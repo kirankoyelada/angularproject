@@ -1,0 +1,47 @@
+
+<div class="wrapper" *ngIf="selectedMarcs && selectedMarcs.length>0">
+  <form #marcContainerform="ngForm">
+	<div id="contentFull" class="tabbedEditer">
+    <ul class="nav nav-tabs tabbedEditerLinks" id="tabbedEditerLinks" role="tablist">
+      <li class="nav-item" *ngFor="let container of selectedMarcs; let index = index">
+        <a class="nav-link" id="tab1" data-toggle="tab"
+           role="tab" [title]="isZ3950Marc ? container.recordControlNumber+' - '+container.recordSource : container.marcState.marc.recordNumber+' - '+container.recordSource"
+           [class.active]="container.isActive"
+           [class.unSaved]="container.isDirty && !container.isActive"
+           id="marc{{index}}"
+           data-toggle="tab"
+           (click)="onTabClick(container)"
+           aria-controls="tab1-data" aria-selected="true">
+          <span *ngIf="!isZ3950Marc" [innerHTML]="container.marcState.marc.recordNumber+' - '+container.recordSource"></span>
+          <span *ngIf="isZ3950Marc" [innerHTML]="container.recordControlNumber+' - '+container.recordSource"></span>
+          <em *ngIf="selectedMarcs.length>1" aria-label="Press enter to close" class="fas fa-times" tabindex="0" title="Close" (click)="onClose(container)" (keydown.enter)="onClose(container)"></em>
+        </a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div *ngIf="selectedMarcs[currentIndex] && !isZ3950Marc" class="tab-pane fade"  [class.active] = "selectedMarcs[currentIndex].isActive"
+      [class.show] = "selectedMarcs[currentIndex].isActive"  role="tabpanel" aria-labelledby="tab1">
+        <marc-edit id="bib-marc-{{currentIndex}}"
+        [offsetHeight]="editorOffsetHeight"
+        [marcId]="selectedMarcs[currentIndex].marcState.marc.id"
+        [marcState]="selectedMarcs[currentIndex].marcState"
+        [recordSource]="selectedMarcs[currentIndex].recordSource"
+        (outputEvent)="onMarcEdit($event)"
+        (saveEvent)="onMarcSave($event)"
+        (backEvent)="onMarcBack($event)"
+        (deleteEvent)="onMarcDelete($event)"></marc-edit>
+      </div>
+      <div *ngIf="selectedMarcs[currentIndex]  && isZ3950Marc" class="tab-pane fade" [class.active] = "selectedMarcs[currentIndex].isActive"
+      [class.show] = "selectedMarcs[currentIndex].isActive" role="tabpanel" aria-labelledby="tab1">
+        <marc-create id="z3950-marc-{{currentIndex}}"
+        [marcState]="selectedMarcs[currentIndex].marcState"
+        [offsetHeight]="editorOffsetHeight"
+        [recordSource]="selectedMarcs[currentIndex].recordSource"
+        (backEvent)="onMarcBack($event)"
+        (outputEvent)="onMarcEdit($event)"
+        (saveEvent)="onMarcSave($event)"></marc-create>
+      </div>
+    </div>
+  </div>
+</form>
+</div>

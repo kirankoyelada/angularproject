@@ -1,0 +1,841 @@
+<section class="search_filter" role="search">
+  <h2 class="sr-only">Global Search Area</h2>
+  <div class="container-fluid" role="grid">
+    <div class="row my-outer" id="search">
+      <div class="col-11 searchGrid" role="grid">
+        <div class="row" role="row">
+             <ng-container *ngFor="let col of searchItems">
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreKeyword',keywordSearchItem)"  >
+            <div class="input-group mt-1 mb-1">
+              <label for="keyword" class="d-none">Keyword</label>
+              <input
+                type="text"
+                class="form-control"
+                [placeholder]="KeywordPlaceholder"
+                name="keyword"
+                id="keyword"
+                tabindex="0"
+                [(ngModel)]="keywordSearchItem.term"
+                (keydown)="onKeydown($event)"
+                (keyup)="onKeyup($event)"
+                [disabled]="disableControl('Keyword')"
+                (ngModelChange)="
+                  onModelChange($event, 'Keyword', keywordSearchItem.type)
+                "
+              />
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreTitle',titleSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="title" class="d-none">Title</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Title"
+                name="title"
+                id="title"
+                tabindex="0"
+                [(ngModel)]="titleSearchItem.term"
+                (keydown)="onKeydown($event)"
+                (keyup)="onKeyup($event)"
+                (ngModelChange)="
+                  onModelChange($event, 'Title', titleSearchItem.type)
+                "
+                [disabled]="disableControl('Title')"
+              />
+              <div class="input-group-append">
+                <label for="titleKeywords" class="d-none">Title</label>
+                <select 
+                  class="keyword-select form-control dropdown"
+                  id="titleKeywords"
+                  name="titleKeywords"
+                  tabindex="0"
+                  [(ngModel)]="titleSearchItem.type"
+                  [disabled]="disableControl('Title')"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'Title',
+                      titleSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Phrase" *ngIf="!isDeletedDbEnable">Phrase</option>
+                  <!-- <option value="Browse">Browse</option> -->
+                  <!-- <option value="Heading">Heading</option> -->
+                  <option value="Word">Word</option>
+                  <option value="Begins" *ngIf="!isDeletedDbEnable">Begins</option>
+                </select> 
+                
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreAuthor',authorSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="Author" class="d-none">Author</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Author"
+                id="Author"
+                name="Author"
+                role="text-box"
+                [(ngModel)]="authorSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                (keyup)="onKeyup($event)"
+                (ngModelChange)="
+                  onModelChange($event, 'Author', authorSearchItem.type)
+                "
+                [disabled]="disableControl('Author')"
+              />
+              <div class="input-group-append">
+                <label for="authorKeywords" class="d-none">Author</label>
+                <select
+                  class="keyword-select form-control dropdown"
+                  id="authorKeywords"
+                  name="authorKeywords"
+                  tabindex="0"
+                  [(ngModel)]="authorSearchItem.type"
+                  [disabled]="disableControl('Author')"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'Author',
+                      authorSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Phrase" *ngIf="!isDeletedDbEnable">Phrase</option>
+                  <!-- <option value="Browse">Browse</option> -->
+                  <!-- <option value="Heading">Heading</option> -->
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreLCClassification',lcClassificationSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="lcClassification" class="sr-only"
+                >LC Classification</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                placeholder="LC Classification"
+                name="lcClassification"
+                id="lcClassification"
+                tabindex="0"
+                [(ngModel)]="lcClassificationSearchItem.term"
+                (keydown)="onKeydown($event)"
+                (ngModelChange)="
+                  onModelChange(
+                    $event,
+                    'LCClassification',
+                    lcClassificationSearchItem.type
+                  )
+                "
+                [disabled]="disableControl('LCClassification') || isDeletedDbEnable"
+              />
+              <div class="input-group-append">
+                <label for="lcClassificationKeywords" class="d-none"
+                  >LC Classification</label
+                >
+                <select
+                  class="keyword-select form-control dropdown"
+                  id="lcClassificationKeywords"
+                  name="lcClassificationKeywords"
+                  tabindex="0"
+                  [(ngModel)]="lcClassificationSearchItem.type"
+                  [disabled]="disableControl('LCClassification') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'LCClassification',
+                      lcClassificationSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Exact">Exact</option>
+                  <!-- <option value="Browse">Browse</option> -->
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMorePubDate',null)" >
+            <div class="input-group mt-1 mb-1 pubDate" [class.pubdate-warn] = "!isPubDateBothValid"
+                 [matTooltip]="!isPubDateBothValid ? 'Invalid Date Range': ''" matTooltipPosition="above"  matTooltipClass="pubErrorTooltip">
+              <label for="pubStartdate" class="sr-only pubStartdate"
+                >Pub Date Start</label>
+              <input
+                type="text"
+                class="form-control"
+                [class.pubdate-warn]="!isPubDateStartValid"
+                placeholder="Pub Date Start"
+                name="pubStartdate"
+                id="pubStartdate"
+                [(ngModel)]="start"
+                tabindex="0"
+                OnlyNumber
+                minlength="4"
+                maxlength="4"
+                matTooltipPosition="above"
+                matTooltipClass="pubErrorTooltip"
+                [matTooltip]="!isPubDateStartValid ? ((start && start.length > 0) ? (start.length === 4) ? 'Invalid Range' : 'Invalid' : 'Required') :''"
+                #tooltip="matTooltip" 
+                matInput
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('PubDate') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'PubDate', '');PubDateValidation();
+                "
+              />
+              <span class="input-group-addon">To</span>
+              <label for="pubEnddate" class="sr-only pubEnddate">Pub Date End</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Pub Date End"
+                aria-label="Pub Date End"
+                name="pubEnddate"
+                id="pubEnddate"
+                [class.pubdate-warn]="!isPubDateEndValid"
+                [(ngModel)]="end"
+                tabindex="0"
+                OnlyNumber
+                minlength="4"
+                maxlength="4"
+                matTooltipPosition="above"
+                matTooltipClass="pubErrorTooltip"
+                [matTooltip]="!isPubDateEndValid ? ((end && end.length > 0) ? (end.length === 4) ? 'Invalid Range' : 'Invalid' : 'Required') :''"
+                #tooltip="matTooltip" 
+                matInput
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('PubDate') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'PubDate', '');PubDateValidation();
+                "
+              />
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreISBN',isbnSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="isbn" class="d-none">ISBN</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="ISBN"
+                id="isbn"
+                name="isbn"
+                role="text-box"
+                [(ngModel)]="isbnSearchItem.term"
+                tabindex="0"
+                AllowNumberXOnly
+                (keydown)="onKeydown($event)"
+                (keyup)="onKeyup($event)"
+                [disabled]="disableControl('ISBN') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'ISBN', isbnSearchItem.type)
+                "
+              />
+
+            </div>
+          </div>
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreUPC',upcSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="upc" class="d-none">UPC</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="UPC"
+                name="upc"
+                id="upc"
+                [(ngModel)]="upcSearchItem.term"
+                tabindex="0"
+                OnlyNumberAndSpace
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('UPC') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'UPC', upcSearchItem.type)
+                "
+              />
+
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreTitleOrAuthor',titleorauthorSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="titleorauthor" class="d-none">Author/Title</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Author/Title"
+                id="titleorauthor"
+                name="titleorauthor"
+                role="text-box"
+                [(ngModel)]="titleorauthorSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                (ngModelChange)="
+                  onModelChange(
+                    $event,
+                    'AuthororTitle',
+                    titleorauthorSearchItem.type
+                  )
+                "
+                [disabled]="disableControl('AuthororTitle') || isDeletedDbEnable"
+              />
+              <div class="input-group-append">
+                <label for="titleorauthorOptions" class="d-none"
+                  >Author/Title</label
+                >
+                <select 
+                  [(ngModel)]="titleorauthorSearchItem.type"
+                  class="keyword-select form-control dropdown"
+                  id="titleorauthorOptions"
+                  name="titleorauthorOptions"
+                  tabindex="0"
+                  [disabled]="disableControl('AuthororTitle') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'AuthororTitle',
+                      titleorauthorSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Phrase">Phrase</option>
+                  <!-- <option value="Heading">Heading</option> -->
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreSeries',seriesSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="series" class="d-none">Series</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Series"
+                id="series"
+                name="series"
+                role="text-box"
+                [(ngModel)]="seriesSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                (ngModelChange)="
+                  onModelChange($event, 'Series', seriesSearchItem.type)
+                "
+                [disabled]="disableControl('Series') || isDeletedDbEnable"
+              />
+              <div class="input-group-append">
+                <label for="seriesOptions" class="d-none">Series</label>
+                <select
+                  [(ngModel)]="seriesSearchItem.type"
+                  class="keyword-select form-control dropdown"
+                  id="seriesOptions"
+                  [disabled]="disableControl('Series') || isDeletedDbEnable"
+                  name="seriesOptions"
+                  tabindex="0"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'Series',
+                      seriesSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Phrase">Phrase</option>
+                  <!-- <option value="Browse">Browse</option> -->
+                  <!-- <option value="Heading">Heading</option> -->
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreSubject',subjectSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="Subject" class="d-none">Subject</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Subject"
+                id="Subject"
+                name="Subject"
+                role="text-box"
+                [(ngModel)]="subjectSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                (keyup)="onKeyup($event)"
+                (ngModelChange)="
+                  onModelChange($event, 'Subject', subjectSearchItem.type)
+                "
+                [disabled]="disableControl('Subject') || isDeletedDbEnable"
+              />
+              <div class="input-group-append">
+                <label for="subjectKeywords" class="d-none">Subject</label>
+                <select
+                  class="keyword-select form-control dropdown"
+                  id="subjectKeywords"
+                  name="subjectKeywords"
+                  tabindex="0"
+                  [(ngModel)]="subjectSearchItem.type"
+                  [disabled]="disableControl('Subject') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'Subject',
+                      subjectSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Phrase">Phrase</option>
+                  <!-- <option value="Heading">Heading</option> -->
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreLCCN',lccnSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="LCCN" class="d-none">LCCN</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="LCCN"
+                id="LCCN"
+                name="LCCN"
+                role="text-box"
+                [(ngModel)]="lccnSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('LCCN') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'LCCN', lccnSearchItem.type)
+                "
+              />
+
+            </div>
+          </div>
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreRecordControlNumber',recordControlNumberSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="recordControlNumber" class="d-none"
+                >Record Control Number</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Record Control Number"
+                id="recordControlNumber"
+                name="recordControlNumber"
+                role="text-box"
+                [(ngModel)]="recordControlNumberSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('RecordControlNumber') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'RecordControlNumber', recordControlNumberSearchItem.type)
+                "
+              />
+              <div class="input-group-append">
+                <label for="recordControlNumberOptions" class="d-none"
+                  >Record Control Number</label
+                >
+                <select
+                  [(ngModel)]="recordControlNumberSearchItem.type"
+                  class="keyword-select form-control dropdown"
+                  id="recordControlNumberOptions"
+                  name="recordControlNumberOptions"
+                  tabindex="0"
+                  [disabled]="disableControl('RecordControlNumber') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'RecordControlNumber',
+                      recordControlNumberSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Exact">Exact</option>
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMorePublisher',publisherSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="publisher" class="d-none">Publisher</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Publisher"
+                name="publisher"
+                id="publisher"
+                tabindex="0"
+                [(ngModel)]="publisherSearchItem.term"
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('Publisher') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'Publisher', publisherSearchItem.type)
+                "
+              />
+              <div class="input-group-append">
+                <label for="publisherKeywords" class="d-none">Publisher</label>
+                <select
+                  class="keyword-select form-control dropdown"
+                  id="publisherKeywords"
+                  name="publisherKeywords"
+                  tabindex="0"
+                  [(ngModel)]="publisherSearchItem.type"
+                  [disabled]="disableControl('Publisher') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'Publisher',
+                      publisherSearchItem.term
+                    )
+                  "
+                >
+                  <option value="Phrase">Phrase</option>
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreDatabaseRecordNumber',databaseRecordNumberSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="databaseRecordNumber" class="d-none"
+                >Database Record Number</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Database Record Number"
+                name="databaseRecordNumber"
+                id="databaseRecordNumber"
+                OnlyNumberAndSpace
+                tabindex="0"
+                [(ngModel)]="databaseRecordNumberSearchItem.term"
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('DatabaseRecordNumber') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'DatabaseRecordNumber', databaseRecordNumberSearchItem.type)
+                "
+              />
+
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreDeweyAbridged',deweyAbridgedSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="deweyAbridged" class="d-none">Dewey Abridged</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Dewey Abridged"
+                id="deweyAbridged"
+                name="deweyAbridged"
+                role="text-box"
+                [(ngModel)]="deweyAbridgedSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('DeweyAbridged') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'DeweyAbridged', deweyAbridgedSearchItem.type)
+                "
+              />
+              <div class="input-group-append">
+                <label for="deweyAbridgedOptions" class="d-none"
+                  >Dewey Abridged</label
+                >
+                <select
+                  [(ngModel)]="deweyAbridgedSearchItem.type"
+                  class="keyword-select form-control dropdown"
+                  id="deweyAbridgedOptions"
+                  name="deweyAbridgedOptions"
+                  tabindex="0"
+                  [disabled]="disableControl('DeweyAbridged') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'DeweyAbridged',
+                      deweyAbridgedSearchItem.term
+                    )
+                  "
+                >
+                <option value="Exact">Exact</option>
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreDeweyUnabridged',deweyUnabridgedSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="deweyUnabridged" class="d-none"
+                >Dewey Unabridged</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Dewey Unabridged"
+                id="deweyUnabridged"
+                name="deweyUnabridged"
+                role="text-box"
+                [(ngModel)]="deweyUnabridgedSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('DeweyUnabridged') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'DeweyUnabridged', deweyUnabridgedSearchItem.type)
+                "
+              />
+              <div class="input-group-append">
+                <label for="deweyUnabridgedOptions" class="d-none"
+                  >Dewey Unabridged</label
+                >
+                <select
+                  [(ngModel)]="deweyUnabridgedSearchItem.type"
+                  class="keyword-select form-control dropdown"
+                  id="deweyUnabridgedOptions"
+                  name="deweyUnabridgedOptions"
+                  tabindex="0"
+                  [disabled]="disableControl('DeweyUnabridged') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'DeweyUnabridged',
+                      deweyUnabridgedSearchItem.term
+                    )
+                  "
+                >
+                <option value="Exact">Exact</option>
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreANSCR',anscrSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="anscr" class="d-none">ANSCR</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="ANSCR"
+                id="anscr"
+                name="anscr"
+                role="text-box"
+                [(ngModel)]="anscrSearchItem.term"
+                tabindex="0"
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('ANSCR') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'ANSCR', anscrSearchItem.type)
+                "
+              />
+              <div class="input-group-append">
+                <label for="anscrOptions" class="d-none">ANSCR</label>
+                <select
+                  [(ngModel)]="anscrSearchItem.type"
+                  class="keyword-select form-control dropdown"
+                  id="anscrOptions"
+                  name="anscrOptions"
+                  tabindex="0"
+                  [disabled]="disableControl('ANSCR') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'anscr',
+                      anscrSearchItem.term
+                    )
+                  "
+                >
+                <option value="Exact">Exact</option>
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3 pr-small pl-small" *ngIf="showSearchField(col.id, 'AddMoreISSN',issnSearchItem)" >
+            <div class="input-group mt-1 mb-1">
+              <label for="issn" class="d-none">ISSN</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="ISSN"
+                id="issn"
+                name="issn"
+                role="text-box"
+                [(ngModel)]="issnSearchItem.term"
+                tabindex="0"
+                AllowHypenNumberOnly
+                (keydown)="onKeydown($event)"
+                [disabled]="disableControl('ISSN') || isDeletedDbEnable"
+                (ngModelChange)="
+                  onModelChange($event, 'ISSN', issnSearchItem.type)
+                "
+              />
+              <div class="input-group-append">
+                <label for="issnOptions" class="d-none">ISSN</label>
+                <select
+                  [(ngModel)]="issnSearchItem.type"
+                  class="keyword-select form-control dropdown"
+                  id="issnOptions"
+                  name="issnOptions"
+                  tabindex="0"
+                  [disabled]="disableControl('ISSN') || isDeletedDbEnable"
+                  (change)="
+                    onTypeChange(
+                      $event.target.value,
+                      'ISSN',
+                      issnSearchItem.term
+                    )
+                  "
+                >
+                <option value="Exact">Exact</option>
+                  <option value="Word">Word</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+
+          </ng-container>
+        </div>
+      </div>
+      <div class="col-1 pl-0 searchBtns pr-0">
+        <button
+          type="button"
+          class="btn btn-primary ml-1 searchCatBtns" title="Search Button" 
+          tabindex="0"
+          (click)="setSearchClicked();getBasicSearchRecords('',true);"
+          [disabled]="!isValidSearch"
+          id="btnSearch"
+          #btnSearch>
+          <em class="fa fa-search" aria-hidden="true" aria-label="Search"></em
+          ><span class="sr-only">Search</span>
+        </button>
+        <button type="button" class="btn btn-danger ml-1 searchCatBtns" tabindex="0" id="btncatalogs"
+            data-toggle="modal"
+            data-backdrop="static"
+            data-target="#catalogFields"
+            (click)="GetCatalogFields()"
+            data-keyboard="true" title="Catalogs" aria-label="Catalogs"
+        >
+          <img src="./assets/images/calalogIcon.png" alt="Catalogs Button" />
+        </button>
+        <app-searchcatalog *ngIf="ShowCatalogDialog" 
+          [defaultCatalogItems]="defaultCatalogItems" 
+          [hasSearchMainPermission]="hasSearchMainPermission" 
+          [hasSearchWorkspacePermission]="hasSearchWorkspacePermission" 
+          [hasSearchAuthorityPermission]="hasSearchAuthorityPermission"
+          [hasSearchDeleteMainRecordsPermission]="hasSearchDeleteMainRecordsPermission"
+          [hasSearchDeleteWSRecordsPermission] = "hasSearchDeleteWSRecordsPermission" 
+          [hasSearchCustomerDelWSPermission] = "hasSearchCustomerDelWSPermission" 
+          [hasSearchDelRecordsPermission] = "hasSearchDelRecordsPermission" 
+          (selectedCatalogItemsAdded)='OnMoreCatalogItemsAdded($event)'>
+        </app-searchcatalog>
+
+        <button
+          type="button"
+          class="btn btn-primary toggleSearch ml-1 searchCatBtns"
+          tabindex="0"
+          (click)="searchExpandorCollapse()"
+          id="btnSearchToggle"
+          #btnSearchToggle [title]="hideSearchItem ? 'Expand':'Collapse'"
+          [hidden] = "ShowExpandorCollapse()">
+          <em
+            [class.fa-chevron-up]="!hideSearchItem"
+            [class.fa-chevron-down]="hideSearchItem"
+            class="fa"
+            aria-hidden="true"
+          ></em><span class="sr-only">Search Toggle</span>
+        </button>
+      </div>
+    </div>
+    <div class="row">
+        <p class="col addMoreAndReset">
+          <a
+            href=""
+            tabindex="0"
+            class="float-left"
+            data-toggle="modal"
+            data-backdrop="static"
+            data-target="#addMoreFields"
+            (click)="AddOrRemoveFields()"
+            data-keyboard="true"
+            ><em class="fa fa-plus" aria-hidden="true"></em> Add / Remove Fields</a>
+            <app-searchbox-addmore *ngIf="ShowAddorRemoveDialog" [defaultAddedItems]="defaultAddedItems" (MoreItemsAdded)='OnMoreItemsAdded($event)'></app-searchbox-addmore>
+          <span class="SearchHistoryLinks float-right">
+            <a href="" class="clearSearch" data-toggle="modal"
+            id="switchCustomer"
+            data-target="#switchCustomerPopup"
+            tabindex="0"
+            *ngIf="isExternalUser || isAllCustomerEnable">Switch Customer</a>
+            <div class="modal fade" id="switchCustomerPopup" role="dialog" tabindex="-1" data-backdrop="static">
+                <div class="modal-dialog modal-sm modal-dialog-scrollable">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h3 class="modal-title" tabindex="0">Select Customer</h3>
+                        <button *ngIf="!isExternalUser" class="close" data-dismiss="modal" tabindex="0" title="Close" type="button">×</button>
+                      </div>
+                      <div class="modal-body">
+                        <div>
+                          <label class="font-weight-bold" for="switchCustomerField">Customer</label>
+                          <input type="text" tabindex="0" class="form-control" name="switchCustomerField"
+                            placeholder="Search Customer" matInput [(ngModel)]="switchCustomerName"
+                            #triggertag="matAutocompleteTrigger" (keydown.enter)="findCustomer()" (focusout)="findCustomer()"
+                            [matAutocomplete]="auto" id="switchCustomerField"/>
+                          <div class="customersListFilter">
+                            <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                            [displayWith]="displayFn" (optionSelected)="selectCustomer($event.option.value,form)">
+                              <ng-container *ngFor="let customer of customers | customerfilter : switchCustomerName">
+                                <mat-option [value]="customer"
+                                  *ngIf="customer.customerName === 'Customer not found'; else customerFound" disabled="true">
+                                  <i>Customer not found</i>
+                                </mat-option>
+                                <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                                  matTooltip="{{customer.customerName}}" #customerFound>
+                                  {{customer.customerName!='' ? customer.customerName : ''}}
+                                </mat-option>
+                              </ng-container>
+                            </mat-autocomplete>
+                          </div>
+                        </div>
+                    </div>
+                        <div class="modal-footer">
+                          <button class="btn btn-primary" [disabled]="!showSelectCustomer" *ngIf="!currentCustomerId" data-dismiss="modal" type="button" (click)="switchCustomer()">OK</button>
+                          <button class="btn btn-primary" [disabled]="!showSelectCustomer" *ngIf="currentCustomerId" data-dismiss="modal" type="button" (click)="switchCustomer()">Update</button>
+                          <button class="btn btn-default" data-dismiss="modal"  *ngIf="currentCustomerId" type="button" (click)="cancel()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <a (click)="newRecordClick();" (keydown.enter)="newRecordClick()" 
+             [class.disabled]="!hasAccessAny([Permissions.CRT_BIB_MN, Permissions.CRT_BIB_WS])"  
+             [ngClass]="{'disableForm': !hasAccessAny([Permissions.CRT_BIB_MN, Permissions.CRT_BIB_WS])}" 
+             class="clearSearch emptyHrefLink" tabindex="0">New Record</a>
+            <a class="clearSearch emptyHrefLink" (click)="clearSearch()" (keydown.enter)="clearSearch()" tabindex="0">Clear Search</a>
+            <a href="" class="mySearches" data-toggle="modal" (click)="ShowSearchHistory = true;"
+            data-backdrop="static"
+            data-target="#searchHistoryModal"
+            data-keyboard="true" tabindex="0">My Searches</a>
+            <search-history *ngIf="ShowSearchHistory" (eventEmitterDoubleClick)="loadSearchData($event)" (closeModalEvent)="onSearchHistoryClose($event)"></search-history>
+          </span>
+        </p>
+        </div>
+  </div>
+</section>

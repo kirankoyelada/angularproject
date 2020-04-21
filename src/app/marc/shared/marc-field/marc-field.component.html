@@ -1,0 +1,208 @@
+<div [id]="'marcRow'+ position" class="row" ngModelGroup="marcRow">
+  <div class="col expandEditRow">
+    <em *ngIf="field.isValid && field.isFieldExpandable && field.tag !='000'" [ngClass]="(field.isValid && field.isFieldExpanded) ? 'fa fa-minus':'fa fa-plus'" [title]="(field.isValid && field.isFieldExpanded) ? 'Collapse':'Expand'"
+      aria-hidden="true" tabindex="0" (keydown.alt.delete)="onDelete()" (keydown.enter)="showEditSubEle();"
+      (click)="showEditSubEle();" aria-label="Press enter to expand or collapse">
+    </em>
+  </div>
+  <div class="col editTag pl-small pr-small">
+    <label class="sr-only" for="editTag{{position}}">Edit Tag</label>
+    <input class="form-control form-control-sm"
+      tabindex="0"
+      name="editTag{{position}}"
+      id="editTag{{position}}"
+      type="text"
+      [readonly]="!isEditable"
+      moveNextByMaxLength [active]="canMoveNextByMaxLength"
+      maxlength="3"
+      [ngModel]="field.tag | leaderConversion"
+      (ngModelChange)="onTagChange($event)"
+      [ngModelOptions]="{standalone: true}"
+      matInput
+      [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+      matTooltipPosition="above"
+      matTooltipClass="my-tooltip editTagEditErrorTooltip"
+      [matTooltip]="field.isValid == false ?field.errMsg:''"
+      [matTooltipDisabled]="field.isValid == true"
+      #tooltip="matTooltip"
+      [matAutocomplete]="tagAutocomplete"
+      OnlyNumber
+      #inputTag
+      #tagModel="ngModel"
+      #triggertag="matAutocompleteTrigger"
+      [ngClass]="{'border-danger':field.isValid == false}"
+      aria-describedby="enterValidData"
+      (focus)="onTagFocus($event)"
+      (blur)="onTagFocusOut($event,triggertag)"
+      (keydown.enter)="onEnterKeyPress(triggertag)"
+      (keydown.arrowup)="onUpKeyPress($event,'tag',triggertag)"
+      (keydown.arrowdown)="onDownKeyPress($event,'tag',triggertag)"
+      (keydown.shift.enter)="onShiftEnterPress($event)"
+      (keydown.alt.delete)="onDelete()"
+      (keydown.control.z)="onCtrlZPressed($event)" />
+    <span class="sr-only" id="enterValidData">Please enter valid data</span>
+    <mat-autocomplete autoActiveFirstOption #tagAutocomplete="matAutocomplete" class="tagAutoComplete">
+      <mat-option *ngFor="let tag of filteredMarcTags | async" [value]="tag.tag" title="{{tag.description}}"
+        (onSelectionChange)="setSelectedTag(tag)">
+        {{ tag.description }}
+      </mat-option>
+    </mat-autocomplete>
+  </div>
+  <!-- <div class=" col editTag pl-small pr-small" *ngIf="!field.isLeaderCtrlField">
+    <label class="sr-only" for="editTagData{{position}}">Edit Tag</label>
+    <input class="form-control form-control-sm"
+      tabindex="0"
+      name="editTagData{{position}}"
+      id="editTagData{{position}}"
+      type="text"
+      [readonly]="!isEditable"
+      moveNextByMaxLength [active]="canMoveNextByMaxLength"
+      maxlength="3"
+      [ngModel]="field.tag"
+      (ngModelChange)="onTagChange($event)"
+      [ngModelOptions]="{standalone: true}"
+      matInput
+      matTooltipPosition="above"
+      matTooltipClass="my-tooltip editTagEditErrorTooltip"
+      [matTooltip]="field.isValid == false ?field.errMsg:''"
+      [matTooltipDisabled]="field.isValid == true"
+      #tooltip="matTooltip"
+      [matAutocomplete]="tagAutocomplete"
+      OnlyNumber
+      #inputTag
+      #tagModel="ngModel"
+      #triggertag="matAutocompleteTrigger"
+      [ngClass]="{'border-danger':field.isValid == false}"
+      [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+      aria-describedby="enterValidData"
+      (focus)="onTagFocus($event)"
+      (blur)="onTagFocusOut($event,triggertag)"
+      (keydown.enter)="onEnterKeyPress(triggertag)"
+      (keydown.arrowup)="onUpKeyPress($event,'tag',triggertag)"
+      (keydown.arrowdown)="onDownKeyPress($event,'tag',triggertag)"
+      (keydown.shift.enter)="onShiftEnterPress($event)"
+      (keydown.alt.delete)="onDelete()"
+      (keydown.control.z)="deActivateMoveNextByMaxLength($event)" />
+    <span class="sr-only" id="enterValidData">Please enter valid data</span>
+    <mat-autocomplete autoActiveFirstOption #tagAutocomplete="matAutocomplete" class="tagAutoComplete">
+      <mat-option *ngFor="let tag of filteredMarcTags | async" [value]="tag.tag"
+        (onSelectionChange)="setSelectedTag(tag)" title="{{tag.description}}">
+        {{tag.description}}
+      </mat-option>
+    </mat-autocomplete>
+  </div> -->
+  <div class="col editIndicator1 pl-0 pr-small" *ngIf="!field.isLeaderCtrlField">
+    <label class="sr-only" for="editIndicator1{{position}}">Edit Indicator1</label>
+    <input class="form-control form-control-sm" AllowHashNumberOnly tabindex="0" id="editIndicator1{{position}}"
+      name="editIndicator1{{position}}" maxlength="1" [ngModel]="field.ind1" [ngModelOptions]="{standalone: true}"
+      (ngModelChange)="onIndicator1Change($event)" type="text" matInput #ind1Model="ngModel"
+      [matAutocomplete]="ind1Autocomplete"
+      [ngStyle]="{'color': marcSettings?.indcolor,'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+      [readonly]="field.tag === '997' || field.tag === '005' || field.tag === '001'" moveNextByMaxLength
+      [active]="canMoveNextByMaxLength" (focus)="onIndicator1Focus($event)" #inputind1 matTooltipPosition="above"
+      matTooltipClass="my-tooltip editErrorTooltip" [matTooltip]="field.isIndi1valid == false ?field.ind1ErrMsg:''"
+      #tooltip="matTooltip"  #trigger="matAutocompleteTrigger"
+      (blur)="onIndicator1FocusOut($event,trigger)"
+      (input)="OnInd1Change($event)" [matTooltipDisabled]="field.isIndi1valid == true"
+      [ngClass]="{'border-danger':field.isIndi1valid == false}" (keydown.enter)="onEnterKeyPress(trigger)"
+      (keydown.arrowup)="onUpKeyPress($event,'indicator1',trigger)"
+      (keydown.arrowdown)="onDownKeyPress($event,'indicator1',trigger)"
+      (keydown.alt.delete)="onDelete()"
+      (keydown.shift.enter)="onShiftEnterPress($event)"
+      (keydown.control.z)="onCtrlZPressed($event)" />
+    <mat-autocomplete autoActiveFirstOption #ind1Autocomplete="matAutocomplete" class="indAutoComplete">
+      <ng-container *ngFor="let ind1 of filteredIndicators1 | async" >
+          <mat-option [value]="ind1.code"
+          *ngIf="ind1.isObsolete != true" title="{{ind1.description}}" (onSelectionChange)="setSelectedInd1()">
+          {{ind1.description}}
+        </mat-option>
+      </ng-container>
+    </mat-autocomplete>
+  </div>
+  <div class="col editIndicator2 pl-0 pr-small" *ngIf="!field.isLeaderCtrlField">
+    <label class="sr-only" for="editIndicator2{{position}}">Edit Indicator2</label>
+    <input class="form-control form-control-sm" AllowHashNumberOnly tabindex="0" name="editIndicator2{{position}}"
+      maxlength="1" [readonly]="field.tag === '997' || field.tag === '005' || field.tag === '001' "
+      (ngModelChange)="onIndicator2Change($event)" id="editIndicator2{{position}}" type="text" [ngModel]="field.ind2"
+      matInput [ngModelOptions]="{standalone: true}" [matAutocomplete]="ind2Autocomplete"
+      [ngStyle]="{'color': marcSettings?.indcolor,'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+      (focus)="onIndicator2Focus($event)" #ind2Model="ngModel" moveNextByMaxLength [active]="canMoveNextByMaxLength"
+      (blur)="onIndicator2FocusOut($event,trigger1)"
+      (input)="OnInd2Change($event)" #inputind2 matTooltipPosition="above"
+      [ngClass]="{'border-danger':field.isIndi2valid == false}" matTooltipClass="my-tooltip editErrorTooltip"
+      [matTooltip]="field.isIndi2valid == false ?field.ind2ErrMsg:''" #tooltip="matTooltip"
+      #trigger1="matAutocompleteTrigger" [matTooltipDisabled]="field.isIndi2valid == true"
+      aria-describedby="enterValidData" (keydown.enter)="onEnterKeyPress(trigger1)"
+      (keydown.tab)= "handleInd2TabKeyPressed($event)"
+      (keydown.arrowup)="onUpKeyPress($event,'indicator2',trigger1)"
+      (keydown.arrowdown)="onDownKeyPress($event,'indicator2',trigger1)"
+      (keydown.shift.enter)="onShiftEnterPress($event)"
+      (keydown.alt.delete)="onDelete()"
+      (keydown.control.z)="onCtrlZPressed($event)" />
+    <mat-autocomplete autoActiveFirstOption #ind2Autocomplete="matAutocomplete" class="indAutoComplete">
+      <ng-container *ngFor="let ind1 of filteredIndicators2 | async">
+          <mat-option [value]="ind1.code"
+          *ngIf="ind1.isObsolete != true" title="{{ind1.description}}" (onSelectionChange)="setSelectedInd2()">
+          {{ind1.description}}
+        </mat-option>
+      </ng-container>
+    </mat-autocomplete>
+  </div>
+  <div class="col editMarcDesc pl-0 pr-0 input is-medium" *ngIf="!field.isLeaderCtrlField">
+    <label class="sr-only" for="editMarcDesc{{position}}">Edit Marc Description</label>
+    <text-editor #editorComponent [id]="'editMarcDesc'+position" name="editMarcDesc{{position}}"
+      [cmEditorId]="'editMarcDesc'+position" [hintFilter]="field.tag" [data]="field.subFieldDescription"
+      [SubFieldData]="field.subfields" [field]="field" (onEnter)="handleTextEditorEnterKeyPressed()"
+      (onAltDelete)="onDelete()" (dataChange)="onSubfieldChange($event)" [overrideValidation]="overrideValidation"
+      (onShiftTab)="handleTextEditorShiftTabPressed($event)" (onKeyboardUpDown)="handleTextEditorUpDownPressed($event);"
+      [readonly]="field.tag === '997' || field.tag === '005' || field.tag === '001' " [isValidateSubfield]="isValidateSubfield"
+      (blur)="onTextEditorFocusOut($event)" [form]="form" [allowRevealingSpaces]=true >
+    </text-editor>
+    <span class="marcIcons">
+      <em class="column-drag-handle fas fa-arrows-alt-v mr-1" title="Drag up / down" aria-hidden="true" tabindex="0"
+        style="cursor:all-scroll;padding-right: 5px" (mousedown)="onMouseDown()" (keydown.alt.delete)="onDelete()"
+        (keydown.shift.tab)="onDragHandlerShiftTabPressed($event)" [hidden]="isDragDisabled"></em>
+      <em class="fas fa-trash-alt" title="Delete" aria-hidden="true" tabindex="0" [hidden]="isDeleteDisabled"
+        (keydown.alt.delete)="onDelete()" aria-label="Press enter to delete"
+        (keydown.shift.tab)="onDeleteShiftTabPressed($event)" (click)="onDelete()" (keydown.enter)="onDelete()"
+        [ngClass]="{'disabledeletebtn': isDeleteDisabled}"></em>
+    </span>
+  </div>
+  <div class="col editMarcDesc readonly pl-0 pr-0 input is-medium" *ngIf="field.isLeaderCtrlField">
+    <label class="sr-only" for="editMarcDesc{{position}}">Edit Marc Description</label>
+    <textarea id="editMarcDesc{{position}}" #inputDesc class="form-control form-control-sm" tabindex="0"
+      name="editMarcDesc{{position}}" ngModel (focus)="onTextAreaFocus($event)"
+      autosize
+      [ngStyle]="{'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+      (keypress) = "UpdateMarcDescValueOnKeyPress($event)"
+      [(ngModel)]="fieldSubFieldDescription"
+      [ngClass]="{'border-danger':(field.isValidData === false && field.isSubfieldValid === false)}"
+      (ngModelChange)="UpdateControlFieldValue($event)"
+      (blur)="onTextEditorFocusOut($event)"
+      [readonly]="(field.tag !='003' && !(field.tag ==='001' && overrideValidation)) || !field.isValid"
+      (keydown.enter)="$event.preventDefault(); onEnterKeyPress(null)"
+      (keydown.alt.delete)="onDelete()"
+      (keydown.arrowup)="onUpKeyPress($event,'marcDesc',null)"
+      (keydown.arrowdown)="onDownKeyPress($event,'marcDesc',null)"></textarea>
+
+    <span class="marcIcons">
+      <em class="fas fa-arrows-alt-v mr-1" aria-hidden="true" cdkDragHandle title="Drag up / down"
+          (keydown.alt.delete)="onDelete()" style="cursor:all-scroll;padding-right: 5px" [hidden]="isDragDisabled"
+          (mousedown)="onMouseDown()"></em>
+      <em class="column-drag-handle fas fa-trash-alt" aria-hidden="true" [hidden]="isDeleteDisabled"
+      (keydown.alt.delete)="onDelete()" title="Delete"
+        (click)="onDelete()" [ngClass]="{'disabledeletebtn':isDeleteDisabled}" tabindex="0" ></em>
+    </span>
+  </div>
+  <edit-subelements id="editSubele" [formData]="form" [value]="field.data" [fieldIndex]="position"
+    [originalData]=field.originalData (valueUpdate)="getUpdatedvalue($event)" [field]=field
+    [leaderDataWithHyphons]='leaderDataWithHyphons' #subElementsComponent  [marcSettings]="marcSettings"
+    [existingMARCData]="existingMARCData" (onAltDelete)="onDelete()" [overrideValidation]="overrideValidation"
+    (leaderDataWithHyphonsChange)="handleLeaderDataWithHyphonsChange($event)" [leaderField]="leaderData" *ngIf="field.isFieldExpanded && field.isFieldExpandable && field.isValid">
+  </edit-subelements>
+  <!-- <app-context-menu *ngIf="contextmenu==true && contextmenuIndex==index"
+                  (onDataSelected)="subfieldSelected(index,$event,field)"
+                  [filteredSubFields]="filteredSubFields" [x]="contextmenuX" [y]="contextmenuY">
+</app-context-menu> -->
+
+</div>

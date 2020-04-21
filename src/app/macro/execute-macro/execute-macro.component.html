@@ -1,0 +1,66 @@
+<p scrollTop=0 class="macroSideNavHeaderCollapsed" tabindex="0" (click)="openNav()" aria-label="Press enter to expand macros"
+  (keydown.enter)="openNav()" [ngClass]="{'disableForm': !hasMacroExecutionPermission || isAllCustomerSelected || isDeletedDBSelected}">
+    <em class="fas fa-angle-double-left"></em><span>Macros</span>
+  </p>
+<div class="macroSideNav">
+  <p class="macroSideNavHeaderExpanded" [ngClass]="{'disableForm':!hasMacroExecutionPermission || isDeletedDBSelected}">
+    <span (click)="closeNav()" (keydown.enter)="closeNav()" tabindex="0" aria-label="Press enter to collapse macros"><em class="fas fa-angle-double-right"></em>
+     Macros</span></p>
+     <div class="form-group rightBarSearchField m-0">
+      <label for="searchMacros" class="sr-only">Macro Filter Search</label>
+      <input [(ngModel)]="searchMacros"  [ngModelOptions]="{standalone: true}" class="form-control" id="searchMacros" name="searchMacros" tabindex="0" placeholder="Search Macros"/>
+    </div>
+  <ul class="macrosList">
+    <ng-container *ngFor="let item of macroList">
+      <li id="{{ item }}" [ngClass]="isActive && item === macroName ?'macroActive':''" 
+        data-backdrop="static"
+        data-target="#macroInputVariable"
+        (click)="executeSingleOrBatchMacros(item)"
+        (keydown.enter)="executeSingleOrBatchMacros(item)" tabindex="0">
+        <em class="far fa-play-circle "></em> <span class="macroLabel">{{ item }}</span>
+      </li>
+    </ng-container>
+  </ul>
+</div>
+<div class="modal fade" id="macroInputVariable" role="dialog" aria-hidden="true" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" tabindex="0">Execute Macro</h5>
+        <button type="button" class="close" data-dismiss="modal" tabindex="0" title="Close">&times;</button>
+      </div>
+      <!-- <form> -->
+        <div class="modal-body">         
+            <div class="col-12">
+              <div class="LCcheckboxRow row">
+                <div class="col-6  pl-small pr-small">
+                  <span class="bibTagLabels">Variable</span>
+                </div>
+                <div class="col-6 pl-small pr-small">
+                  <span class="bibTagLabels">Value</span>
+                </div>
+              </div>              
+              <ng-container *ngFor="let input of currentMacro.inputVariables"> 
+                <div class="row">
+                  <div class="col-6 pl-small pr-small mb-1">
+                    <label class="custom-label" for="{{input.variableName}}" aria-hidden="true">{{input.variableName}}</label>
+                  </div>
+                  <div class="col-6 pl-small pr-small mb-1">
+                    <input class="form-control form-control-sm" type="text" [(ngModel)]="input.variableValue" tabindex="0" id="{{input.variableName}}" name="{{input.variableName}}"/>
+                  </div> 
+                  <div style="clear:both;"></div>
+                </div>                 
+              </ng-container>                            
+            </div>         
+        </div>
+        <div class="modal-footer">
+          <button type="button" (click)="executeMacro(currentMacro.macroName,currentMacro.inputVariables)" class="btn btn-primary" data-dismiss="modal" tabindex="0">Execute</button>
+          <button type="button" (click)="reset()" class="btn btn-default" data-dismiss="modal" tabindex="0">
+            Cancel
+          </button>
+        </div>
+      <!-- </form> -->
+    </div>
+  </div>
+</div>
+

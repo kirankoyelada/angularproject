@@ -1,0 +1,47 @@
+<div class="wrapper">
+        <h3 class="sr-only">Search Results Area</h3>
+        <p class="text-center mt-5" *ngIf="authoritySearchResponse == null && isNoRecords"><span tabindex="0">No results found.</span></p>
+      </div>
+      
+      <div class="wrapper" [hidden]="authoritySearchResponse == null">
+          <form #form="ngForm">
+          
+        <div id="contentFull">
+          <div class="text-right nextPrevBtns">
+          <button class="btn btn-primary prevHistory" (click)="MovePrevNext('prev')" [disabled]="disablePrev" id="prevHistory" tabindex="0" type="button">
+            <em aria-hidden="true" class="fa fa-chevron-left"></em> Previous
+          </button>
+          <button class="btn btn-primary ml-1 nextHistory" (click)="MovePrevNext('next')" [disabled]="disableNext" id="nextHistory" tabindex="0" type="button">
+              Next <em aria-hidden="true" class="fa fa-chevron-right"></em>      
+          </button>
+        </div>
+          <div class="flex-container" [style.height.px]="NewHeight">
+            <div class="fit table-responsive searchResultTableContainer">
+              <fieldset>
+                <legend class="sr-only">Authority Search Results</legend>
+                <table id="AuthoritySearchResults" class="table table-bordered table-hover table-sm" role="grid"
+                       aria-describedby="AuthoritySearchResults" width="100%">
+                </table>
+              </fieldset>
+            </div>      
+            <header class="MARCrecordHeader" *ngIf="authorityId || marcItem">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col pl-small">
+                    <span class="font-weight-bold" tabindex="0">Authority Record</span>
+                  </div>
+                </div>
+              </div>
+            </header>
+            <div class="marc-outer">
+              <div class="MARCrecords" *ngIf="authorityId || marcItem">
+                <marc-view [authorityId]="authorityId" [marcId]="selectedMarcId" [marcItem] = "marcItem"></marc-view>
+              </div>
+            </div>
+            </div>
+          </div>
+        </form>
+        </div>
+      
+      
+      

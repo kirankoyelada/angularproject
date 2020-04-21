@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+     <!-- Load settings -->
+     <script src="config/appSettings.js"></script>
+     <!--End load settings-->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BTCAT | Web Application</title>
+    <base href="/" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script>
+      //-----------------
+      //Poly-fills for IE
+      //-----------------
+      if (!Array.prototype.forEach) {
+        Array.prototype.forEach = function(fn, scope) {
+          for (var i = 0, len = this.length; i < len; ++i) {
+            fn.call(scope, this[i], i, this);
+          }
+        };
+      }
+
+      if (window.NodeList && !NodeList.prototype.forEach) {
+        NodeList.prototype.forEach = function(callback, thisArg) {
+          thisArg = thisArg || window;
+          for (var i = 0; i < this.length; i++) {
+            callback.call(thisArg, this[i], i, this);
+          }
+        };
+      }
+
+      function GetGoogleManagerScript(){
+          var script = document.createElement("script")
+          script.type = "text/javascript";
+          //Chrome,Firefox, Opera, Safari 3+
+          script.onload = function(){
+            console.log("Script is loaded");
+          };
+          script.async = true;
+          script.src = "https://www.googletagmanager.com/gtag/js?id=" + window.__env.googleAnalyticsKey;
+          document.getElementsByTagName("head")[0].appendChild(script);
+      }
+
+      GetGoogleManagerScript();
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+
+      gtag('js', new Date());
+      gtag('config', window.__env.googleAnalyticsKey);
+
+      // Feature detects Navigation Timing API support.
+      if (window.performance) {
+        // Gets the number of milliseconds since page load
+        // (and rounds the result since the value must be an integer).
+        var timeSincePageLoad = Math.round(performance.now());
+        // Sends the timing event to Google Analytics.
+        gtag('event', 'timing_complete', {
+          'name': 'load',
+          'value': timeSincePageLoad,
+          'event_category': 'JS Dependencies'
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+
+<div class="wrapper" *ngIf="showMultipleMarcView">  
+        <div class="multiCompareMarcRecHistory">
+        <header class="tableHeaderCounts">
+          <div class="container-fluid">
+            <div class="row"> 
+              <div class="col-sm-9">
+                  <h4><span class="editMarcHead" tabindex="0">Record Number: {{recordNumber}}</span></h4>
+                </div>
+              <div class="col-sm-3 text-right">
+                  <button *ngIf = "showMerge"  
+                      type="button" class="btn btn-primary" tabindex="0" 
+                      data-toggle="modal"
+                      data-backdrop="static"
+                      data-target="#merge2Popup"
+                      data-keyboard="true"
+                      (click)="mergeRecordHistoryMarc()"
+                      [disabled]="!hasAccess(Permissions.MRG_REC)">
+                    Merge
+                  </button>
+                <button type="button" class="btn btn-primary ml-1" tabindex="0" (click)="backToSearchResult()">
+                  Back to Results
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <marc-history-differentiator [marcs]="selectedMarcs" *ngIf="selectedMarcs && selectedMarcs.length == 2" (showingMergeButtonOnCondition)=showMergeButton($event)>
+        </marc-history-differentiator>
+        <!-- Multiple marc view shows if compare records more than 2-->
+        <multiple-marc-history-view  [marcItems]="selectedMarcs" *ngIf="selectedMarcs && selectedMarcs.length != 2">
+        </multiple-marc-history-view> 
+        <!-- Multiple marc view end-->
+      </div>
+</div>

@@ -1,0 +1,160 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-3 pl-small pr-small">
+              <h4><span tabindex="0">Customer Configuration</span></h4>
+            </div>
+            <div class="col-sm-6 p-0 text-center">
+              <span class="clsLabelErrorMessage" *ngIf="errorDisplayOnTop" tabindex="0">
+                One or more errors occurred while saving the Account Suffix
+                Configuration. Please correct them to proceed.
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="marc-outer Z3950Profiles m-0">
+        <div class="MARCrecords" [style.height.px]="NewHeight">
+          <div class="suffixConfig Z3950Head mt-1">
+            <h4>
+              <span tabindex="0">Suffix Configuration -{{ accountNumber }}</span>
+              <button class="btn btn-primary" aria-label="Press enter to add new" tabindex="0" title="Add Tag"
+                [disabled]="rowsCount >= 10 ? true : null" (keydown.enter)="onAddRow(form)">
+                <em aria-hidden="true" class="fa fa-plus" (click)="onAddRow(form)"></em>
+              </button>
+            </h4>
+            <div class="mb-2" role="table" aria-label="Customer Configuration" aria-describedby="accountSuffixConfiguration">
+              <div class="sr-only">Suffix Configuration</div>
+              <div class="container-fluid tableHeader" role="rowgroup">
+                <div class="row" data-fixed="true" role="row">
+                  <div class="col" row="columnheader"><b>Suffix</b></div>
+                  <div class="col" row="columnheader">
+                    <b>Description of Suffix</b>
+                  </div>
+                  <div class="col onlyCheckBox" row="columnheader">
+                    <b>Combine ATS</b>
+                  </div>
+                  <div class="col" row="columnheader">
+                    <b>Output File Name</b>
+                  </div>
+                  <div class="col" row="columnheader">
+                    <b>Output File Location</b>
+                  </div>
+                  <div class="col" row="columnheader">
+                    <b>Contact for Specific L Account</b>
+                  </div>
+                  <div class="col" row="columnheader">
+                    <b>Email Subject Line</b>
+                  </div>
+                  <div class="col onlyDeleteIcon" row="columnheader"></div>
+                </div>
+              </div>
+              <div class="container-fluid tableBody" role="rowgroup" id="accountSuffixConfiguration"
+                [style.maxHeight.px]="NewTableHeight">
+                <div class="row" role="row" *ngFor="let item of suffixConfiguration; let i = index">
+                  <ng-container *ngIf="item.id">
+                    <div class="col" tabindex="0" role="cell">{{ item.suffix }}</div>
+                    <div class="col" role="cell">
+                      {{ item.descriptionOfSuffix }}
+                    </div>
+                    <div class="col onlyCheckBox" role="cell">
+                      <label class="sr-only" for="BTCombineATS-{{i}}">BTCombineATS</label>
+                      <input id="BTCombineATS-{{i}}" name="BTCombineATS-{{i}}" tabindex="0" type="checkbox"
+                      [(ngModel)]="item.combineATS" [value]="item.combineATS"
+                        (change)="checkComnbineAts(i, $event.target.value)"
+                      />
+                    </div>
+                    <div class="col" tabindex="0" role="cell">
+                      {{ item.outputFileName }}
+                    </div>
+                    <div class="col" tabindex="0" role="cell">
+                      {{ item.outputFileLocation }}
+                    </div>
+                    <div class="col" tabindex="0" role="cell">
+                      {{ item.contactforLAccount }}
+                    </div>
+                    <div class="col" tabindex="0" role="cell">
+                      {{ item.emailSubjectLine }}
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="!item.id">
+                    <div class="col inputCol" role="cell">
+                      <label class="sr-only" for="newSuffix-{{i}}">New Suffix</label>
+                      <input class="form-control" id="newSuffix-{{i}}" [(ngModel)]="item.suffix" name="newSuffix-{{i}}"
+                        tabindex="0" type="text"
+                        [ngClass]="{'border-danger': validateSuffix(suffixConfiguration,item.suffix,i)}" 
+                        [matTooltip]="validateSuffixRequiredTooltip(suffixConfiguration,item.suffix,i)==true ?'Required':validateSuffixMaxCharsTooltip(suffixConfiguration,item.suffix,i)==true? 'Maximum 4 characters are allowed': validateDuplicateSuffix(suffixConfiguration,item.suffix,i)==true?'Duplicate suffix':''"                         
+                        matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" minlength="1" maxlength="4" [ngModelOptions]="{standalone: true}"/>
+                    </div>
+                    <div class="col inputCol" role="cell">
+                      <label class="sr-only" for="NewDescriptionofSuffix-{{i}}">New Description of Suffix</label>
+                      <input class="form-control" maxlength="500" id="NewDescriptionofSuffix-{{i}}"
+                        [(ngModel)]="item.descriptionOfSuffix" name="NewDescriptionofSuffix-{{i}}" tabindex="0"
+                        type="text" [ngModelOptions]="{standalone: true}"/>
+                    </div>
+                    <div class="col onlyCheckBox" role="cell">
+                      <label class="sr-only" for="NewBTCombineATS-{{i}}">NewBTCombineATS</label>
+                      <input type="checkbox" id="NewBTCombineATS-{{i}}" name="NewBTCombineATS-{{i}}" tabindex="0"
+                        [(ngModel)]="item.combineATS" [value]="item.combineATS"
+                        (change)="checkComnbineAts(i, $event.target.value)" [ngModelOptions]="{standalone: true}"/>
+                    </div>
+                    <div class="col inputCol" role="cell">
+                      <label class="sr-only" for="NewOutputFileName-{{i}}">New Output File Name</label>
+                      <input class="form-control" maxlength="100" id="NewOutputFileName-{{i}}" name="NewOutputFileName-{{i}}"
+                        [(ngModel)]="item.outputFileName" tabindex="0" type="text" [ngModelOptions]="{standalone: true}"/>
+                    </div>
+                    <div class="col inputCol" role="cell">
+                      <label class="sr-only" for="NewOutputFileLocation-{{i}}">New Output File Location</label>
+                      <input class="form-control"  maxlength="500" id="NewOutputFileLocation-{{i}}" name="NewOutputFileLocation-{{i}}"
+                        [(ngModel)]="item.outputFileLocation" tabindex="0" type="text" [ngModelOptions]="{standalone: true}"/>
+                    </div>
+                    <div class="col inputCol" role="cell">
+                      <label class="sr-only" for="NewContactforSpecificLAccount-{{i}}">New Contact for Specific L
+                        Account</label>
+                      <input class="form-control" maxlength="100" id="NewContactforSpecificLAccount-{{i}}"
+                        name="NewContactforSpecificLAccount-{{i}}" [(ngModel)]="item.contactforLAccount" tabindex="0"
+                        type="text" [ngModelOptions]="{standalone: true}"
+                         
+                        [ngClass]="{'border-danger': validateEmail(item.contactforLAccount,i,suffixConfiguration)}"
+                        [matTooltip]="validateEmail(item.contactforLAccount,i,suffixConfiguration)==true?'Invalid email format':''"
+                        matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" 
+                        />
+                    </div>
+                    <div class="col inputCol" role="cell">
+                      <label class="sr-only" for="NewEmailSubjectLine-{{i}}">New Email Subject Line</label>
+                      <input class="form-control" maxlength="100" id="NewEmailSubjectLine-{{i}}" name="NewEmailSubjectLine-{{i}}"
+                        [(ngModel)]="item.emailSubjectLine" tabindex="0" type="text" [ngModelOptions]="{standalone: true}"/>
+                    </div>
+                  </ng-container>
+                  <div class="col templateActionBtns onlyDeleteIcon" role="cell">
+                      <em class="fas fa-trash-alt" title="Delete" tabindex="0"
+                       (click)="onRemoveRow(form, i)" (keydown.enter)="onRemoveRow(form, i)"></em>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row z3950Btns">
+        <div class="col-12 pl-small pr-0 text-right">
+          <button [disabled]="!loadControlScreen" class="btn btn-primary mr-1" id="saveClsCustomerConfig" tabindex="0"
+            type="button" (click)="saveClsCustomerConfig(form)">
+            Save
+          </button>
+          <button [disabled]="!loadControlScreen" class="btn btn-default mr-1" id="cancelClsCustomerConfig" tabindex="0"
+            type="button" (click)="clear(form)">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="backClsCustomerConfig" tabindex="0" type="button" (click)="back(form)">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

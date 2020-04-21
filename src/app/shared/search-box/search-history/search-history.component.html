@@ -1,0 +1,58 @@
+<div class="modal fade" id="searchHistoryModal" role="dialog" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" tabindex="0">Search History</h5>
+                <button type="button" class="close" data-dismiss="modal" (click)="OnDialogClose()" title="Close">&times;</button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <fieldset>
+                        <legend class="sr-only">Search history table</legend>
+                        <table class="table table-bordered table-hover table-sm" role="grid" id="searchHistory"
+                            aria-describedby="search_history"
+                            *ngIf="searchHistoryData && searchHistoryData.searchOperations">
+                            <thead>
+                                <tr data-fixed="true">
+                                    <th class="searchCriteria" tabindex="0">Search Criteria</th>
+                                    <th class="searchModifiers" tabindex="0">Search Modifiers</th>
+                                    <th class="searchCatalogs" tabindex="0">Search Catalogs</th>
+                                </tr>
+                            </thead>
+                            <tbody id="search_history">
+                                <ng-container *ngFor="let history of searchHistoryData.searchOperations">
+                                    <tr (dblclick)="eventEmitDoubleClick(history);data-dismiss='searchHistoryModal'" (keydown.enter)="eventEmitDoubleClick(history);data-dismiss='searchHistoryModal'" tabindex="0">
+                                        <td class="searchCriteria">
+                                            <div *ngFor="let search of history.searchCriteria">
+                                                <span class="bold">{{search.displayName}}</span>
+                                                <span *ngIf="search.sType" class="bold"> / </span>
+                                                <span *ngIf="search.sType" class="bold">{{search.searchType}}</span>
+                                                <span> = "{{search.displayTerm}}"</span>
+                                            </div>
+                                        </td>
+                                        <td class="searchModifiers">
+                                            <!-- Modifiers list -->
+                                        </td>
+                                        <td class="searchCatalogs">
+                                            <ng-container *ngFor="let catalogue of history.catalogs; let index = index">
+                                                <span>{{catalogue}}</span>
+                                                <span *ngIf="index+1 < history.catalogs.length">, </span>
+                                            </ng-container>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                        <div *ngIf="searchHistoryData && !searchHistoryData.searchOperations && !loading"
+                        style="text-align: center;">No search history
+                        found.</div>
+                        <!-- <div *ngIf="startSpinner" class="searchSpinner">
+                            <mat-progress-spinner [diameter]="40" [mode]="'indeterminate'">
+                            </mat-progress-spinner>
+                        </div> -->
+                    </fieldset>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

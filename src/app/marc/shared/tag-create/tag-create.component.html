@@ -1,0 +1,51 @@
+<div class="alertConfirmation">
+    <div class="mat-header">
+      <h5> 949 - Tag Creation <button type="button" class="close" matDialogClose tabindex="0"
+        title="Close">&times;</button></h5>    
+     </div>
+    <div mat-dialog-content >
+        <div class="card-body">
+          <div class="col-12">
+            <div class="row mb-1">
+                <div class="col-2 p-0 font-weight-bold">
+                    Sub Field :
+                </div>
+                <div class="col-10 p-0">
+                    {{subField}}
+                </div>
+              </div>
+            <div class="row fixedHeaderMatPopup">
+              <div class="col-12 pl-0 pr-small">
+                <p class="font-weight-bold">Scanned Data</p>
+              </div>
+            </div>
+            <div class="row fixedHeaderMatPopupBody">
+              <div class="col-12">
+                    <div class="row mb-2 mt-2" *ngFor="let data of dataList;let index = index">                      
+                      <div class="col-11 pl-small pr-small">
+                        <label class="sr-only" for="scandata_{{index}}">scandata_{{index}}</label>
+                        <input type="text" class="form-control" tabindex="0" id="scandata_{{index}}" attr.name="scandata_{{index}}" readonly="true" [(ngModel)]="dataList[index]" />
+                      </div>  
+                      <div class="col-1 pl-small pr-0 text-center">
+                      <em aria-label="Press enter to delete" class="fas fa-trash-alt" tabindex="0" 
+                        title="Delete Tag" (click)="deleteScannedData(index)" (keydown.enter)="deleteScannedData(index)">
+                      </em>
+                      </div>
+                    </div>
+                    <div class="row mb-2 mt-2">                      
+                      <div class="col-11 pl-small pr-small">
+                        <label class="sr-only" for="scandata">scandata</label>
+                        <input type="text" #scanInput class="form-control" tabindex="0" id="scandata" attr.name="scandata" [(ngModel)]="scanData" (keydown.enter)="add()" />
+                      </div> 
+                    </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="matActionsBtns">
+    <div mat-dialog-actions class="mat-actions">
+      <button aria-label="Save" class="btn btn-primary mr-1" (click)="save()" tabindex="0" [disabled]="!(dataList && dataList.length > 0)">Save</button>
+      <button matDialogClose tabindex="0" class="btn btn-default" (click)="cancel()">Cancel</button>      
+    </div>
+  </div>

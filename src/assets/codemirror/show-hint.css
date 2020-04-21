@@ -1,0 +1,60 @@
+.CodeMirror-hints {
+  position: absolute;
+  z-index: 10;
+  overflow: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  -webkit-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+  -moz-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+  box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+  border-radius: 0;
+  border: 1px solid silver;
+  background: white;
+  font-family: arial;
+  font-size:10pt;
+  max-height: 256px;
+  overflow-y: auto;
+  max-width: 170px;
+  width:170px;
+}
+
+.CodeMirror-hint {
+  margin: 0;
+  padding: 0 4px;
+  border-radius: 0;
+  white-space: pre;
+  color: #212529;
+  cursor: pointer;
+  font-family: arial;
+  font-size: 10pt;
+  line-height: 25px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+li.CodeMirror-hint-active, li.CodeMirror-hint:hover {
+  background: rgba(0,0,0,.04);
+  color: rgba(0,0,0,.87);
+  cursor: pointer;
+}
+/* Safari 10.1+ */
+
+/* @media not all and (min-resolution:.001dpcm) { @media
+  {
+      .CodeMirror-hint { 
+  
+        max-width: 155px;
+        width:155px;
+  
+      }
+  }}
+  @-moz-document url-prefix() {
+    .CodeMirror-hint { 
+  
+      max-width: 155px;
+      width:155px;
+
+    }
+  }
+   */

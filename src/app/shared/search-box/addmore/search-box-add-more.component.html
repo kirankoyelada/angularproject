@@ -1,0 +1,42 @@
+<div class="modal fade" id="addMoreFields" role="dialog" aria-hidden="true" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" tabindex="0">Add / Remove Fields</h3>
+        <button type="button" class="close" data-dismiss="modal" tabindex="0" (click)="resetAddOrMoreItems()" title="Close">&times;</button>
+      </div>
+      <form (keydown.esc)="onKeyDown($event)">
+        <div class="modal-body addMoreFields addMoreFieldsContainer" cdkScrollable>
+          <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+            [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'" (drop)="onSearchFieldDrop($event)"
+            autoScrollEnabled="true">
+            <smooth-dnd-draggable *ngFor="let item of addmoreItems ;let index= index">
+              <div>
+                <div class="addMoreFieldsRow">
+                  <div class="custom-checkbox-div">
+                    <input [(ngModel)]="item.isChecked" type="checkbox" tabindex="0" id="{{item.id}}" name="{{item.id}}"
+                      [checked]="item.isChecked" [disabled]="item.isReadOnly" />
+                    <label class="custom-label" for="{{item.id}}" aria-hidden="true"><span>
+                        {{item.displayName}} </span></label>
+                  </div>
+                  <em aria-hidden="true" style="cursor:all-scroll !important" title="Drag up / down" class="column-drag-handle fas fa-arrows-alt-v">
+                  </em>
+                </div>
+              </div>
+            </smooth-dnd-draggable>
+          </smooth-dnd-container>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal"
+            (click)="submit(addmoreItems)">Save</button>
+          <button type="button" class="btn btn-default" (click)="resetAddOrMoreItems()" data-dismiss="modal">
+            Cancel
+          </button>
+        </div>
+      </form>
+      <!-- <ng-template #loading>
+        Loading Search Items ...
+      </ng-template> -->
+    </div>
+  </div>
+</div>

@@ -1,0 +1,105 @@
+<div class="container-fluid">
+  <form #form="ngForm" (ngSubmit)="saveCofiguration(form)" (keydown.enter)="($event.target.tagName === 'BUTTON')">
+
+    <div class="MarcEditor mr-0">
+      <h4 class="userConfigHeader">
+        <span tabindex="0" class="editMarcHead">User Configuration</span>
+        <span tabindex="0" class="editMarcHead"></span><span *ngIf="displayWarnMessage"
+              class="editErrorMessage" tabindex="0">
+              {{warningMsg}}
+            </span>
+            <span *ngIf="displayUnAuthMessage" class="profileErrorMessage">
+                User is unauthorized to save.
+              </span>
+      </h4>
+      <div class="userConfigeration container-fluid">
+       <div class="searchUserArea row">
+        <div class="col-3 pr-small pl-small">
+          <div class="form-group searchUser mb-0">
+            <label for="searchUserField" class="font-weight-bold">User</label>
+            <input type="text" class="form-control" [formControl]="myControl" id="searchUserField" placeholder="Search User"
+              name="searchUserField" tabindex="0" matInput [(ngModel)]="searchText"
+              #triggertag="matAutocompleteTrigger" (keydown.enter)="findUser()" (focusout)="findUser()" [matAutocomplete]="auto" />
+          <!-- <ul class="usersList" [style.height.px]="newUserHeight">
+              <li *ngFor="let user of users | filter : searchText" (click)="selectUser(user,form)">
+               {{user.lastName!='' ? (user.lastName+', ') : ''}}{{user.firstName!=null ? user.firstName : ''}}
+              </li>
+          </ul> -->
+          <div class="usersListFilter" [style.height.px]="newUserHeight">
+           <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+           [displayWith]="displayFn" (optionSelected)="selectUser($event.option.value,form)" >
+           <ng-container *ngFor="let user of this.users | filter : searchText " >
+            <mat-option [value]="user" *ngIf="user.firstName === 'User not found'; else userFound" disabled="true">
+             <i>User not found</i>
+            </mat-option>
+            <mat-option [value]="user" *ngIf="user.firstName !== 'User not found'" #userFound>
+                {{user.lastName!='' ? (user.lastName+', ') : ''}}{{user.firstName!=null ? user.firstName : ''}}
+              </mat-option>
+           </ng-container>
+          </mat-autocomplete>
+          </div>
+          </div>
+       </div>
+       <div class="col-3 pr-small pl-small" *ngIf="showRolePermissionList">
+        <span class="rolesHead">Roles</span>
+        <div class="rolesList" [style.height.px]="newHeight">
+            <div class="addMoreFieldsRow">
+              <div class="custom-checkbox-div" *ngFor="let role of roles; let i = index">
+                <input tabindex="0" type="checkbox"
+                id={{role.code}} (click)="setPermissionList(role,$event,form)"
+                [checked]="getRoleInfo(role)" [disabled]="!hasAccess(Permissions.CON_USR) || (role.code!=selectedRoleCode && isRoleDisabled)">
+                <label aria-hidden="true" class="custom-label" for={{role.code}} name="roles"><span>{{role.name}}</span></label>
+              </div>
+            </div>
+        </div>
+     </div>
+     <div class="col-3 pr-small pl-small" *ngIf="showRolePermissionList">
+        <span class="rolesHead">Permissions</span>
+        <div class="rolesList" [style.height.px]="newHeight">
+            <div class="addMoreFieldsRow">
+              <div class="custom-checkbox-div" *ngFor="let permission of permissions; let i = index">
+                <!-- {{selectedPermission | json}} -->
+                <input tabindex="0" type="checkbox" id={{permission.code}} (change)="setOnlyRole(permission,$event,form)"
+                [checked]="(checkedPermissions?.indexOf(permission.code) > -1  && checkedPermissions) "
+                [disabled]="!hasAccess(Permissions.CON_USR)">
+                <label aria-hidden="true" class="custom-label" for='{{permission.code}}' name='permissions'><span>{{permission.name}}</span></label>
+              </div>
+            </div>
+        </div>
+     </div>
+     <div class="col-3 pr-small pl-small searchCustomer" *ngIf="showRolePermissionList">
+      <label class="rolesHead" for="searchCustomer">Customers</label>
+      <input type="text" tabindex="0" class="form-control" id="searchCustomer"
+      name="searchCustomer" placeholder="Search Customer" matInput [(ngModel)]="searchCustomer"/>
+      <div class="customersList" [style.height.px]="newCustomerHeight"> 
+          
+        <div class="addMoreFieldsRow">
+            <div class="custom-checkbox-div" *ngFor="let customer of customers | searchFilter:searchCustomer;let i = index">
+              <input tabindex="0" type="checkbox" id={{customer.id}} name="{{customer.id}}" (change)="setCustomer(customer,$event,form)"
+              [checked]="getCheckedCustomers(customer)" [disabled]="!hasAccess(Permissions.CON_USR)">
+              
+              <label aria-hidden="true" class="custom-label" for={{customer.customerName}} for="{{customer.id}}"><span>{{customer.customerName}}</span></label>
+            </div>
+          </div>
+          </div>
+      </div>
+     </div>
+    </div>
+      <div class="row marcEditorBtns">
+        <div class="col pl-small pr-0 text-right">
+          <button class="btn btn-primary flex-fill mr-1" id="save" tabindex="0" type="button"
+            (click)="saveCofiguration(form)" [disabled]="!hasAccess(Permissions.CON_USR) || !isbuttonShows">
+            Save
+          </button>
+          <button class="btn btn-default mr-1" id="cancel" (click)="clear(form)" tabindex="0"
+          type="button" [disabled]="!hasAccess(Permissions.CON_USR) || !isbuttonShows">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="back" tabindex="0" type="button" (click)="back(form)">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

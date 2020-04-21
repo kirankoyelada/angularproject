@@ -1,0 +1,1002 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-3 pl-small pr-small">
+              <h4><span tabindex="0">Customer Configuration</span></h4>
+            </div>
+            <div class="col-sm-5 p-0 text-center">
+              <span class="clsLabelErrorMessage" *ngIf="errorDisplayOnTop" tabindex="0">
+                One or more errors occurred while saving the Customer
+                Configuration. Please correct them to proceed.
+              </span>
+            </div>
+            <div class="col-sm-4 headerLinks text-right">
+              <a class="emptyHrefLink menu-item" [ngClass]="{'disableForm': !hasAccess(Permissions.SET_LDATA)}" (click)="goToClsLableConfiguration()" tabindex="0" (keydown.enter)="goToClsLableConfiguration()">
+                Label Configuration<span class="sr-only">Press enter to activate</span></a>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer Z3950Profiles m-0">
+        <div class="MARCrecords" [style.height.px]="NewHeight">
+          <div class="row m-0">
+            <div class="col-3 pl-0 pr-small mb-2">
+              <div class="form-group mb-1">
+                <label for="institutionType" class="font-weight-bold">Institution</label>
+                  <select id="institutionType" class="form-control dropdown"  name="institutionType"
+                  (change)="onInstitutionTypeChange(form)" [(ngModel)]="institutionId">
+                      <option *ngFor="let inst of institutes" [value]="inst.id" [selected]="inst=='institutionId'">{{inst.displayName}}</option>
+                  </select>                 
+              </div>
+          </div>
+            <div class="col-3 pl-0 pr-small">
+              <div class="form-group required mb-1">
+                <label for="searchCustomer" class="font-weight-bold">Customer Name</label>
+                <input type="text" tabindex="0" class="form-control" [formControl]="myControl" id="searchCustomer"
+                  name="searchCustomer" placeholder="Search Customer" matInput [(ngModel)]="searchCustomer"
+                  #triggertag="matAutocompleteTrigger" [matAutocomplete]="auto"
+                  (input)="customerNameEntered($event.target.value)" />
+                <div class="customersListFilter">
+                  <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                    [displayWith]="displayFn" (optionSelected)="selectCustomer($event.option.value,form)">
+                    <ng-container *ngFor="let customer of customers | customerfilter : searchCustomer"> 
+                       <mat-option [value]="customer"
+                        *ngIf="customer.customerName === 'Customer not found'; else customerFound" disabled="true">
+                        <i>Customer not found</i>
+                      </mat-option>
+                      <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                        matTooltip="{{customer.customerName}}" #customerFound>
+                        {{customer.customerName!='' ? customer.customerName : ''}}
+                      </mat-option>
+                    </ng-container>
+                  </mat-autocomplete>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-4"></div>
+            <div class="col-2 pl-0 pl-small pr-0" *ngIf="loadControlScreen">
+              <div class="form-group required mb-1 mt-3">
+                <label for="searchCustomerFilter" class="sr-only">Customer Name</label>
+                <input type="text" tabindex="0" class="form-control" id="searchCustomerFilter"
+                  [(ngModel)]="searchAccountGrid" (keyup)="getAccountsBySearchTerm($event.target.value);"
+                  [ngModelOptions]="{standalone: true}" name="searchCustomerFilter" placeholder="Account search"
+                  maxlength="100" />
+              </div>
+            </div>
+          </div>
+          <div class="mb-2" role="table" aria-label="Customer Configuration" aria-describedby="CLSCustomerAccounts"
+            *ngIf="loadControlScreen">
+            <div class="sr-only">Customer Configuration</div>
+            <div class="container-fluid tableHeader" role="rowgroup">
+              <div class="row" data-fixed="true" role="row">
+                <div class="col CLSAccNum" row="columnheader"><b>Account Number</b></div>
+                <div class="col CLSSuffix" row="columnheader"><b>Suffix</b></div>
+                <div class="col ATSNumberCheckbox" row="columnheader"><b>Combine ATS</b></div>
+                <div class="col emailNotificationCheckBox" row="columnheader">
+                  <input type="checkbox" class="chkbox ml5" tabindex="0" attr.name="tblCheckboxForEmailNotifications"
+                    id="tblCheckboxForEmailNotifications" [(ngModel)]="isTableCheckbox"
+                    [ngModelOptions]="{standalone: true}" (change)="checkUnCheckAllCheckboxes(form, isTableCheckbox)" />
+                  <label for="tblCheckboxForEmailNotifications"><b>Send Email Notification to Customer</b></label>
+                </div>
+                <div class="col CLSContEmail" row="columnheader"><b>Contact Email</b></div>
+              </div>
+            </div>
+            <div class="container-fluid tableBody" role="rowgroup" id="CLSCustomerAccounts">
+              <div *ngIf="searchedCustomerAccounts.length===0" style="text-align: center;">No records found</div>
+              <div class="row" role="row" *ngFor="let item of searchedCustomerAccounts;let i = index">
+                <div class="col CLSAccNum" role="cell"><span tabindex="0"
+                    attr.aria-label="Account Number{{item.accountNumber}}">{{item.accountNumber}}</span></div>
+                <div class="col menu-item CLSSuffix" role="cell">
+                  <a (click)="goToSuffixConfiguration(form,item.accountNumber)"
+                    attr.aria-label="Suffix{{ getSuffixConfig(item.suffixConfiguration)}}" tabindex="0"
+                    (keydown.enter)="goToSuffixConfiguration(form,item.accountNumber)">
+                    {{ getSuffixConfig(item.suffixConfiguration)}}
+                  </a>
+                </div>
+                <div class="col ATSNumberCheckbox" role="cell">
+                  <label class="sr-only" for="BTCombineATS-{{i}}">Combine ATS Checkbox Individual</label>
+                  <input [disabled]="item.isDisableCombineAts" id="BTCombineATS-{{i}}" attr.name="BTCombineATS-{{i}}"
+                    tabindex="0" type="checkbox" [(ngModel)]="item.combineATS" [ngModelOptions]="{standalone: true}"
+                    [value]="item.combineATS"  (change)="checkUncheckCombineATSCheckbox(form)" />
+                </div>
+                <div class="col emailNotificationCheckBox" role="cell">
+                  <label class="sr-only" for="checkbox{{item.accountNumber}}">Send Email Notification to Customer
+                    Individual</label>
+                  <input type="checkbox" class="chkbox ml5" tabindex="0" attr.name="checkbox{{item.accountNumber}}"
+                    id="checkbox{{item.accountNumber}}" [(ngModel)]="item.sentEmailToCustomer"
+                    [ngModelOptions]="{standalone: true}"
+                    (change)="checkUncheckTableCheckbox(form,item.sentEmailToCustomer)" />
+                </div>
+                <div class="col inputCol CLSContEmail" role="cell">
+                  <label class="sr-only" for="contactEmailInput{{i}}">Contact Email</label>
+                  <input class="form-control" id="contactEmailInput{{i}}" [(ngModel)]="item.contactEmail"
+                    [ngModelOptions]="{standalone: true}" attr.name="contactEmailInput{{i}}"  tabindex="0"
+                    type="text"
+                    [ngClass]="{'border-danger': validateEmail(item.contactEmail,i,searchedCustomerAccounts)}"
+                    [matTooltip]="validateEmail(item.contactEmail,i,searchedCustomerAccounts)==true?'Invalid email format':''"
+                    matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" maxlength="100"
+                    (input)="markAsDirty()" [ngModelOptions]="{standalone: true}" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="accordion md-accordion mb-1" id="CLSCustomerConfigAccordians" role="tablist"
+            aria-multiselectable="true" *ngIf="loadControlScreen">
+            <div class="card">
+              <div class="card-header" id="CLSCustContDetails">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#CLSCustConfigContactDetails"
+                  aria-expanded="true" aria-controls="CLSCustConfigContactDetails">
+                  <p class="mb-0 font-weight-bold">Customer Contact Details<em
+                      class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigContactDetails" class="collapse show" role="tabpanel"
+                aria-labelledby="CLSCustContDetails" data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-0 required">
+                          <p class="font-weight-bold">Contact Name</p>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-0 required">
+                          <p class="font-weight-bold">Email</p>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-0">
+                          <p class="font-weight-bold">Phone Number</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div
+                      *ngFor="let customer of clsCustomerConfigurationDTO.customerContacts;let customerIndex = index">
+                      <div class="row">
+                        <div class="col-3 pl-0">
+                          <div class="form-group mb-2">
+                            <label class="sr-only" for="customerContactName{{customerIndex}}">customerContactName{{customerIndex}}</label>
+                            <input class="form-control" id="customerContactName{{customerIndex}}"
+                              attr.name="customerContactName{{customerIndex}}" tabindex="0"
+                              [(ngModel)]="customer.contactName" maxlength="100"
+                              [ngClass]="{'border-danger':customerIndex==0&&contactNameError==true?true:false}"
+                              [matTooltip]="customerIndex==0&&contactNameError==true?'Required':''"
+                              matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                              (blur)="requiredFieldValidation(customer.contactName,'name',customerIndex)"
+                              maxlength="100" (input)="markAsDirty()" [ngModelOptions]="{standalone: true}" />
+                          </div>
+                        </div>
+                        <div class="col-3 pl-0">
+                          <div class="form-group mb-2">
+                            <label class="sr-only" for="customerEmail{{customerIndex}}">customerEmail{{customerIndex}}</label>
+                            <input class="form-control" id="customerEmail{{customerIndex}}"
+                              attr.name="customerEmail{{customerIndex}}" tabindex="0" [(ngModel)]="customer.email"
+                              [ngClass]="{'border-danger': validateEmail(customer.email,customerIndex,clsCustomerConfigurationDTO.customerContacts)==true?true:customerIndex==0&&emailError==true?true:false}"
+                              [matTooltip]="validateEmail(customer.email,customerIndex,clsCustomerConfigurationDTO.customerContacts)==true?'Invalid email format':customerIndex==0&&emailError==true?'Required':''"
+                              (blur)="requiredFieldValidation(customer.email,'email',customerIndex)"
+                              matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                              maxlength="100" (input)="markAsDirty()" [ngModelOptions]="{standalone: true}" />
+                          </div>
+                        </div>
+                        <div class="col-3 pl-0">
+                          <div class="form-group mb-2">
+                            <label class="sr-only" for="customerPhoneNumber{{customerIndex}}">customerPhoneNumber{{customerIndex}}</label>
+                            <input class="form-control" id="customerPhoneNumber{{customerIndex}}"
+                              attr.name="customerPhoneNumber{{customerIndex}}" tabindex="0"
+                              [(ngModel)]="customer.phoneNumber"
+                              [ngClass]="{'border-danger': validatePhoneNumber(customer.phoneNumber)}"
+                              [matTooltip]="errorPhoneNumberTooltip"
+                              matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                              minlength="10" maxlength="20" (input)="markAsDirty()"
+                              [ngModelOptions]="{standalone: true}" />
+                          </div>
+                        </div>
+                        <div class="col-3 pl-0">
+                          <div class="form-group mb-2">
+                            <div *ngIf="clsCustomerConfigurationDTO.customerContacts.length-1==customerIndex"
+                              class="addNewContactBtn">
+                              <button class="btn btn-primary p-0" aria-label="Press enter to add customer details"
+                                tabindex="0" title="Add details"
+                                [disabled]="customerContactDetailsRowsCount >= 15 ? true : null" (click)="addCustomerContact()">
+                                <em class="fas fa-plus"></em>
+                              </button>
+                            </div>
+                            <div *ngIf="clsCustomerConfigurationDTO.customerContacts.length-1!=customerIndex"
+                              class="addNewContactBtn">
+                              <em aria-label="Press enter to remove customer details" class="fas fa-trash-alt"
+                                tabindex="0" title="Remove details"
+                                (click)="removeCustomerContact(customerIndex)"
+                                (keydown.enter)="removeCustomerContact(customerIndex)"></em>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="CLSCustInternalContDetails">
+                <a class="collapsed" data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians"
+                  href="#CLSCustConfigInternalDetails" aria-expanded="false"
+                  aria-controls="CLSCustConfigInternalDetails">
+                  <p class="font-weight-bold mb-0">Internal Contact Details<em
+                      class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigInternalDetails" class="collapse" role="tabpanel"
+                aria-labelledby="CLSCustInternalContDetails" data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-3 pl-0">
+                        <p for="primaryContactName" class="font-weight-bold">Contact Name</p>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <p for="primaryContactName" class="font-weight-bold">Email</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div
+                      *ngFor="let internal of clsCustomerConfigurationDTO.internalContacts;let internalIndex = index">
+                      <div class="row">
+                        <div class="col-3 pl-0">
+                          <div class="form-group mb-2">
+                            <label for="internalContactName{{internalIndex}}" class="sr-only">internalContactName{{internalIndex}}</label>
+                            <input class="form-control" id="internalContactName{{internalIndex}}"
+                              name="internalContactName{{internalIndex}}" tabindex="0"
+                              [(ngModel)]="internal.contactName" [ngModelOptions]="{standalone: true}" maxlength="100"
+                              (input)="markAsDirty()" />
+                          </div>
+                        </div>
+                        <div class="col-3 pl-0">
+                          <div class="form-group mb-2">
+                            <label for="internalEmail{{internalIndex}}" class="sr-only">internalEmail{{internalIndex}}</label>
+                            <input class="form-control" id="internalEmail{{internalIndex}}"
+                              name="internalEmail{{internalIndex}}" tabindex="0" [(ngModel)]="internal.email"
+                              [ngClass]="{'border-danger': validateEmail(internal.email,internalIndex,clsCustomerConfigurationDTO.internalContacts)}"
+                              [matTooltip]="validateEmail(internal.email,internalIndex,clsCustomerConfigurationDTO.internalContacts)==true?'Invalid email format':''"
+                              matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                              maxlength="100" (input)="markAsDirty()" [ngModelOptions]="{standalone: true}" />
+                          </div>
+                        </div>
+                        <div class="col-3 pl-0">
+                          <div class="form-group mb-2">
+                            <div *ngIf="clsCustomerConfigurationDTO.internalContacts.length-1==internalIndex"
+                              class="addNewContactBtnInternal">
+                              <button class="btn btn-primary p-0" aria-label="Press enter to add internal details"
+                                tabindex="0" title="Add details"
+                                [disabled]="internalContactDetailsRowsCount >= 15 ? true : null" (click)="addInternalContact()">
+                                <em class="fas fa-plus"></em>
+                              </button>
+                            </div>
+                            <div *ngIf="clsCustomerConfigurationDTO.internalContacts.length-1!=internalIndex"
+                              class="addNewContactBtnInternal">
+                              <em aria-label="Press enter to remove internal details" class="fas fa-trash-alt"
+                                tabindex="0" title="Remove details"
+                                (keydown.enter)="removeInternalContact(internalIndex)"
+                                (click)="removeInternalContact(internalIndex)"></em>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="CLSCustOthers">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#CLSCustConfigOthers"
+                  aria-expanded="true" aria-controls="CLSCustConfigOthers">
+                  <p class="mb-0 font-weight-bold">Others<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigOthers" class="collapse" role="tabpanel" aria-labelledby="CLSCustOthers"
+                data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="col othersection">
+                    <div class="row">
+                      <div class="col-4 pl-0">
+                        <fieldset>
+                          <legend>Combine ATS's Across L Accounts</legend>
+                          <div class="row m-0">
+                            <div class="col-3 p-0">
+                              <input class="mr-2" type="radio" [value]="true" id="combineATSYes"
+                                name="combineATSOptions" tabindex="0"
+                                [(ngModel)]="clsCustomerConfigurationDTO.customerOthersDetails.combineATSsAcrossLAccounts"
+                                [ngModelOptions]="{standalone: true}" (click)="markAsDirty()">
+                              <label for="combineATSYes">Yes</label>
+                            </div>
+                            <div class="col-3 p-0">
+                              <input class="mr-2" type="radio" [value]="false" id="combineATNo" name="combineATSOptions"
+                                tabindex="0"
+                                [(ngModel)]="clsCustomerConfigurationDTO.customerOthersDetails.combineATSsAcrossLAccounts"
+                                [ngModelOptions]="{standalone: true}" (click)="markAsDirty()">
+                              <label for="combineATNo">No</label>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="recordCountOnOutput" class="font-weight-bold">Record count on output</label>
+                          <input class="form-control" id="recordCountOnOutput" name="recordCountOnOutput" tabindex="0"
+                            [(ngModel)]="clsCustomerConfigurationDTO.customerOthersDetails.recordCountOnOutput"
+                            type="text" matInput OnlyNumber #inputTag #tagModel="ngModel"
+                            [ngModelOptions]="{standalone: true}" maxlength="100" (input)="markAsDirty()" />
+                        </div>
+                      </div>
+
+                      <div class="col-4 pl-0">
+                        <div class="form-group mb-0 labelNcheckbox" [ngClass]="{'is-hide':isHide}">
+                          <label aria-hidden="true" for="isMarcValidations" class="font-weight-bold">Override MARC 21 rules</label>
+                          <input tabindex="0" type="checkbox" name="isMarcValidations" [checked]="isMarcValidations" id="isMarcValidations" [(ngModel)]="isMarcValidations">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="row">
+                      <div class="col-4 pl-0">
+                        <div class="form-group mb-2 required">
+                          <label for="itemTagOthers" class="font-weight-bold">Item Tag</label>
+                          <input class="form-control" id="itemTagOthers" name="itemTagOthers" tabindex="0" type="text"
+                            [(ngModel)]="clsCustomerConfigurationDTO.customerOthersDetails.itemTag" matInput OnlyNumber
+                            #inputTag #tagModel="ngModel" [ngModelOptions]="{standalone: true}" minlength="1"
+                            maxlength="3"
+                            [ngClass]="{'border-danger': itemTagRequired || invalidItemTag}"
+                            [matTooltip]="itemTagRequired ? 'Required' : invalidItemTagToolTip"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                            (input)="validateTag(clsCustomerConfigurationDTO.customerOthersDetails.itemTag)"
+                            (blur)="onBlurItemTag(clsCustomerConfigurationDTO.customerOthersDetails.itemTag)" />
+                        </div>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="fileFormatOthers" class="font-weight-bold">File Format</label>
+                          <select class="form-control dropdown" id="fileFormatOthers" name="fileFormatOthers"
+                            tabindex="0" [(ngModel)]="clsCustomerConfigurationDTO.customerOthersDetails.fileFormat"
+                            (change)="markAsDirty()">
+                            <option *ngFor="let file of fileFormat" [value]="file.key">{{file.name}}</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="949ShouldRemove" class="font-weight-bold">949 Subfields should be removed</label>
+                          <input class="form-control" id="949ShouldRemove" name="949ShouldRemove" tabindex="0"
+                            [(ngModel)]="clsCustomerConfigurationDTO.customerOthersDetails.subfieldsShouldBeRemoved949"
+                            [ngModelOptions]="{standalone: true}"
+                            [ngClass]="{'border-danger': validate949Subfields(clsCustomerConfigurationDTO.customerOthersDetails.subfieldsShouldBeRemoved949)}"
+                            [matTooltip]="subfield949Error" matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                            matTooltipPosition="above" (input)="markAsDirty()" />
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="row inputGroupWithTo mr-0">
+                          <p class="font-weight-bold">Convert alpha subfield to numeric subfield on extract</p>
+                          <div class="col-12 alphaTagsBlock">
+                            <div class="row"
+                              *ngFor="let alpha of clsCustomerConfigurationDTO.customerOthersDetails.alphaToNumericSubfield;let i = index">
+                              <div class="col-2 pl-0 pr-small">
+                                <label for="convertTag{{i}}" class="sr-only">Convert Tag</label>
+                                <input class="form-control" id="convertTag{{i}}" name="convertTag{{i}}" tabindex="0"
+                                  placeholder="Tag" [(ngModel)]="alpha.tag" matInput OnlyNumber #inputTag
+                                  #tagModel="ngModel" [ngModelOptions]="{standalone: true}" minlength="1" maxlength="3"
+                                  [ngClass]="{'border-danger': validateAlphaToNumericTag(clsCustomerConfigurationDTO.customerOthersDetails.alphaToNumericSubfield,alpha,i)}"
+                                  [matTooltip]="validateAlphaToNumericTagToolTip"
+                                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                                  (input)="markAsDirty()" />
+                              </div>
+                              <div class="col-4 pl-0 pr-small">
+                                <label for="convertAlphaSubfield{{i}}" class="sr-only">Convert Alpha Subfield</label>
+                                <input class="form-control" id="convertAlphaSubfield{{i}}"
+                                  name="convertAlphaSubfield{{i}}" tabindex="0" placeholder="Alpha Subfield"
+                                  [(ngModel)]="alpha.alphaSubfield" matInput #inputTag #tagModel="ngModel"
+                                  [ngModelOptions]="{standalone: true}" minlength="1" maxlength="1"
+                                  [ngClass]="{'border-danger': validateAlphaSubField(clsCustomerConfigurationDTO.customerOthersDetails.alphaToNumericSubfield,alpha,i)}"
+                                  [matTooltip]="validateAlphaSubFieldToolTip"
+                                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                                  (input)="markAsDirty()" />
+                              </div>
+                              <div class="col-1 p-0">
+                                <p class="mb-0 to">To</p>
+                              </div>
+                              <div class="col-4 pl-small pr-small">
+                                <label class="sr-only" for="convertNumericSubfield{{i}}">Convert Numeric
+                                  Subfield</label>
+                                <input class="form-control" type="text" AllowNumberXOnly
+                                  id="convertNumericSubfield{{i}}" [(ngModel)]="alpha.numericSubfield"
+                                  name="convertNumericSubfield{{i}}" placeholder="Numeric Subfield" minlength="1"
+                                  maxlength="1" [ngModelOptions]="{standalone: true}"
+                                  [ngClass]="{'border-danger': validateNumericSubField(clsCustomerConfigurationDTO.customerOthersDetails.alphaToNumericSubfield,alpha,i)}"
+                                  [matTooltip]="validateNumericSubFieldToolTip"
+                                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                                  (input)="markAsDirty()" />
+                              </div>
+                              <div
+                                *ngIf="clsCustomerConfigurationDTO.customerOthersDetails.alphaToNumericSubfield.length-1==i"
+                                class="col-1 p-0 renumberDuplicate">
+                                <em aria-label="Press enter to add new" class="fas fa-plus" tabindex="0" title="Add Tag"
+                                  (click)="addAlphaToNumericSubfield()"
+                                  (keydown.enter)="addAlphaToNumericSubfield()"></em>
+                              </div>
+                              <div
+                                *ngIf="clsCustomerConfigurationDTO.customerOthersDetails.alphaToNumericSubfield.length-1!=i"
+                                class="col-1 p-0 renumberDuplicate">
+                                <em aria-label="Press enter to remove" class="fas fa-trash-alt" tabindex="0"
+                                  title="Remove Tag" (click)="removeAlphaToNumericSubfield(i)"
+                                  (keydown.enter)="removeAlphaToNumericSubfield(i)"></em>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <div class="form-group mb-2">
+                          <p class="font-weight-bold">Renumber Tag</p>
+                          <div class="renumberTagsData">
+                            <div class="renumberTagsDataRow"
+                              *ngFor="let renumber of clsCustomerConfigurationDTO.customerOthersDetails.renumberTag;let renumberIndex = index">
+                              <div class="renumberCurrent">
+                                <label class="sr-only" for="currentTag{{renumberIndex}}">Renumber Tag</label>
+                                <input class="form-control" id="currentTag{{renumberIndex}}"
+                                  name="currentTag{{renumberIndex}}" tabindex="0" type="text"
+                                  [(ngModel)]="renumber.tagFrom" matInput OnlyNumber #inputTag #tagModel="ngModel"
+                                  [ngModelOptions]="{standalone: true}" minlength="1" maxlength="3"
+                                  placeholder="From Tag"
+                                  [ngClass]="{'border-danger': validateRenumberTagFrom(clsCustomerConfigurationDTO.customerOthersDetails.renumberTag,renumber,renumberIndex)}"
+                                  [matTooltip]="renumberTagFromToolTip"
+                                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                                  (input)="markAsDirty()">
+                              </div>
+                              <div class="renumberChange">
+                                <label class="sr-only" for="changeTag{{renumberIndex}}">Renumber Tag</label>
+                                <input class="form-control" id="changeTag{{renumberIndex}}"
+                                  name="changeTag{{renumberIndex}}" tabindex="0" type="text"
+                                  [(ngModel)]="renumber.tagTo" matInput OnlyNumber #inputTag #tagModel="ngModel"
+                                  [ngModelOptions]="{standalone: true}" minlength="1" maxlength="3" placeholder="To Tag"
+                                  [ngClass]="{'border-danger': validateRenumberTagTo(clsCustomerConfigurationDTO.customerOthersDetails.renumberTag,renumber,renumberIndex)}"
+                                  [matTooltip]="renumberTagToToolTip"
+                                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                                  (input)="markAsDirty()">
+                              </div>
+                              <div
+                                *ngIf="clsCustomerConfigurationDTO.customerOthersDetails.renumberTag.length-1==renumberIndex"
+                                class="renumberDuplicate">
+                                <em aria-label="Press enter to duplicate tag" class="fas fa-plus" tabindex="0"
+                                  title="Duplicate Tag" (keydown.enter)="addRenumberTag()"
+                                  (click)="addRenumberTag()"></em>
+                              </div>
+                              <div
+                                *ngIf="clsCustomerConfigurationDTO.customerOthersDetails.renumberTag.length-1!=renumberIndex"
+                                class="renumberDuplicate">
+                                <em aria-label="Press enter to remove duplicate tag" class="fas fa-trash-alt"
+                                  tabindex="0" title="Remove Duplicate Tag"
+                                  (keydown.enter)="removeRenumberTag(renumberIndex)"
+                                  (click)="removeRenumberTag(renumberIndex)"></em>
+                              </div>
+                            </div>
+                            <!-- <div class="renumberTagsDataRow">
+                                <div class="renumberCurrent">
+                                  <label class="sr-only" for="currentTag">Current</label>
+                                  <input id="currentTag" name="currentTag" tabindex="0" type="text">
+                                </div>
+                                <div class="renumberChange">
+                                  <label class="sr-only" for="changeTag">Current</label>
+                                  <input id="changeTag" name="changeTag" tabindex="0" type="text">
+                                </div>
+                                <div class="renumberDuplicate">
+                                  <em aria-label="Press enter to delete tag" class="fas fa-trash-alt" tabindex="0" title="Delete Tag"></em>
+                                </div>
+                              </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <div class="form-group mb-2">
+                          <label class="font-weight-bold" for="retain9XXTagsOthers">Retain 9XX Tags</label>
+                          <textarea class="form-control scrollableTextArea"
+                            [ngClass]="{'border-danger':duplicateTagExists}" [matTooltip]="duplicateTagExistsTooltip"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" cols="10"
+                            id="retain9XXTagsOthers" [(ngModel)]="retain9XXTagsOthers"
+                            [ngModelOptions]="{standalone: true}" (input)="formatText($event)"
+                            (blur)="onBlur($event.target.value)" name="retain9XXTagsOthers" rows="2" tabindex="0"
+                            type="text"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="CLSCustCatalogs">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#CLSCustConfigCatalogs"
+                  aria-expanded="true" aria-controls="CLSCustConfigCatalogs">
+                  <p class="mb-0 font-weight-bold">Catalogs<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigCatalogs" class="collapse" role="tabpanel" aria-labelledby="CLSCustCatalogs"
+                data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-4 pl-0">
+                        <p class="font-weight-bold">Existing Catalogs</p>
+                        <div class="existingCatalogSection">
+                          <div class="form-group mb-0">
+                            <label for="searchExistingCatalogs" class="sr-only">Search Existing Catalogs</label>
+                            <input class="form-control" [(ngModel)]="searchExistingCatalogs" id="searchExistingCatalogs"
+                              name="searchExistingCatalogs" tabindex="0" [ngModelOptions]="{standalone: true}"
+                              placeholder="Search Catalogs" maxlength="100" />
+                          </div>
+                          <ul>
+                            <li *ngFor="let option of filterCatatlogs" tabindex="0"
+                              (keydown.enter)="selectCatalog(option)" name="z3950Profiles"
+                              [class.active]="option.profileName === selectedCatalogId" (click)="selectCatalog(option)"
+                              value="{{option.id}}"> {{option.profileName}}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="col-1 pl-0">
+                        <div class="catalogsMoveBtns">
+                          <button [disabled]="!selectedCatalogId" class="btn btn-primary mb-3" id="catalogsMoveRight"
+                            tabindex="0" type="button" title="Move Right" (click)="moveRight()">
+                            <em aria-hidden="true" class="fa fa-chevron-right"></em>
+                            <span class="sr-only">Catalogs Move Right</span>
+                          </button><br>
+                          <button [disabled]="!selectedCatalogLeftId" class="btn btn-primary" id="catalogsMoveLeft"
+                            tabindex="0" type="button" title="Move Left" (click)="moveLeft()">
+                            <em aria-hidden="true" class="fa fa-chevron-left"></em>
+                            <span class="sr-only">Catalogs Move Left</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <p class="font-weight-bold">Selected Catalogs</p>
+                        <div class="selectedCatalogSection">
+                          <ul>
+                            <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+                              [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'"
+                              (drop)="onDropZ3950Column($event)" autoScrollEnabled="true">
+                              <smooth-dnd-draggable *ngFor="
+                                  let option of selectedZ3950Profiles;
+                                  let index = index
+                                ">
+                                <li name="selectedZ3950Profiles" tabindex="0"
+                                  (keydown.enter)="selectCatalogLeft(option)"
+                                  [class.active]="option.profileName === selectedCatalogLeftId"
+                                  (click)="selectCatalogLeft(option)">
+                                  {{ option.profileName }}
+                                  <em aria-hidden="true" class="column-drag-handle fas fa-arrows-alt-v"
+                                    title="Drag up / down"></em>
+                                </li>
+                              </smooth-dnd-draggable>
+                            </smooth-dnd-container>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="CLSCustMacros">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#CLSCustConfigMacros"
+                  aria-expanded="true" aria-controls="CLSCustConfigMacros">
+                  <p class="mb-0 font-weight-bold">Macros<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigMacros" class="collapse" role="tabpanel" aria-labelledby="CLSCustMacros"
+                data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-4 pl-0">
+                        <p class="font-weight-bold">Existing Macros</p>
+                        <div class="existingCatalogSection">
+                          <div class="form-group mb-0">
+                            <label for="searchExistingMacros" class="sr-only">Search Existing Macros</label>
+                            <input class="form-control" [(ngModel)]="searchExistingMacros" id="searchExistingMacros"
+                              [ngModelOptions]="{standalone: true}" name="searchExistingMacros" tabindex="0"
+                              placeholder="Search Macros" />
+                          </div>
+                          <ul>
+                            <li *ngFor="let option of filterMacros" name="macros" tabindex="0"
+                              (keydown.enter)="selectMacro(option)" [class.active]="option === selectedMarc"
+                              (click)="selectMacro(option)" value="{{option}}">
+                              {{option}}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="col-1 pl-0">
+                        <div class="catalogsMoveBtns">
+                          <button [disabled]="!selectedMarc" class="btn btn-primary mb-3" id="macroMoveRight"
+                            tabindex="0" type="button" title="Move Right" (click)="moveMacroRight()">
+                            <em aria-hidden="true" class="fa fa-chevron-right"></em>
+                            <span class="sr-only">Macros Move Right</span>
+                          </button><br>
+                          <button [disabled]="!selectedMarcLeft" class="btn btn-primary" id="macroMoveLeft" tabindex="0"
+                            type="button" title="Move Right" (click)="moveMacroLeft()">
+                            <em aria-hidden="true" class="fa fa-chevron-left"></em>
+                            <span class="sr-only">Catalogs Move Left</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <p class="font-weight-bold">Selected Macros</p>
+                        <div class="selectedCatalogSection">
+                          <ul>
+                            <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+                              [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'"
+                              (drop)="onDropMacroColumn($event)" autoScrollEnabled="true">
+                              <smooth-dnd-draggable *ngFor="
+                                      let option of selectedMacros;
+                                        let index = index
+                                      ">
+                                <li name="selectedMacros" tabindex="0" (keydown.enter)="selectMacroLeft(option)"
+                                  [class.active]="option === selectedMarcLeft" (click)="selectMacroLeft(option)"
+                                  value="{{option}}">
+                                  {{option}}
+                                  <em aria-hidden="true" class="column-drag-handle fas fa-arrows-alt-v"
+                                    title="Drag up / down"></em>
+                                </li>
+                              </smooth-dnd-draggable>
+                            </smooth-dnd-container>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="OCLCDetails">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#OCLC" aria-expanded="true"
+                  aria-controls="OCLC">
+                  <p class="mb-0 font-weight-bold">OCLC<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="OCLC" class="collapse" role="tabpanel" aria-labelledby="OCLCDetails"
+                data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="col mb-2 border-bottom">
+                    <div class="row">
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="OCLCholdingCode" class="font-weight-bold">Holding Code</label>
+                          <input minlength="3" maxlength="5" class="form-control" id="OCLCholdingCode" name="OCLCholdingCode" tabindex="0"
+                            type="text" [(ngModel)]="clsCustomerConfigurationDTO.oclcDetails.holdingCode" matInput
+                            [ngModelOptions]="{standalone: true}" [ngClass]="{'border-danger': holdingCodeError}"
+                            (input)="validateHoldingCode(clsCustomerConfigurationDTO.oclcDetails.holdingCode,clsCustomerConfigurationDTO.oclcDetails.projectId)"
+                            [matTooltip]="holdingCodeToolTip" matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                            matTooltipPosition="above" />
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="OCLCProjectID" class="font-weight-bold">OCLC Project ID</label>
+                          <input maxlength="12" class="form-control" id="OCLCProjectID" name="OCLCProjectID" tabindex="0" type="text"
+                            [(ngModel)]="clsCustomerConfigurationDTO.oclcDetails.projectId" matInput OnlyNumber
+                            [ngModelOptions]="{standalone: true}" [ngClass]="{'border-danger': projectIdError}"
+                            (input)="validateProjectId(clsCustomerConfigurationDTO.oclcDetails.projectId,clsCustomerConfigurationDTO.oclcDetails.holdingCode)"
+                            [matTooltip]="projectIdToolTip" matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                            matTooltipPosition="above" />
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="row">
+                          <div class="col-12">
+                            <p class="mb-1 font-weight-bold">Automated Process</p>
+                          </div>
+                          <div class="col-3">
+                            <fieldset>
+                              <legend class="sr-only">Automated Process</legend>
+                              <div class="row m-0">
+                                <div class="col-6 p-0">
+                                  <input class="mr-2" type="radio" id="automatedProcessYes" name="automatedProcessState"
+                                    tabindex="0" [value]="true"
+                                    [(ngModel)]="clsCustomerConfigurationDTO.oclcDetails.isScheduled"
+                                    (click)="markAsDirty()" disabled />
+                                  <label for="automatedProcessYes">Yes</label>
+                                </div>
+                                <div class="col-6 p-0">
+                                  <input class="mr-2" type="radio" id="automatedProcessNo" name="automatedProcessState"
+                                    tabindex="0" [value]="false"
+                                    [(ngModel)]="clsCustomerConfigurationDTO.oclcDetails.isScheduled"
+                                    (click)="markAsDirty()" disabled />
+                                  <label for="automatedProcessNo">No</label>
+                                </div>
+                              </div>
+                            </fieldset>
+                          </div>
+                          <div class="col-3 pl-0">
+                            <div class="form-group">
+                              <label for="autoProcessDaysRange" class="sr-only">Auto Process Days Range</label>
+                              <select class="form-control" id="autoProcessDaysRange" name="autoProcessDaysRange"
+                                tabindex="0" disabled
+                                [(ngModel)]="clsCustomerConfigurationDTO.oclcDetails.scheduledInfo.type"
+                                (change)="autoProcessRangeChanged(clsCustomerConfigurationDTO.oclcDetails.scheduledInfo.type)">
+                                <option *ngFor="let dur of duration" [value]="dur.key">{{dur.name}}</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="col-3" *ngIf="defaultWeeklySelected == 'Weekly'">
+                            <div class="form-group">
+                              <label for="autoProcessRange" class="sr-only">Auto Process Range</label>
+                              <select class="form-control" id="autoProcessRange" name="autoProcessRange" tabindex="0"
+                                disabled [(ngModel)]="clsCustomerConfigurationDTO.oclcDetails.scheduledInfo.dateOfWeek"
+                                (change)="markAsDirty()">
+                                <option *ngFor="let day of daysOfWeek" [value]="day.key">{{day.name}}</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="col-3">
+                            <div class="form-group required mb-2">
+                              <label for="automatedProcessDateTime" class="sr-only">Automated Process Date & Time
+                                (EST)</label>
+                              <div class="input-group">
+                                <input type="text" class="form-control" aria-describedby="automatedProcessDateTime"
+                                  id="automatedProcessDateTime" name="automatedProcessDateTime" disabled>
+                                <div class="input-group-append">
+                                  <span class="input-group-text">
+                                    <em class="far fa-calendar-alt" aria-hidden="true" disabled></em>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-12">
+                        <div class="row font-weight-bold">ODC Details</div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="accountNumberstoManuallyExtract" class="font-weight-bold">Account Numbers to
+                            Manually Extract</label>
+                          <textarea class="form-control scrollableTextArea" id="accountNumberstoManuallyExtract"
+                            name="accountNumberstoManuallyExtract" tabindex="0" disabled></textarea>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group required mb-2">
+                          <label for="automatedProcessStartDate" class="font-weight-bold">Start Date</label>
+                          <div class="input-group">
+                            <input type="text" class="form-control" aria-describedby="automatedProcessStartDate"
+                              id="automatedProcessStartDate" name="automatedProcessStartDate" disabled>
+                            <div class="input-group-append">
+                              <span class="input-group-text">
+                                <em class="far fa-calendar-alt" aria-hidden="true" disabled></em>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-3">
+                        <div class="form-group required mb-2">
+                          <label for="automatedProcessEndDate" class="font-weight-bold">End Date</label>
+                          <div class="input-group">
+                            <input type="text" class="form-control" aria-describedby="automatedProcessEndDate"
+                              id="automatedProcessEndDate" name="automatedProcessEndDate" disabled>
+                            <div class="input-group-append">
+                              <span class="input-group-text">
+                                <em class="far fa-calendar-alt" aria-hidden="true" disabled></em>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-3 sendODCBtn">
+                        <button class="btn btn-primary" tabindex="0" type="button" disabled>Send ODC</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="ATSReviewFields">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#ATSReviewFieldsCreate"
+                  aria-expanded="true" aria-controls="ATSReviewFieldsCreate">
+                  <p class="mb-0 font-weight-bold">ATS Review Fields<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="ATSReviewFieldsCreate" class="collapse" role="tabpanel" aria-labelledby="ATSReviewFields"
+                data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body mt-4">
+                  <div class="col-5">
+                    <div class="row ATSFieldsHeader">
+                      <div class="col-6 pl-small pr-small">
+                        <p class="font-weight-bold">Label</p>
+                      </div>
+                      <div class="col-2 pl-small pr-small">
+                        <p class="font-weight-bold">Tag</p>
+                      </div>
+                      <div class="col-2 pl-small pr-small">
+                        <p class="font-weight-bold">Subfield</p>
+                      </div>
+                      <div class="col-2 pl-small pr-small">
+                        <button class="btn btn-primary addNewATSReviewBtn" tabindex="0" type="button"
+                          (click)="addNewAtsReviewField()"
+                          [disabled]="clsCustomerConfigurationDTO.atsReviewFields && clsCustomerConfigurationDTO.atsReviewFields.length==50">Add New</button>
+                      </div>
+                    </div>
+                    <div class="row atsNumbersBlockInATSReview">
+                      <div class="col-12">
+                        <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+                          [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'"
+                          (drop)="onDropReviewFields($event)" autoScrollEnabled="true">
+                          <smooth-dnd-draggable
+                            *ngFor="let reviewFields of clsCustomerConfigurationDTO.atsReviewFields;let reviewIndex = index">
+                            <div class="row ATSReviewFieldRow">
+                              <div class="col-6 pl-small pr-small">
+                                <div class="form-group mt-1 mb-1">
+                                  <label for="ATSReviewFieldTitle{{reviewIndex}}" class="sr-only">ATS Review Field Label
+                                    Title</label>
+                                  <input class="form-control" id="ATSReviewFieldTitle{{reviewIndex}}"
+                                    name="ATSReviewFieldTitle{{reviewIndex}}" tabindex="0"
+                                    [matTooltip]="reviewFields.isLabelValid  ? 'Required':''"
+                                    [ngClass]="reviewFields.isLabelValid ? 'border-danger' : '' "
+                                    [(ngModel)]="reviewFields.label" [ngModelOptions]="{standalone: true}"
+                                    (blur)="validateLabelReviewField(reviewFields.label,reviewIndex)" (input)="markAsDirty()"
+                                    matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" />
+                                </div>
+                              </div>
+                              <div class="col-2 pl-small pr-small">
+                                <div class="form-group mt-1 mb-1">
+                                  <label for="ATSReviewFieldTitleTag{{reviewIndex}}" class="sr-only">ATS Review Field
+                                    Title Tag</label>
+                                  <input class="form-control" id="ATSReviewFieldTitleTag{{reviewIndex}}"
+                                    name="ATSReviewFieldTitleTag{{reviewIndex}}" tabindex="0"
+                                    [(ngModel)]="reviewFields.tag" [ngModelOptions]="{standalone: true}"
+                                    [matTooltip]="reviewFields.isTagValid ? 'Required':''"
+                                    [ngClass]="reviewFields.isTagValid ? 'border-danger' : '' " OnlyNumber maxlength="3"
+                                    (input)="markAsDirty()" (blur)="validateTagReviewField(reviewFields.tag,reviewIndex)"
+                                    matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" />
+                                </div>
+                              </div>
+                              <div class="col-2 pl-small pr-small">
+                                <div class="form-group mt-1 mb-1">
+                                  <label for="ATSReviewFieldTitleSubfield{{reviewIndex}}" class="sr-only">ATS Review
+                                    Field Title
+                                    Subfield</label>
+                                  <input class="form-control" id="ATSReviewFieldTitleSubfield{{reviewIndex}}"
+                                    name="ATSReviewFieldTitleSubfield{{reviewIndex}}" tabindex="0"
+                                    (keypress)="remove_special_char($event)"
+                                    [matTooltip]="reviewFields.isSubFieldValid && !checkControlNumber(reviewFields.tag) ? 'Required':''"
+                                    [ngClass]="reviewFields.isSubFieldValid && !checkControlNumber(reviewFields.tag) ? 'border-danger' : ''"
+                                    [(ngModel)]="reviewFields.subFieldCode"
+                                    (blur)="validateSubFieldReviewField(reviewFields.subFieldCode,reviewIndex)"
+                                    matTooltipClass="my-tooltip editTagEditErrorTooltip" maxlength="1"
+                                    matTooltipPosition="above" [ngModelOptions]="{standalone: true}"
+                                    (input)="markAsDirty()" />
+                                </div>
+                              </div>
+                              <div class="col-2 pl-small pr-small text-center">
+                                <em aria-hidden="true" class="column-drag-handle fas fa-arrows-alt-v"
+                                  title="Drag up / down"></em>
+                                <em aria-label="Press enter to delete" class="fas fa-trash-alt" tabindex="0"
+                                  title="Delete Tag" (click)="removeReviewField(reviewIndex)" (keydown.enter)="removeReviewField(reviewIndex)"></em>
+                              </div>
+                            </div>
+                          </smooth-dnd-draggable>
+                        </smooth-dnd-container>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="CLSCustUsers">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#CLSCustConfigUsers"
+                  aria-expanded="true" aria-controls="CLSCustConfigUsers">
+                  <p class="mb-0 font-weight-bold">Users<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigUsers" class="collapse" role="tabpanel" aria-labelledby="CLSCustUsers"
+                data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-4 pl-0">
+                        <p class="font-weight-bold">Available Users</p>
+                        <div class="existingUserSection">
+                          <div class="form-group mb-0">
+                            <label for="searchExistingUsers" class="sr-only">Search Available Users</label>
+                            <input class="form-control" [(ngModel)]="searchExistingUsers" id="searchExistingUsers"
+                              name="searchExistingUsers" tabindex="0" [ngModelOptions]="{standalone: true}"
+                              placeholder="Search Users" maxlength="100" />
+                          </div>
+                          <ul>
+                            <li *ngFor="let user of filterUsers | searchFilter:searchExistingUsers" tabindex="0"
+                              (keydown.enter)="selectUser(user)" name="users"
+                              [class.active]="user.id===selectedUserId"
+                               (click)="selectUser(user)"
+                              value="{{user}}">
+                              {{user.lastName!='' ? (user.lastName+', ') : ''}}{{user.firstName!=null ? user.firstName : ''}}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="col-1 pl-0">
+                        <div class="userMoveBtns">
+                          <button [disabled]="!selectedUserId" class="btn btn-primary mb-3" id="userMoveRight"
+                            tabindex="0" type="button" title="Move Right" (click)="moveUserRight()">
+                            <em aria-hidden="true" class="fa fa-chevron-right"></em>
+                            <span class="sr-only">User Move Right</span>
+                          </button><br>
+                          <button [disabled]="!selectedUserLeftId" class="btn btn-primary" id="userMoveLeft"
+                            tabindex="0" type="button" title="Move Left" (click)="moveUserLeft()">
+                            <em aria-hidden="true" class="fa fa-chevron-left"></em>
+                            <span class="sr-only">User Move Left</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="col-4 pl-0">
+                        <p class="font-weight-bold">Selected Users</p>
+                        <div class="selectedUserSection">
+                          <ul>
+                            <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+                              [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'"
+                              (drop)="onDropUserColumn($event)" autoScrollEnabled="true">
+                              <smooth-dnd-draggable *ngFor="
+                                  let option of selectedUsers;
+                                  let index = index
+                                ">
+                                <li name="selectedUsers" tabindex="0"
+                                  (keydown.enter)="selectUserLeft(option)"
+                                  [class.active]="option.id===selectUserLeftId"
+                                  (click)="selectUserLeft(option)">
+                                  {{option.lastName!='' ? (option.lastName+', ') : ''}}{{option.firstName!=null ? option.firstName : ''}}
+                                  <em aria-hidden="true" class="column-drag-handle fas fa-arrows-alt-v"
+                                    title="Drag up / down"></em>
+                                </li>
+                              </smooth-dnd-draggable>
+                            </smooth-dnd-container>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row z3950Btns">
+        <div class="col-12 pl-small pr-0 text-right">
+          <button [disabled]="!loadControlScreen" class="btn btn-primary mr-1" id="saveClsCustomerConfig" tabindex="0"
+            type="button" (click)="saveClsCustomerConfig(form)">Save</button>
+          <button [disabled]="!loadControlScreen" class="btn btn-default mr-1" id="cancelClsCustomerConfig" tabindex="0"
+            type="button" (click)="clear(form)">Cancel</button>
+          <button class="btn btn-default" id="backClsCustomerConfig" tabindex="0" type="button"
+            (click)="back(form)">Back</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,115 @@
+<div class="alertConfirmation">
+    <div class="mat-header">
+      <h5> Configure Columns <button type="button" class="close" matDialogClose tabindex="0"
+        title="Close">&times;</button></h5>    
+     </div>
+    <div mat-dialog-content >
+        <div class="card-body">
+          <div class="col-12">
+            <div class="row">
+              <div class="col-sm-12 p-0 text-center">
+                <span class="ErrorMessage" *ngIf="error" tabindex="0">
+                  One or more errors occurred while updating the columns. Please correct them to proceed.
+                </span>
+              </div>
+            </div>
+            <div class="row fixedHeaderMatPopup">
+              <div class="col-2 pl-0 pr-small">
+                <p class="font-weight-bold">Tag</p>
+              </div>
+              <div class="col-2 pl-0 pr-small">
+                <p class="font-weight-bold">Subfield</p>
+              </div>
+              <div class="col-6 pl-0 pr-small">
+                <p class="font-weight-bold">Label</p>
+              </div>
+              <div class="col-2 pl-small pr-small text-left">
+                <button class="btn btn-primary" [disabled]="atsReviewFields && atsReviewFields.length==50"
+                (click)="addNewAtsReviewField()" tabindex="0" title="Add" aria-hidden="true" aria-label="Press enter to add">
+                <em class="fas fa-plus"></em>
+              </button>
+              </div>
+            </div>
+            <div class="row fixedHeaderMatPopupBody">
+              <div class="col-12">
+                <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+                  [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'"
+                  (drop)="onDropReviewFields($event)" autoScrollEnabled="true">
+                  <smooth-dnd-draggable
+                    *ngFor="let reviewFields of atsReviewFields;let reviewIndex = index">
+                    <div class="row ATSReviewFieldRow">
+                      <div class="col-2 pl-small pr-small">
+                        <div class="form-group mt-1 mb-1">
+                          <label *ngIf="reviewFields.editable" for="ATSReviewFieldTitleTag{{reviewIndex}}" class="sr-only">ATS Review Field
+                            Title Tag</label>
+                          <input *ngIf="reviewFields.editable" class="form-control" id="ATSReviewFieldTitleTag{{reviewIndex}}"
+                            name="ATSReviewFieldTitleTag{{reviewIndex}}" tabindex="0"
+                            [(ngModel)]="reviewFields.tag" [ngModelOptions]="{standalone: true}"
+                            [matTooltip]="reviewFields.isTagValid ? 'Required':''"
+                            [ngClass]="reviewFields.isTagValid ? 'border-danger' : '' " OnlyNumber maxlength="3"
+                            (blur)="validateTagReviewField(reviewFields)"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" />
+                            <span *ngIf="!reviewFields.editable">{{reviewFields.tag}}</span>
+                        </div>
+                      </div>
+                      <div class="col-2 pl-small pr-small">
+                        <div class="form-group mt-1 mb-1">
+                          <label *ngIf="reviewFields.editable" for="ATSReviewFieldTitleSubfield{{reviewIndex}}" class="sr-only">ATS Review
+                            Field Title
+                            Subfield</label>
+                          <input *ngIf="reviewFields.editable" class="form-control" id="ATSReviewFieldTitleSubfield{{reviewIndex}}"
+                            name="ATSReviewFieldTitleSubfield{{reviewIndex}}" tabindex="0"
+                            (keypress)="remove_special_char($event)"
+                            [matTooltip]="reviewFields.isSubFieldValid && !checkControlNumber(reviewFields.tag) ? 'Required':''"
+                            [ngClass]="reviewFields.isSubFieldValid && !checkControlNumber(reviewFields.tag) ? 'border-danger' : ''"
+                            [(ngModel)]="reviewFields.subFieldCode"
+                            (blur)="validateSubFieldReviewField(reviewFields)"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" maxlength="1"
+                            matTooltipPosition="above" [ngModelOptions]="{standalone: true}"
+                            />                            
+                            <span *ngIf="!reviewFields.editable">{{reviewFields.subFieldCode}}</span>
+                        </div>
+                      </div>                      
+                      <div class="col-6 pl-small pr-small">
+                        <div class="form-group mt-1 mb-1">
+                          <label *ngIf="reviewFields.editable" for="ATSReviewFieldTitle{{reviewIndex}}" class="sr-only">ATS Review Field Label
+                            Title</label>
+                          <input *ngIf="reviewFields.editable" class="form-control" id="ATSReviewFieldTitle{{reviewIndex}}"
+                            name="ATSReviewFieldTitle{{reviewIndex}}" tabindex="0"
+                            [matTooltip]="reviewFields.isLabelValid  ? 'Required':''"
+                            [ngClass]="reviewFields.isLabelValid ? 'border-danger' : '' "
+                            [(ngModel)]="reviewFields.label" [ngModelOptions]="{standalone: true}"
+                            (blur)="validateLabelReviewField(reviewFields)"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" />                            
+                            <span *ngIf="!reviewFields.editable">{{reviewFields.label}}</span>
+                        </div>
+                      </div>
+                      <div class="col-2 pl-small pr-0 text-left">
+                      <em aria-hidden="true" class="column-drag-handle fas fa-arrows-alt-v"
+                        title="Drag up / down"></em>
+                      <em *ngIf="!reviewFields.editable && !reviewFields.isNew" class="fas fa-edit" tabindex="0" title="Edit" 
+                      aria-hidden="true" aria-label="Press enter to edit"  [ngClass]="{'disableForm':disableEdit(reviewFields)}"
+                      (click)='reviewFields.editable = true' (keydown.enter)="reviewFields.editable = true">
+                      </em>
+                      <em *ngIf="reviewFields.editable && !reviewFields.isNew" class="fas fa-check" tabindex="0" title="Update" 
+                      aria-hidden="true" aria-label="Press enter to update" [ngClass]="{'disableForm':disableEdit(reviewFields)}"
+                      (click)='reviewFields.editable = false' (keydown.enter)="reviewFields.editable = false">
+                      </em>
+                      <em aria-label="Press enter to delete" class="fas fa-trash-alt" tabindex="0"
+                        title="Delete Tag" (click)="removeReviewField(reviewIndex)" (keydown.enter)="removeReviewField(reviewIndex)">
+                      </em>
+                      </div>
+                    </div>
+                  </smooth-dnd-draggable>
+                </smooth-dnd-container>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="matActionsBtns">
+    <div mat-dialog-actions class="mat-actions">
+      <button mat-button aria-label="Ok" class="btn btn-primary" (click)="ok()" tabindex="0">OK</button>
+      <button mat-button matDialogClose tabindex="0" class="btn btn-default" (click)="cancel()">Cancel</button>      
+    </div>
+  </div>

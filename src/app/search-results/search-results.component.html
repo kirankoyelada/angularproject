@@ -1,0 +1,372 @@
+<div class="wrapper">
+  <h3 class="sr-only">Search Results Area</h3>
+  <p class="text-center mt-5" *ngIf="basicSearchResponse == null"><span tabindex="0">No results found.</span></p>
+</div>
+
+<div class="wrapper" [hidden]="!showSearchResult && (basicSearchResponse != null || facetResponse != null )">
+  <!-- Sidebar  -->
+  <nav id="sidebar" *ngIf="facetResponse != null" [style.height.px]="FHeight">
+    <p class="filterHeader"><span tabindex="0">Refine Your Search</span></p>
+    <ul class="list-unstyled components" role="menubar">
+      <li role="menuitem" *ngIf="!(facetResponse.PublicationYear == '')">
+        <span class="filterHeader" tabindex="0">Pub Date</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endPubDate < 11 ? 'auto' : '235px', 'overflow-y' : endPubDate > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let publication of facetResponse.PublicationYear |  slice:0:endPubDate">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, publication.Value, 'PubDate')">
+              <a (click)="getFacetValue(publication.Value, 'Pub Date')" [ngStyle]="{'font-weight': boldPubDate.indexOf(publication.Value) > -1 ? 'bolder' : '', 'color': boldPubDate.indexOf(publication.Value) > -1 ? '#004165' : ''}">{{ publication.Value }} <span
+                  class="filterCount">({{ publication.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.PublicationYear.length > 3 && endPubDate == 3"
+          (click)="showMore('Publication',facetResponse.PublicationYear.length)" (keydown.enter)="showMore('Publication',facetResponse.PublicationYear.length)" class="showMoreOrLessLink" tabindex="0">Show more
+        </div>
+        <div *ngIf="endPubDate > 3" (click)="showLess('Publication')" (keydown.enter)="showLess('Publication')" class="showMoreOrLessLink" tabindex="0">
+          Show less</div>
+
+      </li>
+
+      <li role="menuitem" *ngIf="!(facetResponse.Format == '')">
+        <span class="filterHeader" tabindex="0">Format</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endFormat < 11 ? 'auto' : '235px', 'overflow-y' : endFormat > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let format of facetResponse.Format |  slice:0:endFormat">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, format.Value, 'Format')">
+              <a (click)="getFacetValue(format.Value, 'Format')" [ngStyle]="{'font-weight': boldFormat.indexOf(format.Value) > -1 ? 'bolder' : '', 'color': boldFormat.indexOf(format.Value) > -1 ? '#004165' : ''}">{{ format.Value }} <span
+                  class="filterCount">({{ format.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.Format.length > 3 && endFormat == 3"
+          (click)="showMore('Format',facetResponse.Format.length)"  (keydown.enter)="showMore('Format',facetResponse.Format.length)" class="showMoreOrLessLink" tabindex="0">Show more</div>
+        <div *ngIf="endFormat > 3" (click)="showLess('Format')" (keydown.enter)="showLess('Format')" class="showMoreOrLessLink" tabindex="0">Show less
+        </div>
+      </li>
+
+      <li role="menuitem" *ngIf="!(facetResponse.Subject == '')">
+        <span class="filterHeader" tabindex="0">Subject</span>
+        <ul [hidden]="!showLessSubject" class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endSubject < 11 ? 'auto' : subjectHeight, 'overflow-y' : endSubject > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let subject of facetResponse.Subject|  slice:0:3">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, subject.Value, 'Subject')">
+              <a (click)="getFacetValue(subject.Value, 'Subject')"
+                [ngStyle]="{'font-weight': boldSubject.indexOf(getFormatted(subject.Value)) > -1 ? 'bolder' : '', 'color': boldSubject.indexOf(getFormatted(subject.Value)) > -1 ? '#004165':''}">{{ getFormatted(subject.Value) }} <span
+                  class="filterCount">({{ subject.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <ul [hidden]="!showMoreSubject" class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endSubject < 11 ? 'auto' : subjectHeight, 'overflow-y' : endSubject > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let subject of facetResponse.Subject|  slice:0:endSubject">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, subject.Value, 'Subject')">
+              <a (click)="getFacetValue(subject.Value, 'Subject')"
+                [ngStyle]="{'font-weight': boldSubject.indexOf(getFormatted(subject.Value)) > -1 ? 'bolder' : '', 'color': boldSubject.indexOf(getFormatted(subject.Value)) > -1 ? '#004165':''}">{{ getFormatted(subject.Value) }} <span
+                  class="filterCount">({{ subject.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.Subject.length > 3 && endSubject == 3"
+              (click)="showMore('Subject',facetResponse.Subject.length)"  (keydown.enter)="showMore('Subject',facetResponse.Subject.length)" class="showMoreOrLessLink" tabindex="0">Show more</div>
+        <div *ngIf="endSubject > 3" (click)="showLess('Subject')"  (keydown.enter)="showLess('Subject')" class="showMoreOrLessLink" tabindex="0">Show less
+        </div>
+      </li>
+
+
+      <li role="menuitem" *ngIf="!(facetResponse.Author == '')">
+        <span class="filterHeader" tabindex="0">Author</span>
+        <ul [hidden]="!showLessAuthor" class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endAuthor < 11 ? 'auto' : authorHeight, 'overflow-y' : endAuthor > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let author of facetResponse.Author |  slice:0:3">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, author.Value, 'Author')">
+              <a (click)="getFacetValue(author.Value, 'Author')"
+                [ngStyle]="{'font-weight': boldAuthor.indexOf(getFormatted(author.Value)) > -1 ? 'bolder' : '', 'color': boldAuthor.indexOf(getFormatted(author.Value)) > -1 ? '#004165':''}">{{ getFormatted(author.Value) }} <span
+                  class="filterCount">({{ author.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <ul [hidden]="!showMoreAuthor" class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endAuthor < 11 ? 'auto' : authorHeight, 'overflow-y' : endAuthor > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let author of facetResponse.Author |  slice:0:endAuthor">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, author.Value, 'Author')">
+              <a (click)="getFacetValue(author.Value, 'Author')"
+                [ngStyle]="{'font-weight': boldAuthor.indexOf(getFormatted(author.Value)) > -1 ? 'bolder' : '', 'color': boldAuthor.indexOf(getFormatted(author.Value)) > -1 ? '#004165':''}">{{ getFormatted(author.Value) }} <span
+                  class="filterCount">({{ author.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.Author.length > 3 && endAuthor == 3"
+          (click)="showMore('Author',facetResponse.Author.length)" (keydown.enter)="showMore('Author',facetResponse.Author.length)" class="showMoreOrLessLink" tabindex="0">Show more
+        </div>
+        <div *ngIf="endAuthor > 3" (click)="showLess('Author')" (keydown.enter)="showLess('Author')" class="showMoreOrLessLink" tabindex="0">Show
+          less</div>
+      </li>
+
+
+      <li role="menuitem" *ngIf="!(facetResponse.Series == '')">
+        <span class="filterHeader" tabindex="0">Series</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endSeries < 11 ? 'auto' : seriesHeight, 'overflow-y' : endSeries > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let series of facetResponse.Series |  slice:0:endSeries">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, series.Value, 'Series')">
+              <a (click)="getFacetValue(series.Value, 'Series')"
+                [ngStyle]="{'font-weight': boldSeries.indexOf(getFormatted(series.Value)) > -1 ? 'bolder' : '', 'color': boldSeries.indexOf(getFormatted(series.Value)) > -1 ? '#004165':''}">{{ getFormatted(series.Value) }} <span
+                  class="filterCount">({{ series.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.Series.length > 3 && endSeries == 3"
+          (click)="showMore('Series',facetResponse.Series.length)" (keydown.enter)="showMore('Series',facetResponse.Series.length)" class="showMoreOrLessLink" tabindex="0">Show more
+        </div>
+        <div *ngIf="endSeries > 3" (click)="showLess('Series')" (keydown.enter)="showLess('Series')" class="showMoreOrLessLink" tabindex="0">
+          Show less</div>
+      </li>
+
+      <li role="menuitem" *ngIf="!(facetResponse.EncodingLevel == '')">
+        <span class="filterHeader" tabindex="0">Encoding level</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endEncodingLevel < 11 ? 'auto' : '235px', 'overflow-y' : endEncodingLevel > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let encoding of facetResponse.EncodingLevel |  slice:0:endEncodingLevel">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, encoding.Value, 'Encoding')">
+              <a (click)="getFacetValue(encoding.Value, 'Encoding Level')"
+                [ngStyle]="{'font-weight': boldEncodingLevel.indexOf(encoding.Value) > -1 ? 'bolder' : '', 'color': boldEncodingLevel.indexOf(encoding.Value) > -1 ? '#004165' : ''}">{{ encoding.Value }}
+                <span class="filterCount">({{ encoding.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.EncodingLevel.length > 3 && endEncodingLevel == 3"
+          (click)="showMore('Encoding',facetResponse.EncodingLevel.length)" (keydown.enter)="showMore('Encoding',facetResponse.Encoding.length)" class="showMoreOrLessLink" tabindex="0">Show more</div>
+        <div *ngIf="endEncodingLevel > 3" (click)="showLess('Encoding')" (keydown.enter)="showLess('Encoding')"  class="showMoreOrLessLink" tabindex="0">Show
+          less</div>
+      </li>
+
+      <li role="menuitem" *ngIf="!(facetResponse.RecordSource == '')">
+        <span class="filterHeader" tabindex="0">Record Source</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endRecordSource < 11 ? 'auto' : '235px', 'overflow-y' : endRecordSource > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let recordSource of facetResponse.RecordSource |  slice:0:endRecordSource">
+            <li role="menuitem" tabindex="0"
+              (keydown.enter)="viewFacetsOnEnter($event, recordSource.Value, 'RecordSource')">
+              <a (click)="getFacetValue(recordSource.Value, 'Record Source')"
+                [ngStyle]="{'font-weight': boldRecordSource.indexOf(recordSource.Value) > -1 ? 'bolder' : '', 'color': boldRecordSource.indexOf(recordSource.Value) > -1 ? '#004165' : ''}">{{ recordSource.Value }}
+                <span class="filterCount">({{ recordSource.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.RecordSource.length > 3 && endRecordSource == 3"
+          (click)="showMore('RecordSource',facetResponse.RecordSource.length)" (keydown.enter)="showMore('RecordSource',facetResponse.RecordSource.length)" class="showMoreOrLessLink" tabindex="0">Show more
+        </div>
+        <div *ngIf="endRecordSource > 3" (click)="showLess('RecordSource')" (keydown.enter)="showLess('RecordSource')"  class="showMoreOrLessLink" tabindex="0">
+          Show less</div>
+      </li>
+
+      <li role="menuitem" *ngIf="!(facetResponse.Language == '')">
+        <span class="filterHeader" tabindex="0">Language</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endLanguage < 11 ? 'auto' : '235px', 'overflow-y' : endLanguage > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let language of facetResponse.Language |  slice:0:endLanguage">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, language.Value, 'Language')">
+              <a (click)="getFacetValue(language.Value, 'Language')"
+                [ngStyle]="{'font-weight': boldLanguage.indexOf(language.Value) > -1 ? 'bolder' : '', 'color': boldLanguage.indexOf(language.Value) > -1 ? '#004165':''}">{{ language.Value }} <span
+                  class="filterCount">({{ language.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.Language.length > 3 && endLanguage == 3"
+          (click)="showMore('Language',facetResponse.Language.length)" (keydown.enter)="showMore('Language',facetResponse.Language.length)" class="showMoreOrLessLink" tabindex="0">Show more</div>
+        <div *ngIf="endLanguage > 3" (click)="showLess('Language')"  (keydown.enter)="showLess('Language')" class="showMoreOrLessLink" tabindex="0">Show less
+        </div>
+      </li>
+
+      <li role="menuitem" *ngIf="!(facetResponse.Audience == '')">
+        <span class="filterHeader" tabindex="0">Audience</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endAudience < 11 ? 'auto' : '235px', 'overflow-y' : endAudience > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let audience of facetResponse.Audience |  slice:0:endAudience">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, audience.Value, 'Audience')">
+              <a (click)="getFacetValue(audience.Value, 'Audience')"
+                [ngStyle]="{'font-weight': boldAudience.indexOf(audience.Value) > -1 ? 'bolder' : '', 'color': boldAudience.indexOf(audience.Value) > -1 ? '#004165':''}">{{ audience.Value }} <span
+                  class="filterCount">({{ audience.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.Audience.length > 3 && endAudience == 3"
+          (click)="showMore('Audience',facetResponse.Audience.length)" (keydown.enter)="showMore('Audience',facetResponse.Audience.length)"  class="showMoreOrLessLink" tabindex="0">Show more</div>
+        <div *ngIf="endAudience > 3" (click)="showLess('Audience')" (keydown.enter)="showLess('Audience')"  class="showMoreOrLessLink" tabindex="0">Show less
+        </div>
+      </li>
+
+      <li role="menuitem" *ngIf="!(facetResponse.Publisher == '')">
+        <span class="filterHeader" tabindex="0">Publisher</span>
+        <ul class="list-unstyled" id="nameSubmenu" role="menubar" [ngStyle]="{ 'height' : endPublisher < 11 ? 'auto' : publisherHeight, 'overflow-y' : endPublisher > 3 ? 'auto' : '' }">
+          <ng-container *ngFor="let publisher of facetResponse.Publisher |  slice:0:endPublisher">
+            <li role="menuitem" tabindex="0" (keydown.enter)="viewFacetsOnEnter($event, publisher.Value, 'Publisher')">
+              <a (click)="getFacetValue(publisher.Value, 'Publisher')"
+                [ngStyle]="{'font-weight': boldPublisher.indexOf(getFormatted(publisher.Value)) > -1 ? 'bolder' : '', 'color': boldPublisher.indexOf(getFormatted(publisher.Value)) > -1 ? '#004165':''}">{{ getFormatted(publisher.Value) }} <span
+                  class="filterCount">({{ publisher.Count }})</span></a>
+            </li>
+          </ng-container>
+        </ul>
+        <div *ngIf="facetResponse.Publisher.length > 3 && endPublisher == 3"
+          (click)="showMore('Publisher',facetResponse.Publisher.length)" (keydown.enter)="showMore('Publisher',facetResponse.Publisher.length)" class="showMoreOrLessLink" tabindex="0">Show more</div>
+        <div *ngIf="endPublisher > 3" (click)="showLess('Publisher')" (keydown.enter)="showLess('Publisher')" class="showMoreOrLessLink" tabindex="0">Show less
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Page Content  -->
+
+  <div id="content" [ngClass]="hideFacets ? 'content-table':'content-table-facets'" *ngIf="allSearchResults != null">
+
+    <header class="tableHeaderCounts">
+      <div class="container-fluid" role="grid">
+        <div class="row" *ngIf="!isZ3950Profile">
+          <div class="col-sm-10 pl-small pr-small" id="divSelectedFilter">
+            <div>
+              <button class="btn clearFilterLink" type="button" *ngIf="selectedFacetValue.length > 0" (click)="btnClearFilters()" (keydown.enter)="btnClearFilters()" tabindex="0">Clear All</button>
+            <ng-container *ngFor="let selFacetValue of selectedFacetValue">
+              <div tabindex="0" class="btn btn-primary btn-sm roundBtn" 
+              (click)="selectedFacetValueClick(selFacetValue.FacetValue, selFacetValue.FacetType)" [ngStyle]="{'color':'white'}">{{selFacetValue.FacetType}}:
+                {{getFormatted(selFacetValue.FacetValue)}} <span tabindex="0" class="fa fa-times" [ngStyle]="{'cursor':'pointer'}"
+                  aria-hidden="true" (keydown.enter)="selectedFacetValueClick(selFacetValue.FacetValue, selFacetValue.FacetType)"
+                  ></span></div>
+            </ng-container>
+          </div>
+          </div>
+          <div class="col-sm-2 pr-small pl-small text-right compareAndsearchFields">
+            <button type="button" class="btn btn-primary" tabindex="0"
+                    [disabled]="!hasAccess(Permissions.ATS_REV) || !isCLSCustomerSelected || isDeletedDbSelected"
+                    (keydown.enter)="viewATSReview()"
+                    (click)="viewATSReview()">
+              ATS Review
+            </button>
+            <button type="button" data-fixed="true" data-toggle="modal" title="Search Columns"
+                    data-backdrop="static" data-keyboard="true"
+                    data-target="#addMoreColumns" (click)="AddOrRemoveColumns()" class="btn btn-primary ml-1 searchResultsReorder" tabindex="0">
+              <img src="./assets/images/column-reorder.png" alt="Search Columns" />
+            </button>
+            <app-searchresults-columns [showModal]="showAddColumnsModal" [tableFields]="tableColumns" (OnGridColumnsAdded)="GridColumnsAdded($event)"></app-searchresults-columns>
+            <button type="button" class="btn btn-primary ml-1" tabindex="0" (click)="compareMarcRecords()"
+                    [disabled]="!(selectedMarcs && selectedMarcs.length > 1) || isDeletedDbSelected">
+              Compare
+            </button>
+            <button type="button" class="btn btn-primary ml-1" tabindex="0" (click)="editMarcRecords()"
+                    [disabled]="!(selectedMarcs && selectedMarcs.length > 1) || isDeletedDbSelected">
+              Edit
+            </button>
+          </div>
+        </div>
+        <div class="row z3950TableHeader" *ngIf="isZ3950Profile">
+            <div class="col-sm-10 pl-small pr-small">
+            <div class="z3950TableFilters">
+              <div class="custom-checkbox-div col p-0">
+                  <ng-container *ngFor="let profile of z3950Profiles">
+                    <div class="refineLevelBlock">
+                        <input [disabled]="selecedProfiles==1 && profile.isChecked"
+                          (change)="filterResultsBasedOnProfile()" [(ngModel)]="profile.isChecked"
+                          id="{{profile.displayProfileName}}" class="refineLevel" name="{{profile.displayProfileName}}" tabindex="0"
+                          type="checkbox">
+
+                        <label aria-hidden="true" [ngStyle]="{'font-weight': profile.totalRecords > 0 ? 'bolder' : '','color': profile.totalRecords > 0 ? '#085ebb' : ''}" class="custom-label ml-1 mr-2"
+                          for="{{profile.displayProfileName}}">{{ profile.displayProfileName }}({{profile.matchedRecords}}/{{profile.totalRecords}})</label>
+                    </div>
+                  </ng-container>
+              </div>
+            </div>
+            </div>
+            <div class="col-sm-2 pr-small pl-small text-right">
+              <a [ngClass]="{'disableForm': disableViewMore}"  class="z3950ViewMore emptyHrefLink" [class.disabled]="disableViewMore" (click)="ViewMoreZ3950Results();" (keydown.enter)="ViewMoreZ3950Results()" tabindex="0">View More</a>
+              <!-- <button type="button" class="btn btn-primary" tabindex="0">ATS Review</button> -->
+              <button type="button" data-fixed="true" data-toggle="modal" title="Search Columns"
+                      data-backdrop="static" data-keyboard="true"
+                      data-target="#addMoreColumns" (click)="AddOrRemoveColumns()" class="btn btn-primary ml-1 searchResultsReorder" tabindex="0">
+                <img src="./assets/images/column-reorder.png" alt="Search Columns" />
+              </button>
+              <app-searchresults-columns [showModal]="showAddColumnsModal" [tableFields]="tableColumns" (OnGridColumnsAdded)="GridColumnsAdded($event)"></app-searchresults-columns>
+              <button type="button" class="btn btn-primary ml-1" tabindex="0" (click)="compareMarcRecords()"
+                      [disabled]="!(selectedMarcs && selectedMarcs.length > 1)">
+                Compare
+              </button>
+              <button type="button" class="btn btn-primary ml-1" tabindex="0" (click)="editMarcRecords()"
+                      [disabled]="!(selectedMarcs && selectedMarcs.length > 1)">
+                Edit
+              </button>
+            </div>
+          </div>
+      </div>
+    </header>
+    <div class="flex-container" [style.height.px]="NewHeight">
+      <div class="fit table-responsive searchResultTableContainer"
+        [class.searchResultTableContainerFull]="!selectedMarcId">
+        <fieldset>
+          <legend class="sr-only">Search result table</legend>
+          <table id="searchGrid" class="table table-bordered table-hover table-sm" role="grid"
+                 aria-describedby="search_results" width="100%">
+
+          </table>
+        </fieldset>
+      </div>
+      <header class="MARCrecordHeader" *ngIf="selectedMarcId || marcItem">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-7 pl-small">
+              <span class="font-weight-bold" tabindex="0">Bibliographic Record</span>
+            </div>
+            <div class="col-sm-5 text-right pr-small">
+              <button id="btnPrintView" type="button" class="btn btn-primary mr-1" tabindex="0"
+              data-toggle="modal"
+              data-backdrop="static"
+              data-target="#printInfoView"
+              data-keyboard="true"
+              (click)="openPrintPopup()">
+                Print
+              </button>
+              <div class="modal fade" id="printInfoView" role="dialog" aria-hidden="true" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" tabindex="0">Print - Line Spacing</h5>
+                      <button type="button" class="close" data-dismiss="modal" tabindex="0" title="Close">&times;</button>
+                    </div>
+                    <form>
+                      <div class="modal-body">
+                        <div class="printConfirm text-left">
+                          <fieldset>
+                            <legend class="sr-only">Choose Line Space Option</legend>
+                            <div class="row m-0">
+                              <div class="col-5 p-0">
+                                <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection"
+                                  id="doubleSpace" name="spaceOption" value="2" tabindex="0">
+                                <label for="doubleSpace">Double Space</label>
+                              </div>
+                            <div class="col-5 p-0">
+                              <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection"
+                                id="singleSpace" name="spaceOption" value="1" tabindex="0">
+                              <label for="singleSpace">Single Space</label>
+                            </div>
+                            </div>
+                          </fieldset>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" (click)="printMarcRecord(selectedMarcId, marcItem)">OK</button>
+                        <button type="button" id="closePrintViewBtn" class="btn btn-default" data-dismiss="modal"  (tap)="ClosePrintPopup()">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <button [disabled]="isZ3950Profile || !canDelete() || isAllCustomerSelected || isDeletedDbSelected" id="btnDelete" type="button" class="btn btn-primary mr-1" tabindex="0" (click)="deleteConfirmationMessage(selectedMarcId)">
+                Delete
+              </button>
+
+              <button [disabled]="!canClone()|| isAllCustomerSelected || isDeletedDbSelected" id="btnClone" type="button" class="btn btn-primary mr-1" tabindex="0" (click)="CloneMarcRecord(selectedMarcId,marcItem)">
+                    Clone
+                  </button>
+              <button [disabled]="!canEdit()|| isAllCustomerSelected || isDeletedDbSelected" type="button" class="btn btn-primary" tabindex="0" (click)="EditMarcRecord(selectedMarcId,marcItem)">
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer">
+        <div class="MARCrecords MARCrecordsView" *ngIf="selectedMarcId || marcItem" [ngStyle]="{'background-color':marcSettings?.backgroundcolor}">
+          <!-- <marc-view [authorityId]=authorityId [marcId]="selectedMarcId" [marcItem] = "marcItem" [recordNumber]="selectedRecordNumber"></marc-view> -->
+          <marc-view [authorityId]=authorityId [marcId]="selectedMarcId" [marcItem] = "marcItem" [recordNumber]="selectedRecordNumber" [recordReason]="selectedRecordReason"></marc-view>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

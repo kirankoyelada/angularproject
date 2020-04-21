@@ -1,0 +1,11 @@
+<!--The content below is only a placeholder and can be replaced.-->
+
+<router-outlet> </router-outlet>
+
+<div class="overlay-default" *ngIf="loadingDefault"></div>
+<div class="overlay" *ngIf="loading">
+        <div class="spinner" >
+          <mat-progress-spinner  [diameter]="70" [mode]="'indeterminate'">
+           </mat-progress-spinner>
+        </div>
+        </div>

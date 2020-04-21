@@ -1,0 +1,124 @@
+<div class="container-fluid">
+        <div class="compareTwoContainer container-fluid">
+            <div class="row">
+                <div class="compareBox col-6 pr-small">
+                    <div class="compareHeader">
+                        <div class="col pl-small pr-small">
+                            <span *ngIf="!isZ3950ProfileSearch()" class="float-left" tabindex="0">
+                                Record Number: {{sourceMarc.recordNumber}}</span>
+                            <span *ngIf="isZ3950ProfileSearch()" class="float-left" tabindex="0">
+                                Control Number: {{sourceMarc.RecordControlNumber}}</span>
+                            <span class="float-right">
+                                <button type="button" class="disableBtn btn btn-default"  (click)="EditMarcRecord(sourceMarcId, 0, sourceMarc)" tabindex="0" [disabled]="!hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS]) || isAllCustomerSelected" (keydown.enter)="EditMarcRecord(sourceMarcId, 0, sourceMarc)">
+                                <em class="fas fa-edit" title="Edit" aria-label="Press enter to edit"><span class="sr-only">Edit Button</span></em>
+                                </button>
+                                <em class="fa fa-times" title="Close" aria-label="Press enter to delete"
+                                    (click)="EditMarcRecord(targetMarcId, 1, targetMarc)" tabindex="0"
+                                    (keydown.enter)="EditMarcRecord(targetMarcId, 1, targetMarc)"></em>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="compareBody" [style.height.px]="NewHeight"
+                        [ngStyle]="{'font-size':marcSettings?.fontsize,'font-family':marcSettings?.font}">
+                        <ng-container *ngFor="let field of sourceMarc.fields">
+                            <p class="twoMarcViewRow row" [ngStyle]="{'background-color':field.color,'font-size':marcSettings?.fontsize,'font-family':marcSettings?.font}" tabindex="0">
+                                <span class="marctag col" data-toggle="tooltip" data-placement="top"
+                                    *ngIf="field.tag=='Leader'"
+                                    [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font}">
+                                    000
+                                </span>
+                                <span class="marctag col" data-toggle="tooltip" data-placement="top"
+                                    [title]="getTagDescription(field.tag)" *ngIf="!(field.tag=='Leader')"
+                                    [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font}">
+                                    {{field.tag}}
+                                </span>
+                                <ng-container
+                                    *ngIf="!(field.tag=='Leader' || (field.type && field.type == 'controlfield'))">
+                                    <span class="indicator"
+                                        [ngStyle]="{'color': marcSettings?.indcolor,'font-family':marcSettings?.font}">
+                                        <span class="indicator-1">{{field.ind1?field.ind1:""}}</span>{{field.ind2}}
+                                    </span>
+                                    <div class="col ViewDesc">
+                                    <ng-container *ngFor="let subfield of field.subfields;">
+                                        <span class="subfieldcode white-space"
+                                            [ngStyle]="{'color': marcSettings?.subfieldcolor,'font-family':marcSettings?.font}"
+                                            [innerHTML]="marcSettings?.delimiter+subfield.code">
+                                        </span>
+                                        <span *ngIf="!subfield.authorityId" class="marcData white-space" [innerHTML]="subfield.data"></span>
+                                        <span *ngIf="subfield.authorityId" class="authLink white-space">
+                                            <a
+                                                [routerLink]="['/authority-view/',subfield.authorityId]" [innerHTML]="subfield.data"></a>
+                                        </span>
+                                    </ng-container>
+                                    </div>
+                                </ng-container>
+                                <span class="indicator"  *ngIf="(field.tag=='Leader' || (field.type && field.type == 'controlfield'))" ></span>
+                                <span class="marcDataDesc col white-space" *ngIf="field.tag=='Leader'" [innerHTML]="field.data.substring(5, 10) + field.data.substring(17, 20)">
+                                </span>
+                                <span class="marcDataDesc col white-space" *ngIf="(field.type && field.type == 'controlfield')" [innerHTML]="field.data"></span>
+                            </p>
+                        </ng-container>
+                    </div>
+                </div>
+                <div class="compareBox col-6 pl-small">
+                    <div class="compareHeader">
+                        <div class="col pl-small pr-small">
+                            <!-- <span class="float-left" tabindex="0">
+                                Record Number: {{targetMarc.recordNumber}}</span> -->
+                                <span *ngIf="!isZ3950ProfileSearch()" class="float-left" tabindex="0">
+                                        Record Number: {{targetMarc.recordNumber}}</span>
+                                    <span *ngIf="isZ3950ProfileSearch()" class="float-left" tabindex="0">
+                                        Control Number: {{targetMarc.RecordControlNumber}}</span>
+                            <span class="float-right">
+                             <button type="button"  title="Edit" (click)="EditMarcRecord(targetMarcId, 0, targetMarc)"  tabindex="0" aria-label="Press enter to edit" (keydown.enter)="EditMarcRecord(targetMarcId, 0, targetMarc)"  class="disableBtn btn btn-default" [disabled]="!hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS]) || isAllCustomerSelected ">
+                                <em class="fas fa-edit"></em>
+                             </button>
+                                <em class="fa fa-times" title="Close" aria-label="Press enter to delete" (click)="EditMarcRecord(sourceMarcId, 1, sourceMarc)" tabindex="0" (keydown.enter)="EditMarcRecord(sourceMarcId, 1, sourceMarc)"></em>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="compareBody" [style.height.px]="NewHeight"
+                        [ngStyle]="{'font-size':marcSettings?.fontsize}">
+                        <ng-container *ngFor="let field of targetMarc.fields">
+                            <p class="twoMarcViewRow row" [ngStyle]="{'background-color':field.color,'font-size':marcSettings?.fontsize,'font-family':marcSettings?.font}" tabindex="0">
+                                <span class="marctag col" data-toggle="tooltip" data-placement="top"
+                                    *ngIf="field.tag=='Leader'"
+                                    [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font}">
+                                    000
+                                </span>
+                                <span class="marctag col" data-toggle="tooltip" data-placement="top"
+                                    [title]="getTagDescription(field.tag)" *ngIf="!(field.tag=='Leader')"
+                                    [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font}">
+                                    {{field.tag}}
+                                </span>
+                                <ng-container
+                                    *ngIf="!(field.tag=='Leader' || (field.type && field.type == 'controlfield'))">
+                                    <span class="indicator"
+                                        [ngStyle]="{'color': marcSettings?.indcolor,'font-family':marcSettings?.font}">
+                                        <span class="indicator-1">{{field.ind1?field.ind1:""}}</span>{{field.ind2}}
+                                    </span>
+                                    <div class="col ViewDesc">
+                                    <ng-container *ngFor="let subfield of field.subfields;">
+                                        <span class="subfieldcode  white-space"
+                                            [ngStyle]="{'color': marcSettings?.subfieldcolor,'font-family':marcSettings?.font}"
+                                            [innerHTML]="marcSettings?.delimiter+subfield.code">
+                                        </span>
+                                        <span *ngIf="!subfield.authorityId" class="marcData white-space"  [innerHTML]="subfield.data"></span>
+                                        <span *ngIf="subfield.authorityId" class="authLink white-space">
+                                            <a
+                                                [routerLink]="['/authority-view/',subfield.authorityId]" [innerHTML]="subfield.data"></a>
+                                        </span>
+                                    </ng-container>
+                                    </div>
+                                </ng-container>
+                                <span class="indicator"  *ngIf="(field.tag=='Leader' || (field.type && field.type == 'controlfield'))" ></span>
+                                <span class="marcDataDesc col white-space" *ngIf="field.tag=='Leader'" [innerHTML]="field.data.substring(5, 10) + field.data.substring(17, 20)"></span>
+                                <span class="marcData col white-space"
+                                    *ngIf="(field.type && field.type == 'controlfield')" [innerHTML]="field.data"></span>
+                            </p>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,57 @@
+<nav class="navbar navbar-expand-md navbar-light fixed-top bg-light">
+    <a tabindex="0" class="navbar-brand" href="/"><img src="./assets/images/BTCAT_logo.png"
+            alt="Bayker & Taylor - A Follett Company" /></a>
+</nav>
+<div class="container login">
+    <div class="row">
+        <div class="col-sm-9 col-md-7 col-lg-5 mx-auto mt-5">
+            <div class="card card-signin my-5">
+                <div class="card-body">
+                    <h1 class="card-title text-center">Login</h1>
+                    <div class="form-group">
+                        <label for="selectRole" [hidden]="true">Select Role</label>
+                        <select tabindex="0" [hidden]="true" class="form-control dropdown" id="selectRole" name="selectRole"
+                            [(ngModel)]="actor">
+                            <ng-container *ngFor="let role of roles">
+                                <option [value]="role.name">
+                                    {{ role.name }}
+                                </option>
+                            </ng-container>
+                        </select>
+                        <form>
+                            <p class="userErrorMessage" *ngIf ="showErr">
+                                Invalid Username or Password
+                            </p>
+                            <div [formGroup]="userValidations" class="mb-2">
+                                <label for="userName">Username</label>
+                                <input type="text" autocomplete="username"  name="userName" id="userName" class="form-control" [(ngModel)]="userName"
+                                    formControlName="user" (keydown)="onKeydown($event)"
+                                    [ngClass]="{'is-invalid':userValidations.get('user').touched && userValidations.get('user').invalid}" />
+                                <div class="invalid-feedback">
+                                    Username is required
+                                </div>
+                            </div>
+
+                            <div [formGroup]="userValidations">
+                                <label for="userPassword">Password</label>
+                                <input type="password" autocomplete="current-password" name="userPassword" id="userPassword" class="form-control" [(ngModel)]="password"
+                                    formControlName="pass" (keydown)="onKeydown($event)"
+                                    [ngClass]="{'is-invalid':userValidations.get('pass').touched && userValidations.get('pass').invalid}" />
+                                <div class="invalid-feedback">
+                                    Password is required
+                                </div>
+                            </div>
+
+
+                        </form>
+                        <button id="btnLogin" tabindex="0" type="submit" class="btn btn-primary col mt-3" role="button"
+                            (click)="Login()" [disabled]="!(userName && userName.length > 0 && password)">
+                            Login
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+<div class="modal fade" id="undo979Tag" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" tabindex="0">Undo 979 Tag</h5>
+        <button type="button" class="close" data-dismiss="modal" tabindex="0" title="Close"
+          (click)="cancel()">&times;</button>
+      </div>
+      <form>
+        <div class="modal-body blockLevelForm">
+          <div class="form-group required mb-2">
+            <label class="font-weight-bold" for="undo979TagCustomer">Customer</label>
+            <input class="form-control" id="undo979TagCustomer" name="undo979TagCustomer" placeholder="Search Customer"
+              tabindex="0" [(ngModel)]="searchCustomerUndo" matInput #triggertag="matAutocompleteTrigger"
+              (keydown.enter)="findCustomerUndo()" (focusout)="findCustomerUndo()" [matAutocomplete]="auto"
+              (input)="validateUpdateUndoCustomerName($event.target.value)"
+              [ngClass]="{'border-danger': isvalidUndoCustomerRequired}"
+              [matTooltip]="isvalidUndoCustomerRequired ? 'Required' : ''"
+              matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" />
+            <div class="customersListFilter">
+              <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                [displayWith]="displayFnUndo">
+                <ng-container *ngFor=" let cust of customers | customerfilter: searchCustomerUndo">
+                  <mat-option [value]="cust" *ngIf="cust.customerName === 'Customer not found';else customerFoundUndo"
+                    disabled="true">
+                    <i>Customer not found</i>
+                  </mat-option>
+                  <mat-option [value]="cust" *ngIf="cust.customerName !== 'Customer not found'"
+                    matTooltip="{{ cust.customerName }}" #customerFoundUndo>
+                    {{ cust.customerName }}
+                  </mat-option>
+                </ng-container>
+              </mat-autocomplete>
+            </div>
+          </div>
+          <div class="form-group required mb-1">
+            <label for="startDateTimeUndo" class="font-weight-bold">Start Date (EST)</label>
+            <div class="input-group">
+              <input type="text" class="form-control" [max]="maxDateTime" tabindex="0"
+                id="startDateTimeUndo" name="startDateTimeUndo" matTooltipPosition="above"
+                matTooltipClass="my-tooltip editTagEditErrorTooltip" [(ngModel)]="undoStartDate"
+                [ngClass]="{'border-danger': isvalidUndoStartDateRequired}"
+                [matTooltip]="isvalidUndoStartDateRequired ? 'Required' : ''" #tooltip="matTooltip" 
+                [owlDateTime]="undodtstart" [owlDateTimeTrigger]="undodtstart" #undostart>
+              <div class="input-group-append" tabindex="0">
+                <span class="input-group-text" [owlDateTimeTrigger]="undodtstart">
+                  <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                </span>
+              </div>
+              <owl-date-time (afterPickerOpen)="pickerUndoStartDateOpen();" [pickerType]="'calendar'"
+                (afterPickerClosed)="pickerUndoStartDateClosed();" #undodtstart></owl-date-time>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" tabindex="0"
+            [disabled]="enableUndoExecute()" (click)="executeUndo979()">Execute</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal" tabindex="0"
+            (click)="cancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

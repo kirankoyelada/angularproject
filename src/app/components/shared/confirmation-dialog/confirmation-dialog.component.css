@@ -1,0 +1,30 @@
+.btn.mat-button{line-height:30px !important;}
+.mat-actions{
+    padding-top:5px;
+    float:right;
+}
+.alertConfirmation .mat-header{
+    color: #ffffff;
+    position: relative;
+    width: 100%;
+    border-bottom: 1px solid #004165;
+    background-color: #004165;
+    
+  }
+  .errorNav {
+    height: auto;
+    max-height: 120px;
+    background-color: #ececec;
+    width: 100%;
+    position: relative;
+    overflow: auto;
+    word-break: break-all;
+    padding: .5rem;
+    margin-top: 0.5rem;
+    border: 1px solid #bebebe;
+  }
+  .alertConfirmation .mat-header h5{margin-bottom: 0;font-size:10pt;}
+.mat-dialog-container{
+    padding: 4px !important;
+}
+

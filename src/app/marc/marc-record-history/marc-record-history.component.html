@@ -1,0 +1,154 @@
+<div class="wrapper">
+  <div class="container-fluid">
+  <div class="twoCompareMarcRecHistory">
+    <header class="tableHeaderCounts">
+      <div class="container-fluid" role="grid">
+        <div class="row">
+          <div class="col-sm-6 pl-small pr-small">
+              <h4><span class="editMarcHead" tabindex="0">Record Number: {{recordNumber}}</span></h4>
+          </div>
+          <div
+            class="col-sm-6 pr-small pl-small text-right">
+            <button class="btn btn-primary prevHistory" (click)="MovePrevNext('prev')" [disabled]="disablePrev" id="prevHistory" tabindex="0" type="button">
+                <em aria-hidden="true" class="fa fa-chevron-left"></em> Previous
+              </button>
+              <button class="btn btn-primary ml-1 nextHistory" (click)="MovePrevNext('next')" [disabled]="disableNext" id="nextHistory" tabindex="0" type="button">
+                  Next <em aria-hidden="true" class="fa fa-chevron-right"></em>
+              </button>
+
+            <button
+              type="button"
+              class="btn btn-primary ml-1"
+              tabindex="0"
+              (click)="compareMarcRecords()"
+              [disabled]="!(selectedMarcs && selectedMarcs.length > 1)">
+              Compare
+            </button>
+
+            <button class="btn btn-default ml-1" id="backToRecHistory" (click)="back()" tabindex="0" type="button"> Back </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-container" [style.height.px]="NewHeight"
+    *ngIf="recordHistoryResponse && recordHistoryResponse.length > 0">
+      <div class="fit table-responsive recordHistoryResultTableContainer mb-2"
+        [class.searchResultTableContainerFull]="!marcHistoryId" >
+        <fieldset>
+          <legend class="sr-only">Record History result table</legend>
+          <table
+            id="recordHistoryDetailsGrid"
+            class="table table-bordered table-hover table-sm"
+            role="grid"
+            aria-describedby="history_results"
+            width="100%"
+          >
+            <thead>
+              <tr data-fixed="true">
+                <th class="td-1-small no-sort">
+                  <input
+                    type="checkbox"
+                    tabindex="0"
+                    id="checkAll"
+                    name="checkAll"
+                    (click)="selectAll($event)"
+                    [checked]="selectedAll"
+                    [indeterminate]="!selectedAll && selectAnyChkBox"
+                  />
+                  <label class="sr-only" for="checkAll" aria-hidden="true"
+                    >Checkbox to check all
+                  </label>
+                </th>
+                <th class="titleTH">
+                  <span for="Title">Title</span>
+                </th>
+                <th class="editedByTH">
+                  <span for="EditedBy">Edited By</span>
+                </th>
+                <th class="editedDateTH">
+                  <span for="DateofSave">Edited Date</span>
+                </th>
+                <th class="recordsourceTH">
+                  <span for="RecordSource">Record Source</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="history_results">
+              <tr
+              (keydown)="viewMarcRecordOnEnter($event,item.id)" (click)="viewMarcRecord($event,item.id)"
+                [class.active]="marcHistoryId && marcHistoryId === item.id"
+                *ngFor="let item of recordHistoryResponse; let i = index"
+                tabindex="0"
+              >
+                <td class="td-1-small">
+                  <input
+                    type="checkbox"
+                    class="chkbox"
+                    [(ngModel)]="item.IsSelect"
+                    id="{{ item.id }}"
+                    name="{{ item.id }}"
+                    (click)="onSelectChange($event, item.id, '')"
+                    title="{{tooltip}}"
+
+                  />
+                  <label class="sr-only" for="{{ item.id }}" id="chkLabel{{ item.id }}" title="{{tooltip}}" >
+                    {{
+                      selectedMarcs &&
+                      selectedMarcs.length == 8 &&
+                      !item.IsSelect
+                        ? "Maximum records limit reached"
+                        : "Checkbox to view Marc Record"
+                    }}
+                  </label>
+                </td>
+                <td class="titleTD">
+                  <a title="{{ item.title }}" class="TestCalls"
+                    ><span>Title&nbsp;</span>{{ item.title }}</a
+                  >
+                </td>
+                <td class="editedByTD">
+                    <a title="{{ item.editedBy }}" class="TestCalls"
+                      ><span>Edited by&nbsp;</span>{{ item.editedBy }}</a
+                    >
+                  </td>
+                  <td class="editedDateTD">
+                    <a title="{{ item.editedDate }}" class="TestCalls"
+                      ><span>Edited Date&nbsp;</span>{{ item.editedDate }}</a
+                    >
+                </td>
+                <td class="recordsourceTD">
+                  <a
+                    title="{{
+                      item.recordSource
+                    }}"
+                    class="TestCalls"
+                    ><span>Record Source&nbsp;</span>
+                    {{ item.recordSource }}
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </fieldset>
+      </div>
+      <header class="MARCrecordHeader" *ngIf="marcHistoryId">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-sm-9 pl-small">
+                <span class="font-weight-bold" tabindex="0">Bibliographic Record</span>
+              </div>
+              <div class="col-sm-3 text-right pr-small">
+              </div>
+            </div>
+          </div>
+        </header>
+        <div class="marc-outer">
+          <div class="MARCrecords" *ngIf="marcHistoryId" [ngStyle]="{'background-color':marcSettings?.backgroundcolor}">
+            <marc-view [marchistoryId] = "marcHistoryId" ></marc-view>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+</div>

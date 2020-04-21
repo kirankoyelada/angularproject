@@ -1,0 +1,87 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull" class="environMentalSettings">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-4 pl-small pr-small">
+              <h4><span tabindex="0">Environmental Settings</span></h4>
+            </div>
+            <div class="col-sm-8"></div>
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer Z3950Profiles m-0">
+        <div class="MARCrecords text-right" [style.height.px]="NewHeight">
+          <button class="btn btn-primary mb-1" id="new" tabindex="0" type="button" (click)="createEnvSettings()">New</button>
+          <div role="table" aria-label="Customer Name Mapping" aria-describedby="environmentalSettings">
+            <div class="sr-only">Environmental Settings</div>
+            <div class="container-fluid tableHeader" role="rowgroup">
+              <div class="row" data-fixed="true" role="row">
+                <div class="col onlyCheckBoxNexpandCol" row="columnheader"></div>
+                <div class="col" row="columnheader"><b>Institution</b></div>
+                <div class="col" row="columnheader"><b>Customer</b></div>
+                <div class="col editCol" row="columnheader"><b>Edit</b></div>
+                <div class="col deleteCol" row="columnheader"><b>Delete</b></div>
+            </div>
+           </div>
+           <div class="container-fluid tableBody" role="rowgroup" id="EnvSettings" *ngIf="institutions" id="environmentalSettings">
+             <ng-container *ngFor="let item of institutions;let i = index" tabindex="0">
+               <div class="row" role="row">
+                <div class="col onlyCheckBoxNexpandCol" row="columnheader">
+                  <span *ngIf="item.customers.length >0"><a class="fa expandCollapseLink" [ngClass]="{'fa-plus': item.isExpanded == false, 'fa-minus': item.isExpanded == true}"
+                    (click)="iconChange(i)" tabindex="0" (keydown.enter)="iconChange(i)"
+                    aria-label="Press enter to expand or collapse"
+                    [title]="(item.isExpanded == true) ? 'Collapse':'Expand'">
+                  </a></span>
+                </div>
+                <div class="col" role="cell" tabindex="0" attr.aria-label="Institutions{{item.Institution.InstitutionID}}">
+                  {{item.Institution.name}}
+                </div>
+                <div class="col" role="cell" tabindex="0"><span class="sr-only"></span></div>
+                <div class="col editCol" role="cell" tabindex="0" attr.aria-label="Delete{{item.Institution.InstitutionID}}"
+                (click)="editInst(item.Institution.id)" (keydown.enter)="editInst(item.Institution.id)">
+                  <em class="fas fa-edit" title="Edit" aria-hidden="true" aria-label="Press enter to edit"
+                  >
+                  </em>
+                 </div>
+                <div class="col deleteCol" role="cell" tabindex="0"><span class="sr-only"></span></div>
+               </div>
+               <div *ngIf="item.isExpanded == true" class="nestedTableTR container-fluid p-0">
+                <div class="row" role="row">
+                  <div class="container-fluid">
+                    <div class="row" *ngFor="let customer of item.customers;let j=index" role="row">
+                      <div class="col onlyCheckBoxNexpandCol" role="cell" tabindex="0"></div>
+                      <div class="col" role="cell" tabindex="0" (dblclick)="doDoubleClickAction(i,j)"></div>
+                      <div class="col" role="cell" tabindex="0" (dblclick)="doDoubleClickAction(i,j)"
+                        attr.aria-label="Account Name{{customer.id}}">{{customer.customerName}}
+                      </div>
+                      <div class="col editCol" role="cell" tabindex="0" attr.aria-label="Edit{{customer.id}}"
+                      (click)="editCustomer(item.Institution.id,customer.id)" (keydown.enter)="editCustomer(item.Institution.id,customer.id)">
+                        <em class="fas fa-edit"  title="Edit" aria-hidden="true" aria-label="Press enter to edit">
+                        </em>
+                      </div>
+                      <div class="col deleteCol" role="cell" tabindex="0" attr.aria-label="Delete{{customer.id}}"
+                      (click)="deleteInst(item.Institution.id,item.Institution.name,customer.id,customer.customerName,item.Institution.environmentSettings)"
+                          (keydown.enter)="deleteInst(item.Institution.id,customer.id,customer.customerName,item.Institution.environmentSettings)">
+                        <em aria-label="Press enter to delete" class="fas fa-trash-alt"
+                          title="Delete" >
+                        </em>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+             </ng-container>
+           </div>
+           </div>
+        </div>
+      </div>
+      <div class="row z3950Btns">
+        <div class="col-12 pl-small pr-0 text-right">
+          <button class="btn btn-default" id="backClsCustomerConfig" tabindex="0" type="button" (click)="back()">Back</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

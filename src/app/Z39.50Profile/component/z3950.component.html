@@ -1,0 +1,254 @@
+<div class="wrapper" *ngIf="divGridResult">
+  <form #form="ngForm" (ngSubmit)="saveZ3950Profile(form)" (keydown.enter)="$event.target.tagName === 'BUTTON'">
+
+<div id="contentFull">
+  <header class="tableHeaderCounts">
+    <div class="container-fluid Z3950Head" role="grid">
+      <div class="row">
+        <div class="col-sm-2 pl-small pr-small">
+          <h4><span tabindex="0">Z39.50 Profiles</span></h4>
+        </div>
+        <div class="col-sm-6"><span *ngIf="displayWarnMessage" class="profileErrorMessage">
+          One or more errors occurred while saving the record. Please correct them to
+          proceed.
+        </span>
+        <span *ngIf="displayUnAuthMessage" class="profileErrorMessage">
+            User is unauthorized to save
+          </span></div>
+        <div class="col-sm-4 pr-small text-right">
+          <div class="form-group z3950SearchFilter">
+            <label for="z3950SearchFilter" class="sr-only">Z3950 Search Filter</label>
+            <input type="text" class="form-control" (keyup)="GetProfilesBySearchTerm($event);" id="z3950SearchFilter" name="z3950SearchFilter" tabindex="0" placeholder="Search">
+          </div>
+          <button type="button" (click)="clearSearch()" class="btn btn-primary ml-1 lessPaddingInZoom" tabindex="0" >Clear Search</button>
+          <button type="button" (click)="clickNew(form)"
+          class="btn btn-primary ml-1 lessPaddingInZoom" tabindex="0">New</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="flex-container" [style.height.px]="NewHeight">
+    <div class="fit table-responsive searchResultTableContainer">
+      <fieldset>
+        <legend class="sr-only">Z39.50 Profiles</legend>
+        <table id="Z3950Profiles" class="table table-bordered table-hover table-sm" role="grid"
+               aria-describedby="Z3950Profiles" width="100%">
+        </table>
+      </fieldset>
+    </div>
+
+    <div class="marc-outer Z3950Profiles m-0" *ngIf="divShow">
+      <div class="MARCrecords">
+        <div class="row m-0">
+          <div class="col-4 pl-small pr-small">
+            <div class="form-group required">
+              <label for="profileName" class="font-weight-bold">Profile Name</label>
+              <input type="text" [class.pubdate-warn]="!isProfileRequired || isProfileDuplicate" [(ngModel)]="z3950ResultData.profileName" class="form-control" id="profileName"
+              [matTooltip]="!isProfileRequired ? 'Required' : (isProfileDuplicate) ? 'Duplicate Profile Name' : '' " matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltipprofileName="matTooltip"
+               name="profileName" tabindex="0"  (wheel)="tooltipprofileName.hide()"  (blur)="ValidateForm('profile-name')">
+
+            </div>
+            <div class="form-group required">
+              <label for="customerName" class="font-weight-bold">Customer</label>
+              <input type="text" [class.pubdate-warn]="!isCustomerRequired" [(ngModel)]="z3950ResultData.customerName" class="form-control" id="customerName"
+              [matTooltip]="!isCustomerRequired ? 'Required' : ''" matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltipcustomerName="matTooltip"
+               name="customerName" tabindex="0" (wheel)="tooltipcustomerName.hide()"  (blur)="ValidateForm('customer-name')">
+            </div>
+          </div>
+          <div class="col-4 pl-small pr-small">
+            <div class="form-group profileDescription">
+              <label for="profileDescription" class="font-weight-bold">Profile Description</label>
+              <textarea type="text" [(ngModel)]="z3950ResultData.profileDescription" class="form-control"
+                id="profileDescription" name="profileDescription"
+                rows="5" cols="50" tabindex="0" (keydown.enter)="getprofileDesc();"></textarea>
+            </div>
+          </div>
+          <div class="col-4 pl-small pr-small">
+            <div class="col pl-0 pr-0 mb-3">
+              <p class="font-weight-bold mb-2">Search Type</p>
+              <div class="container-fluid p-0">
+                <div class="row m-0">
+                  <div class="col pl-small pr-small">
+                    <fieldset>
+                    <legend class="sr-only">Choose Search Type</legend>
+                    <div class="row m-0">
+                      <div class="col-6 p-0">
+                        <input class="mr-2" type="radio" [(ngModel)]="z3950ResultData.isSearchTypeBib"
+                          id="biblographicSearchType" name="biblographicSearchType" [value]="true" tabindex="0">
+                        <label for="biblographicSearchType">Bibliographic</label>
+                      </div>
+                      <div class="col-6 p-0">
+                        <input [disabled]="true" class="mr-2" type="radio" [(ngModel)]="z3950ResultData.isSearchTypeBib"
+                          id="authoritySearchType" name="biblographicSearchType" [value]="false" tabindex="0">
+                        <label for="authoritySearchType">Authority</label>
+                      </div>
+                    </div>
+                  </fieldset>
+                  </div>
+                </div>
+              </div>
+               </div>
+              <div class="form-group required">
+                <label for="searchDatabase" class="font-weight-bold">Search Database</label>
+                <input type="text" tabindex="0" [class.pubdate-warn]="!isSearchDBRequired" [(ngModel)] = "z3950ResultData.databaseName" [matTooltip]="!isSearchDBRequired ? 'Required' : ''"
+                 matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltipdatabaseName="matTooltip" (wheel)="tooltipdatabaseName.hide()"  class="form-control" id="searchDatabase" name="searchDatabase" (blur)="ValidateForm('database-name')">
+              </div>
+          </div>
+             <div class="col-6 pl-small pr-small databaseOptions mb-2">
+                <p class="font-weight-bold">Login Options</p>
+                <div class="container-fluid">
+                 <div class="row m-0">
+                  <div class="col-md-12 col-lg-6 pl-small pr-small">
+                    <fieldset>
+                      <legend class="sr-only">Choose Login Options</legend>
+                      <div class="row m-0">
+                      <div class="col-6 p-0">
+                        <input class="mr-2" type="radio" [(ngModel)] = "modelLoginType" id="loginAnonymous" name="loginOptions" (click)="getLogTypeRadioValue('Anonymous')" value="Anonymous" tabindex="0" checked>
+                        <label for="loginAnonymous">Anonymous</label>
+                      </div>
+                      <div class="col-6 p-0">
+                        <input class="mr-2" type="radio" [(ngModel)] = "modelLoginType" id="loginOpen" name="loginOptions" value="Open" tabindex="0" (click)="getLogTypeRadioValue('Open')">
+                        <label for="loginOpen">Open</label>
+                      </div>
+                      <div class="col-6 p-0">
+                        <input class="mr-2" type="radio" [(ngModel)] = "modelLoginType" id="loginIDandPassword" name="loginOptions" value="UserIdAndPassword" tabindex="0" (click)="getLogTypeRadioValue('UserIdAndPassword');ValidateForm('user-pwd');">
+                        <label for="loginIDandPassword">ID and Password</label>
+                      </div>
+                      <div class="col-6 p-0">
+                        <input class="mr-2" type="radio" [(ngModel)] = "modelLoginType" id="loginNone" name="loginOptions" value="None" tabindex="0" (click)="getLogTypeRadioValue('None')">
+                        <label for="loginNone">None</label>
+                      </div>
+                      </div>
+                      </fieldset>
+                  </div>
+                  <div class="col-md-12 col-lg-6 pl-small pr-small">
+                      <div class="form-group row mb-1">
+                          <label for="loginUserID" class="col-sm-4 col-form-label text-right">User ID</label>
+                          <div class="col-sm-8">
+                            <input matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltipUserId="matTooltip"  [matTooltip]="!isUserIdRequired ? 'Required' : ''"
+                            [class.pubdate-warn]="!isUserIdRequired" (wheel)="tooltipUserId.hide()"  tabindex="0" type="text" [(ngModel)] = "modelUserId" [readonly] = "!editable" class="form-control" id="loginUserID" name="loginUserID" #inputUserId  (blur)="ValidateForm('user-pwd')">
+                          </div>
+                        </div>
+                      <div class="form-group row mb-1">
+                        <label for="loginPassword" class="col-sm-4 col-form-label text-right">Password</label>
+                        <div class="col-sm-8">
+                          <input matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltipPassword="matTooltip"  [matTooltip]="!isPasswordRequired ? 'Required' : ''"
+                          [class.pubdate-warn]="!isPasswordRequired" type="text" (wheel)="tooltipPassword.hide()"  tabindex="0" [(ngModel)] = "modelPassword" [readonly] = "!editable" class="form-control" id="loginPassword" name="loginPassword" #inputPassword (blur)="ValidateForm('user-pwd')">
+                        </div>
+                      </div>
+
+                  </div>
+                </div>
+              </div>
+               </div>
+               <div class="col-6 pl-small pr-small databaseOptions">
+                <p class="font-weight-bold">Host</p>
+                <div class="container-fluid">
+                  <div class="row m-0">
+                  <div class="col-md-12 col-lg-6 pl-small pr-small">
+                    <div class="form-group row mb-1 required">
+                      <label for="z3950ProfileAddress" class="col-sm-4 col-form-label text-right">Address</label>
+                      <div class="col-sm-8">
+                        <input [class.pubdate-warn]="!ishostRequired" [(ngModel)] = "z3950ResultData.hostAddress" type="email" [matTooltip]="!ishostRequired ? 'Required' : ''" matTooltipPosition="above"
+                         matTooltipClass="pubErrorTooltip" #tooltiphostAddress="matTooltip"  (wheel)="tooltiphostAddress.hide()"   class="form-control" id="z3950ProfileAddress" name="z3950ProfileAddress" (blur)="ValidateForm('host-address')">
+                      </div>
+                    </div>
+                    <div class="form-group row mb-1 required">
+                      <label for="z3950ProfilePort" class="col-sm-4 col-form-label text-right">Port</label>
+                      <div class="col-sm-8">
+                        <input OnlyNumber [class.pubdate-warn]="!isPortRequired" [(ngModel)] = "z3950ResultData.portNumber" type="email" [matTooltip]="!isPortRequired ? 'Required' : ''" matTooltipPosition="above"
+                        matTooltipClass="pubErrorTooltip" #tooltipport="matTooltip"  class="form-control" id="z3950ProfilePort" name="z3950ProfilePort" (wheel)="tooltipport.hide()" (blur)="ValidateForm('port-number')">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </div>
+              <div class="col-12 pl-small pr-small databaseOptions mb-2">
+                <span class="font-weight-bold">Attribute Options</span>
+                <div class="container-fluid">
+                  <div class="row m-0">
+                  <div class="col-6 pl-small pr-small">
+                    <div class="searchTypeAttributes row mb-1">
+                      <p tabindex="0">Search Type</p>
+                      <ul id="lstSearchType">
+                        <li *ngFor="let u of z3950SearchType" [type]="u.type" [value]="u.value" tabindex="0" (click)="searchTypeChange($event, u.name)"
+                        (keydown.enter)="searchTypeChange($event, u.name);" [class.active] = "u.value === selSearchTypeVal">{{u.name}}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="col-6 pl-small pr-small">
+                      <div class="searchTypeAttributes mb-1">
+                        <div class="form-group row mb-1">
+                          <label for="attrUse" class="col-sm-4 col-form-label text-right">Use</label>
+                          <div class="col-sm-8">
+                            <select [(ngModel)] = "modelUse" (change) = 'getSelectedOptionTextForUse($event)' class="form-control dropdown" id="attrUse" tabindex="0" name="attrUse" > <!--[disabled] = "isAttrOptionsReadOnly"-->
+                              <option *ngFor="let u of z3950AttributeOptions.Use.Values" [value]="u.value">{{u.name}} - {{u.value}}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                          <label for="attrStructure" class="col-sm-4 col-form-label text-right">Structure</label>
+                          <div class="col-sm-8">
+                            <select [(ngModel)] = "modelStructure" (change) = 'getSelectedOptionTextForStructure($event)' class="form-control dropdown" id="attrStructure" tabindex="0" name="attrStructure">
+                              <option *ngFor="let u of z3950AttributeOptions.Structure.Values" [value]="u.value">{{u.name}} - {{u.value}}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                          <label for="attrRelation" class="col-sm-4 col-form-label text-right">Relation</label>
+                          <div class="col-sm-8">
+                            <select [(ngModel)] = "modelRelation" (change) = 'getSelectedOptionTextForRelation($event)' class="form-control" id="attrRelation" tabindex="0" name="attrRelation">
+                              <option *ngFor="let u of z3950AttributeOptions.Relation.Values" [value]="u.value">{{u.name}} - {{u.value}}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                          <label for="attrPosition" class="col-sm-4 col-form-label text-right">Position</label>
+                          <div class="col-sm-8">
+                            <select [(ngModel)] = "modelPosition" (change) = 'getSelectedOptionTextForPosition($event)' class="form-control dropdown" id="attrPosition" tabindex="0" name="attrPosition">
+                                <option *ngFor="let u of z3950AttributeOptions.Position.Values" [value]="u.value">{{u.name}} - {{u.value}}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                          <label for="attrTruncation" class="col-sm-4 col-form-label text-right">Truncation</label>
+                          <div class="col-sm-8">
+                            <select [(ngModel)] = "modelTruncation" (change) = 'getSelectedOptionTextForTruncation($event)' class="form-control dropdown" id="attrTruncation" tabindex="0" name="attrTruncation">
+                              <option *ngFor="let u of z3950AttributeOptions.Truncation.Values" [value]="u.value">{{u.name}} - {{u.value}}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                          <label for="attrCompleteness" class="col-sm-4 col-form-label text-right">Completeness</label>
+                          <div class="col-sm-8">
+                            <select [(ngModel)] = "modelCompleteness" (change) = 'getSelectedOptionTextForCompleteness($event)' class="form-control dropdown" id="attrCompleteness" tabindex="0" name="attrCompleteness">
+                              <option *ngFor="let u of z3950AttributeOptions.Completeness.Values" [value]="u.value">{{u.name}} - {{u.value}}</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+              </div>
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="row z3950Btns" *ngIf="divShow">
+        <div class="col-12 pl-small pr-0 text-right">
+            <button class="btn btn-primary mr-1" id="saveZ3950Profile" (click)="saveZ3950Profile(form)" tabindex="0" type="button">
+                Save
+              </button>
+          <button class="btn btn-default mr-1"  id="cancelZ3950Profile" tabindex="0" type="button" (click)="back(form)">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="backFromZ3950Profile" tabindex="0" type="button" (click)="goBack(form)">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+</div>

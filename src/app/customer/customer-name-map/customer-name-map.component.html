@@ -1,0 +1,314 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-3 pl-small pr-small">
+              <h4><span tabindex="0">Customer Name Mapping</span></h4>
+            </div>
+            <div class="col-sm-5 p-0 text-center">
+              <span *ngIf="isCheckBoxSelectedOrUnselected" class="clsLabelErrorMessage" tabindex="0">
+                Please select the accounts to update the customer name.
+              </span>
+            </div>
+            <div class="col-sm-4 headerLinks text-right">
+              <a class="emptyHrefLink menu-item" [ngClass]="{'disableForm': !hasAccess(Permissions.SET_LDATA)}" (click)="goToClsLableConfiguration()" tabindex="0" (keydown.enter)="goToClsLableConfiguration()">
+                Label Configuration</a>
+              <a class="emptyHrefLink menu-item ml-2" [ngClass]="{'disableForm': !hasAccess(Permissions.CLS_CUST_CONFIG)}" (click)="goToCustomerConfiguration()" tabindex="0" (keydown.enter)="goToCustomerConfiguration()">
+                Customer Configuration</a>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer Z3950Profiles m-0">
+        <div class="MARCrecords" [style.height.px]="NewHeight">
+          <div class="row m-0">
+            <div class="col-3 pl-small pr-small mb-2">
+              <fieldset>
+                <legend class="sr-only">Customer State</legend>
+                <p for="searchCustomerByInstitutionType" class="font-weight-bold pl-0">Customer</p>
+                <div class="row m-0">
+                  <div class="p-0 mr-3">
+                    <input class="mr-2" type="radio" [value]="true" [(ngModel)]="isForExistingCustomer"
+                      name="customerState" tabindex="0" id="existingCustmer" [formControl]="customerStateControl"
+                      (click)="changeSearchSelection(form,false,true)">
+                    <label for="existingCustmer">Existing</label>
+                  </div>
+                  <div class="p-0">
+                    <input class="mr-2" type="radio" [value]="false" [(ngModel)]="isForExistingCustomer" tabindex="0"
+                      name="customerState" id="newCustmer" [formControl]="customerStateControl" (click)="changeSearchSelection(form,true, true)"> 
+                    <label for="newCustmer">New</label>
+                  </div>
+                  <!-- <div class="m-1 menu-item pl-3">
+                    <a class="emptyHrefLink" (click)="goToClsLableConfiguration()" tabindex="0" (keydown.enter)="goToClsLableConfiguration()">
+                      CLS Label Configuration<span class="sr-only">Press enter to activate</span></a>
+                  </div>
+                  <div class="m-1 menu-item pl-3">
+                    <a class="emptyHrefLink" (click)="goToCustomerConfiguration()" tabindex="0" (keydown.enter)="goToCustomerConfiguration()">
+                      Customer Configuration<span class="sr-only">Press enter to activate</span></a>
+                  </div> -->
+                </div>
+              </fieldset>
+            </div>
+            <div class="col-3 pl-small pr-small mb-2">
+                <div class="form-group mb-0">
+                  <label for="institutionType" class="font-weight-bold">Institution</label>
+                    <select id="institutionType" class="form-control dropdown" name="institutionType"
+                    (change)="onInstitutionTypeChange(form)" [(ngModel)]="institutionId">
+                        <option *ngFor="let inst of institutes" [value]="inst.id" [selected]="inst=='institutionId'">{{inst.displayName}}</option>
+                    </select>                  
+                </div>
+            </div>
+          </div>
+          <!--Search panel for Existing Customer name search-->
+          <div class="row m-0">
+            <div *ngIf="isForExistingCustomer" class="col-3 pl-small pr-small">
+              <div class="form-group">
+                <label for="searchCustomerByName" class="font-weight-bold">Customer Name</label>
+                <input type="text" tabindex="0" [class.pubdate-warn]="!true || false" class="form-control"
+                  id="searchCustomerByName" name="searchCustomerByName" [formControl]="searchTermControl"
+                  (input)="enteredText($event.target.value,'existing')" matInput [(ngModel)]="searchCustomerByName"
+                  Width="70" (blur)="checkCustomerName($event.target.value)" [matAutocomplete]="auto"
+                  #triggertag="matAutocompleteTrigger" required />
+                <div class="customersListFilter">
+                  <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                    [displayWith]="displayFnForName"
+                    (optionSelected)="customerSelectionOperation($event.option.value, 'add', form, 'customerIds','existing')">
+                    <ng-container
+                      *ngFor="let customer of existingCustomers | filterCustomerByName : searchCustomerByName">
+                      <mat-option [value]="customer"
+                        *ngIf="customer.customerName === 'Customer not found'; else customerFound" disabled="true">
+                        <i>Customer not found</i>
+                      </mat-option>
+                      <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                        matTooltip="{{customer.customerName}}" #customerFound>
+                        {{customer.customerName}}
+                      </mat-option>
+                    </ng-container>
+                  </mat-autocomplete>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="isForExistingCustomer" class="col-3 pl-small pr-small existingCustomer">
+              <div class="form-group required">
+                <p class="font-weight-bold">Customer ID(s)</p>
+                <div class="sp-peoplepicker-topLevel" [ngStyle]="{'background-color': disabledCustomerId}">
+                  <span class="sp-peoplepicker-resolveList">
+                    <span class="sp-peoplepicker-userSpan" *ngFor="let user of userSearchedValues">
+                      <span class="ms-entity-resolved" tabindex="0">{{user.customerId}}</span>
+                      <span class="sp-peoplepicker-delImage" href="#" tabindex="0" title="Close Customer"
+                        aria-label="Press enter to close customer"
+                        (keydown.enter)="customerSelectionOperation(user, 'remove', form, 'customerId','existing')"
+                        (click)="customerSelectionOperation(user, 'remove', form, 'customerId','existing')">&times;</span>
+                    </span>
+                  </span>
+                  <label class="sr-only" for="searchCustomerId">Search Customer ID(s)</label>
+                  <input type="text" tabindex="0" [disabled]="disableCustomerId"
+                    class="form-control sp-peoplepicker-editorInput" id="searchCustomerId" name="searchCustomerId"
+                    matInput [(ngModel)]="searchCustomerId" Width="70"
+                    [hidden]=" userSearchedValues?.length==UsersAllowed" [matAutocomplete]="auto"
+                    #triggertag="matAutocompleteTrigger" />
+                </div>
+                <div class="customersListFilter" [style.height.px]="newUserHeight">
+                  <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                    [displayWith]="displayNoneFn"
+                    (optionSelected)="customerSelectionOperation($event.option.value, 'add', form, 'customerId','existing')">
+                    <ng-container *ngFor="let customer of newCustomers | filterCustomerById : searchCustomerId">
+                      <mat-option [value]="customer"
+                        *ngIf="customer.customerName === 'Customer Id not found'; else customerFound" disabled="true">
+                        <i>Customer Id not found</i>
+                      </mat-option>
+                      <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer Id not found'"
+                        matTooltip="{{customer.customerId}}-{{customer.customerName}}" #customerFound>
+                        {{customer.customerId}}
+                      </mat-option>
+                    </ng-container>
+                  </mat-autocomplete>
+                </div>
+              </div>
+            </div>
+            <!--Search panel for New Customer name search-->
+            <div *ngIf="!isForExistingCustomer" class="col-3 pl-small pr-small existingCustomer">
+              <div class="form-group required">
+                <p class="font-weight-bold pl-0">Customer</p>
+                <div class="sp-peoplepicker-topLevel">
+                  <span class="sp-peoplepicker-resolveList">
+                    <span class="sp-peoplepicker-userSpan" *ngFor="let user of userSearchedValues">
+                      <span class="ms-entity-resolved" tabindex="0">{{user.customerId}}</span>
+                      <span class="sp-peoplepicker-delImage" href="#" tabindex="0" title="Close Customer"
+                        aria-label="Press enter to close customer"
+                        (keydown.enter)="customerSelectionOperation(user, 'remove', form, 'customerId','new')"
+                        (click)="customerSelectionOperation(user, 'remove', form, 'customerId','new')">&times;</span>
+                    </span>
+                  </span>
+                  <label for="searchCustomer" class="sr-only">Customer</label>
+                  <input type="text" tabindex="0" class="form-control sp-peoplepicker-editorInput" id="searchCustomer"
+                    name="searchCustomer" [formControl]="searchTermControl"
+                    (input)="enteredText($event.target.value,'new')" matInput [(ngModel)]="searchCustomer" Width="70"
+                    [hidden]=" userSearchedValues?.length==UsersAllowed" [matAutocomplete]="auto"
+                    #triggertag="matAutocompleteTrigger" />
+                </div>
+                <div class="customersListFilter" [style.height.px]="newUserHeight">
+                  <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                    [displayWith]="displayNoneFn"
+                    (optionSelected)="customerSelectionOperation($event.option.value, 'add', form, 'customerId','new')">
+                    <ng-container *ngFor="let customer of newCustomers | customerfilter : searchCustomer">
+                      <mat-option [value]="customer"
+                        *ngIf="customer.customerName === 'Customer not found'; else customerFound" disabled="true">
+                        <i>Customer not found</i>
+                      </mat-option>
+                      <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                        matTooltip="{{customer.customerId}}-{{customer.customerName}}" #customerFound>
+                        {{customer.customerName!='' ? customer.customerId + '-' + customer.customerName : customer.customerId}}
+                      </mat-option>
+                    </ng-container>
+                  </mat-autocomplete>
+                </div>
+              </div>
+            </div>
+            <div class="col-3 pl-small pr-small">
+              <div class="form-group">
+                <label for="searchCustomerByAccountNumber" class="font-weight-bold">Account Number</label>
+                <input type="text" tabindex="0" class="form-control" id="searchCustomerByAccountNumber" matInput
+                  [disabled]="disableAccountNumber" [matAutocomplete]="auto" #triggertag="matAutocompleteTrigger"
+                  name="searchCustomerByAccountNumber" [(ngModel)]="searchAccountNumber" />
+                <div class="customersListFilter">
+                  <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                    [displayWith]="displayFnForAccountNumber"
+                    (optionSelected)="customerSelectionOperation($event.option.value, 'add', form, 'customerId','')">
+                    <ng-container
+                      *ngFor="let customerAccount of searchCustomerAccounts | filterCustomerByAccountNumber : searchAccountNumber">
+                      <mat-option [value]="customerAccount"
+                        *ngIf="customerAccount.accountNumber === 'Account not found'; else accountFound"
+                        disabled="true">
+                        <i>Account not found</i>
+                      </mat-option>
+                      <mat-option [value]="customerAccount"
+                        *ngIf="customerAccount.accountNumber !== 'Account not found'"
+                        matTooltip="{{customerAccount.accountNumber}}" #accountFound>
+                        {{customerAccount.customerId}}-{{customerAccount.accountNumber}}
+                      </mat-option>
+                    </ng-container>
+                  </mat-autocomplete>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!isForExistingCustomer" class="col-3 pl-small pr-small">
+              <div class="form-group required">
+                <label for="updateCustomerName" class="font-weight-bold">New Customer Name</label>
+                <input [class.pubdate-warn]="iscustomerNameRequired || displayDuplicateWarnMessage"
+                  tabindex="0" type="text" class="form-control" id="updateCustomerName" name="updateCustomerName"
+                  [(ngModel)]="updatedcustomerName" (blur)="ValidateForm('updateCustomerName')"
+                  (input)="validateUpdateCustomerName(form, $event.target.value)"
+                  [matTooltip]="iscustomerNameRequired ? 'Required' : (displayDuplicateWarnMessage) ? 'Duplicate Name' : '' "
+                  matTooltipPosition="above" matTooltipClass="my-tooltip pubErrorTooltip">
+              </div>
+            </div>
+            <div *ngIf="isForExistingCustomer" class="col-3 pl-small pr-small">
+              <div class="form-group required">
+                <label for="updateCustomerNameInExisting" class="font-weight-bold">Update Customer Name</label>
+                <input type="text" tabindex="0" class="form-control" id="updateCustomerNameInExisting"
+                  name="updateCustomerNameInExisting" [(ngModel)]="updateCustomerNameInExisting"
+                  (input)="validateUpdateCustomerNameInExisting(form, $event.target.value)"
+                  [ngClass]="{'border-danger': duplicateCustomerNameError}" [matTooltip]="duplicateCustomerNameToolTip"
+                  matTooltipPosition="above" matTooltipClass="my-tooltip pubErrorTooltip">
+              </div>
+            </div>
+          </div>
+
+          <!--Customer Accounts Grid-->
+          <div *ngIf="displayGrid" role="table" aria-label="Customer Name Mapping"
+            aria-describedby="customerNameMapping">
+            <div class="sr-only">Customer Name Mapping</div>
+            <div class="container-fluid tableHeader" role="rowgroup">
+              <div class="row" data-fixed="true" role="row">
+                <div class="col checkBoxNexpandCol" row="columnheader">
+                  <a class="fa expandCollapseLink" [ngClass]="{'fa-plus': isExpandedAll == false, 'fa-minus': isExpandedAll == true}"
+                      (click)="expandCollapseAll(i)" tabindex="0" (keydown.enter)="expandCollapseAll(i)"
+                      aria-label="Press enter to expand or collapse"
+                      [title]="(isExpandedAll == true) ? 'Collapse':'Expand'"></a>
+                  <label *ngIf="isShowisTableCheckbox" for="tblCheckbox" class="sr-only">Account Number Checkboxes</label>
+                  <input *ngIf="isShowisTableCheckbox" type="checkbox" class="chkbox ml5" tabindex="0"
+                    attr.name="tblCheckbox" id="tblCheckbox" [(ngModel)]="isTableCheckbox"
+                    [ngModelOptions]="{standalone: true}" (change)="checkUnCheckAllCheckboxes(form, isTableCheckbox)" />
+                </div>
+                <div class="col" row="columnheader"><b>Account Number</b></div>
+                <div class="col" row="columnheader"><b>Customer ID</b></div>
+                <div class="col" row="columnheader"><b>Customer Name</b></div>
+                <div class="col" row="columnheader"><b>Account Name</b></div>
+              </div>
+            </div>
+            <div class="container-fluid tableBody" role="rowgroup" id="customerNameMapping"
+              [style.maxHeight.px]="NewTableHeight">
+              <ng-container *ngFor="let item of customerMasterAccountsDTO;let i = index" tabindex="0">
+                <div class="row" role="row">
+                  <div class="col checkBoxNexpandCol" role="cell">
+                    <!-- <em [ngClass]="(rowSelected!=item.masterAccount) ? 'fa fa-plus':'fa fa-minus'"
+                      [title]="(rowSelected!=item.masterAccount) ? 'Expand':'Collapse'" aria-hidden="true" tabindex="0"
+                      (keydown.enter)="openCloseRow(item.masterAccount,form);"
+                      (click)="openCloseRow(item.masterAccount,form);" aria-label="Press enter to expand or collapse">
+                    </em> -->
+                    <a class="fa expandCollapseLink" [ngClass]="{'fa-plus': customerMasterAccountsDTO[i].isExpanded == false, 'fa-minus': customerMasterAccountsDTO[i].isExpanded == true}"
+                      (click)="iconChange(i)"tabindex="0" (keydown.enter)="iconChange(i)"
+                      aria-label="Press enter to expand or collapse"
+                      [title]="(customerMasterAccountsDTO[i].isExpanded == true) ? 'Collapse':'Expand'"></a>
+
+                    <label *ngIf="item.isShowMasterCheckbox" for="checkbox{{item.masterAccount}}"
+                      class="sr-only">Customer Account Row</label>
+                    <input *ngIf="item.isShowMasterCheckbox" type="checkbox" class="chkbox ml5" tabindex="0"
+                      attr.name="checkbox{{item.masterAccount}}" id="checkbox{{item.masterAccount}}"
+                      [(ngModel)]="item.isCheckMasterCheckbox" [ngModelOptions]="{standalone: true}"
+                      (change)="checkUncheckAll(item.masterAccount,item.isCheckMasterCheckbox,form,item.customerId)" />
+                  </div>
+                  <div class="col" role="cell" tabindex="0" attr.aria-label="Account Number{{item.masterAccount}}">
+                    {{item.masterAccount}}</div>
+                  <div class="col customerID" role="cell" tabindex="0" attr.aria-label="Customer ID{{item.customerId}}">
+                    {{item.customerId}}</div>
+                    <div class="col" role="cell" tabindex="0" attr.aria-label="Customer Name{{item.customerName}}">
+                      {{item.customerName}}</div>
+                  <div class="col" role="cell" tabindex="0"><span class="sr-only"></span></div>
+                </div>
+                <div *ngIf="customerMasterAccountsDTO[i].isExpanded == true" class="nestedTableTR container-fluid p-0">
+                  <div class="row" role="row">
+                    <div class="container-fluid">
+                      <div class="row" *ngFor="let mAccount of item.mainAccounts;" role="row">
+                        <div class="col checkBoxNexpandCol onlyCheckBox" role="cell">
+                          <label *ngIf="mAccount.isShowCheckBox" for="chkbox-{{mAccount.accountNumber}}"
+                            class="sr-only">Account
+                            Number</label>
+                          <input *ngIf="mAccount.isShowCheckBox" type="checkbox" class="chkbox" tabindex="0"
+                            attr.name="chkbox-{{mAccount.accountNumber}}" id="chkbox-{{mAccount.accountNumber}}"
+                            [(ngModel)]="mAccount.isChecked" [ngModelOptions]="{ standalone: true }"
+                            [value]="mAccount.isChecked"
+                            (change)="isCheckMasterAccount(form,item.masterAccount,item.customerId,mAccount.id,mAccount.isChecked)" />
+                        </div>
+                        <div class="col" role="cell" tabindex="0"
+                          attr.aria-label="Account Number{{mAccount.accountNumber}}">{{mAccount.accountNumber}}</div>
+                        <div class="col" role="cell" tabindex="0"><span class="sr-only"></span></div>
+                        <div class="col" role="cell" tabindex="0"
+                          attr.aria-label="Customer Name{{mAccount.customerName}}">{{mAccount.customerName}}</div>
+                        <div class="col" role="cell" tabindex="0"
+                          attr.aria-label="Account Name{{mAccount.accountName}}">{{mAccount.accountName}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row z3950Btns">
+        <div class="col-12 pl-small pr-0 text-right">
+          <button [disabled]="!isvalidCustomer || validUpdateCustomerName" class="btn btn-primary mr-1"
+            id="updateCustNameMapping" tabindex="0" type="button" (click)="updateCustomer(form)">Update</button>
+          <button class="btn btn-default mr-1" id="cancelCustNameMapping" tabindex="0" type="button"
+            (click)="clear(form)">Cancel</button>
+          <button class="btn btn-default" id="backCustNameMapping" tabindex="0" type="button"
+            (click)="back(form)">Back</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

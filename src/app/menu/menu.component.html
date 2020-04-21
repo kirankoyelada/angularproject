@@ -1,0 +1,54 @@
+<div class="container-fluid mainNavSection" role="grid">
+    <div class="row" role="row">
+      <div class="col-8">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div id="mainNav">
+            <ul class="navbar-nav mr-auto mt-lg-0" role="menubar">
+              <li class="nav-item home" [ngClass]="{'active': isHomeMenuActive()}" role="menuitem" tabindex="0" (keydown.enter)="homeMenuClick()">
+                <a class="nav-link menu-item" (click)="homeMenuClick()">Home</a>
+              </li>
+              <li class="nav-item dropdown admin" [ngClass]="{'active': isAdminMenuActive()}"  [hidden]="!hasAccessAny([Permissions.CON_USR,Permissions.CED_Z395,Permissions.CED_GTEMP,Permissions.CED_ITEMP, Permissions.CED_LTEMP, Permissions.BT_EXT])" (mouseover)="toggleMenu('block')" (mouseout)="toggleMenu('none')">
+                <a class="nav-link dropdown-toggle menu-item" data-toggle="dropdown" tabindex="0">
+                  Admin
+                </a>
+                <div class="dropdown-menu" id="DropdownMenuAdmin">
+                  <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.ENV_SETTINGS)}" (click)="envSettingsClick()"  tabindex="0" (keydown.enter)="envSettingsClick()">Environmental Settings</a>
+                  <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.BT_EXT)}" (click)="marcExportClick()" tabindex="0" (keydown.enter)="marcExportClick()">MARC Extract</a>
+                  <a class="dropdown-item" (click)="clslabelExtractClick()" tabindex="0" (keydown.enter)="clslabelExtractClick()">Extract</a>
+                  <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccessAny([Permissions.CED_GTEMP,Permissions.CED_ITEMP, Permissions.CED_LTEMP])}" (click)="templatesClick()" tabindex="0" (keydown.enter)="templatesClick()">Templates</a>
+                  <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.CON_USR)}" (click)="userConfigurationClick()" tabindex="0" (keydown.enter)="userConfigurationClick()">User Configuration</a>
+                  <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.CED_Z395)}" (click)="z3950Click()" tabindex="0" (keydown.enter)="z3950Click()">Z39.50 Profiles</a>
+                  <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.CRT_MAC)}" (click)="macroClick()" tabindex="0" (keydown.enter)="macroClick()">Macro Admin</a>
+                </div>
+              </li>
+              <li class="nav-item dropdown settings" [ngClass]="{'active': isSettingsMenuActive()}" (mouseover)="toggleSettingsMenu('block')" (mouseout)="toggleSettingsMenu('none')">
+                <a class="nav-link dropdown-toggle menu-item" data-toggle="dropdown" tabindex="0">
+                  User Settings
+                </a>
+                <div class="dropdown-menu" id="DropdownMenuSettings">
+                    <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.GP_CUST_FUNC)}" (click)="uploadFileClick()" tabindex="0" (keydown.enter)="uploadFileClick()">Gap Customer File</a>
+                    <a class="dropdown-item"  (click)="myPreferencesClick()" tabindex="0" (keydown.enter)="myPreferencesClick()">My Preferences</a>
+                </div>
+              </li>
+               <li class="nav-item dropdown customer settings" [ngClass]="{'active': isCustomerSettingsMenuActive()}" (mouseover)="toggleCustomerSettingsMenu('block')" (mouseout)="toggleCustomerSettingsMenu('none')">
+                <a class="nav-link dropdown-toggle menu-item" data-toggle="dropdown" tabindex="0">
+                 Customer Settings
+                </a>
+                <div class="dropdown-menu" id="DropdownMenuCustomerSettings">
+                    <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.CUST_NAME_MAP)}" (click)="customerNameMappingClick()" tabindex="0" (keydown.enter)="customerNameMappingClick()">Customer Name Mapping</a>
+                    <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.CLS_CUST_CONFIG)}" (click)="clsConfigurationClick()" tabindex="0" (keydown.enter)="clsConfigurationClick()">Customer Configuration</a>
+                    <a class="dropdown-item" [ngClass]="{'disableForm': !hasAccess(Permissions.SET_LDATA)}"  (click)="clsLabelConfigurationClick()" tabindex="0" (keydown.enter)="clsLabelConfigurationClick()">Label Configuration</a>
+                    <!-- <a class="dropdown-item"  (click)="oclcConfigurationClick()" tabindex="0" (keydown.enter)="oclcConfigurationClick()" style="display:none;">OCLC Configuration</a>
+                    <a class="dropdown-item"  (click)="unflipClick()" tabindex="0" (keydown.enter)="unflipClick()" style="display:none;">Unflip</a> -->
+                </div>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+      <div class="col-4 text-right">
+        <button class="btn btn-primary backtoAuthoritySearch" *ngIf="showBackBtn" tabindex="0" type="button" (click)="back()">
+            <em aria-hidden="true" class="fa fa-chevron-left"></em> Back</button>
+      </div>
+    </div>
+  </div>

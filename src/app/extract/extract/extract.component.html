@@ -1,0 +1,215 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-3 pl-small pr-small">
+              <h4><span tabindex="0">Extract</span></h4>
+            </div>
+            <div class="col-sm-9 pl-small pr-small text-right" *ngIf="isShow('oclcExtract')">
+              <div class="form-group z3950SearchFilter">
+                <button class="btn btn-primary" tabindex="0" type="button" (click)="loadUndo979Dialog()"
+                  data-toggle="modal" data-backdrop="static" data-target="#undo979Tag">
+                  Undo 979 Tag
+                </button>
+              </div>
+            </div>
+            <div class="col-sm-9 pl-small pr-small text-right" *ngIf="isShow('clsExtract')">
+              <div class="form-group z3950SearchFilter">
+                <button class="btn btn-primary" tabindex="0" type="button" (click)="viewLogs()" disabled>
+                  View Logs
+                </button>
+              </div>
+            </div>
+            <div class="col-sm-10 pl-small pr-small">
+              <span class="clsLabelErrorMessage" tabindex="0" *ngIf="textAreaErrorDisplay">
+                One or more errors occurred while extracting the CLS label
+                Configuration. Please correct them to proceed.
+              </span>
+              <span class="clsLabelErrorMessage" tabindex="0" *ngIf="maxAtsNumberErrorDisplay">
+                The entered atsNumbers has reached the maximum range
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer Z3950Profiles m-0">
+        <div class="MARCrecords" [style.height.px]="NewHeight">
+          <div class="col">
+            <div class="row">
+              <div class="col-3 pl-0 pr-small">
+                <div class="form-group required mb-2">
+                  <label for="extract-type" class="font-weight-bold">Select Extract Type</label>
+                  <select class="form-control dropdown" id="extract-type" tabindex="0" [(ngModel)]="extractType"
+                    name="extract-type" (change)="buttonDisable($event.target.value,'extractType')"
+                    (blur)="validateRequiredFields($event.target.value,'extractType')"
+                    [ngClass]="{'border-danger': isValidExtractTypeRequired}"
+                    [matTooltip]="isValidExtractTypeRequired ? 'Required' : ''"
+                    matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above">
+                    <option value="Select" selected>Select Extract Type</option>
+                    <option value="clsExtract" [disabled]="!hasAccess(Permissions.CLS_EXT)">CLS/JB Extract</option>
+                    <option value="lableExtract" [disabled]="!hasAccess(Permissions.SET_LDATA)">Label Extract</option>
+                    <option value="oclcExtract" [disabled]="!hasAccess(Permissions.OCL_EXT)">OCLC Extract</option>
+                    <option value="unflip" [disabled]="!hasAccess(Permissions.UNF_MARC)">Unflip</option>
+
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-3 pl-0 pr-small">
+                <div class="form-group mb-2">
+                  <label for="institutionType" class="font-weight-bold">Institution</label>
+                  <select id="institutionType" class="form-control dropdown" name="institutionType"
+                    (change)="onInstitutionTypeChange(form)" [(ngModel)]="institutionId">
+                    <option *ngFor="let inst of institutes" [value]="inst.id" [selected]="inst=='institutionId'">{{inst.displayName}}</option>
+                  </select>
+                </div>
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-3 pl-0 pr-small">
+              <div class="form-group required mb-3">
+                <label for="customer" class="font-weight-bold">Customer</label>
+                <input class="form-control" [formControl]="myControl" id="customer" name="customer" tabindex="0"
+                  placeholder="Search Customer" matInput [(ngModel)]="searchCustomer"
+                  #triggertag="matAutocompleteTrigger" (keydown.enter)="findCustomer()" (focusout)="findCustomer()"
+                  [matAutocomplete]="auto" (input)="validateUpdateCustomerName($event.target.value)"
+                  (blur)="validateRequiredFields($event.target.value,'customer')"
+                  [ngClass]="{'border-danger': (isvalidCustomerRequired || inValidCustomer)}"
+                  [matTooltip]="isvalidCustomerRequired ? 'Required' :  inValidCustomerNameTooltip"
+                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" />
+                <div class="usersListFilter">
+                  <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                    [displayWith]="displayFn" (optionSelected)="selectedCustomer()">
+                    <ng-container *ngFor=" let customer of customers | customerfilter: searchCustomer">
+                      <mat-option [value]="customer" *ngIf="
+                            customer.customerName === 'Customer not found';
+                            else customerFound
+                          " disabled="true">
+                        <i>Customer not found</i>
+                      </mat-option>
+                      <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                        matTooltip="{{ customer.customerName }}" #customerFound>
+                        {{ customer.customerName }}
+                      </mat-option>
+                    </ng-container>
+                  </mat-autocomplete>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="isShow('lableExtract')">
+            <div class="col-3 pl-0 pr-small">
+              <div class="form-group required mb-2">
+                <label class="font-weight-bold" for="ATSNumbers">ATS Numbers</label>
+                <textarea class="form-control scrollableTextArea" id="ATSNumbers" name="ATSNumbers" tabindex="0"
+                  type="text" [(ngModel)]="ATSNumbers" [ngModelOptions]="{standalone: true}"
+                  [ngClass]="{'border-danger': textAreaErrorDisplay || maxAtsNumberErrorDisplay  || textAreaErrorDisplayRequired || duplicateATSNumberExists}"
+                  (input)="formatText($event,10,100)"
+                  [matTooltip]="textAreaErrorDisplayRequired ? 'Required' : duplicateATSNumberExistsTooltip"
+                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                  (blur)="onBlur($event.target.value)" (paste)="handlePaste($event)"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" *ngIf="isShow('clsExtract')">
+            <div class="col-3 pl-0 pr-small">
+              <div class="form-group required mb-2">
+                <label class="font-weight-bold" for="clsATSNumbers">CLS ATS Numbers</label>
+                <textarea class="form-control scrollableTextArea" id="clsATSNumbers" name="clsATSNumbers" tabindex="0"
+                  type="text" [(ngModel)]="ATSNumbers" [ngModelOptions]="{standalone: true}"
+                  [ngClass]="{'border-danger': textAreaErrorDisplay || maxAtsNumberErrorDisplay  || textAreaErrorDisplayRequired || duplicateATSNumberExists}"
+                  (input)="formatText($event,14,20)"
+                  [matTooltip]="textAreaErrorDisplayRequired ? 'Required' : duplicateATSNumberExistsTooltip"
+                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                  (blur)="onBlur($event.target.value)" (paste)="handlePaste($event)"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="isShow('oclcExtract')">
+            <div class="col-3 pl-0 pr-small">
+              <div class="form-group required mb-2">
+                <label for="startDateTime" class="font-weight-bold">Start Date (EST)</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" [max]="maxDateTime" id="startDateTime" name="startDateTime"
+                    matTooltipPosition="above" matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                    [(ngModel)]="oclcExportState.startDateTime" #tooltip="matTooltip" [owlDateTime]="dtstart"
+                    [owlDateTimeTrigger]="dtstart" [ngClass]="{'border-danger': startDateError}"
+                    [matTooltip]="startDateTooltip" #startDt>
+                  <div class="input-group-append">
+                    <span class="input-group-text" [owlDateTimeTrigger]="dtstart">
+                      <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                    </span>
+                  </div>
+                  <owl-date-time (afterPickerOpen)="pickerStartDateOpen();" [pickerType]="'calendar'"
+                    (afterPickerClosed)="pickerStartDateClosed();" #dtstart></owl-date-time>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="isShow('oclcExtract')">
+            <div class="col-3 pl-0 pr-small">
+              <div class="form-group required mb-2">
+                <label for="endDateTime" class="font-weight-bold">End Date (EST)</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" [max]="maxDateTime" aria-describedby="endDateTime"
+                    id="endDateTime" name="endDateTime" matTooltipPosition="above"
+                    matTooltipClass="my-tooltip editTagEditErrorTooltip" [(ngModel)]="oclcExportState.endDateTime"
+                    [matTooltip]="endDateTooltip" #tooltip="matTooltip" [owlDateTime]="dtend"
+                    [owlDateTimeTrigger]="dtend" [ngClass]="{'border-danger': endDateError}" #endDt>
+                  <div class="input-group-append">
+                    <span class="input-group-text" [owlDateTimeTrigger]="dtend">
+                      <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                    </span>
+                  </div>
+                  <owl-date-time (afterPickerOpen)="pickerEndDateOpen();" [pickerType]="'calendar'"
+                    (afterPickerClosed)="pickerEndDateClosed($event);" #dtend></owl-date-time>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="isShow('unflip')">
+            <div class="col-3 pl-0 pr-small">
+              <div class="form-group required mb-2">
+                <label class="font-weight-bold" for="clsATSNumbers"> ATS(s)</label>
+                <textarea class="form-control scrollableTextArea" id="clsATSNumbers" name="clsATSNumbers" tabindex="0"
+                  type="text" [(ngModel)]="ATSNumbers" [ngModelOptions]="{standalone: true}"
+                  [ngClass]="{'border-danger': textAreaErrorDisplay || maxAtsNumberErrorDisplay  || textAreaErrorDisplayRequired || duplicateATSNumberExists}"
+                  (input)="formatText($event,14,10)"
+                  [matTooltip]="textAreaErrorDisplayRequired ? 'Required' : duplicateATSNumberExistsTooltip"
+                  matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                  (blur)="onBlur($event.target.value)" (paste)="handlePaste($event)"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row z3950Btns">
+      <div class="col pl-small pr-0 text-right">
+        <button *ngIf="!isShow('unflip')" class="btn btn-primary mr-1" id="extractCLSlabelDataConfig" tabindex="0"
+          type="button" (click)="Extract(form)" [disabled]="enableSave(extractType)">
+          Extract
+        </button>
+        <button *ngIf="isShow('unflip')" class="btn btn-primary mr-1" id="extractCLSlabelDataConfig" tabindex="0"
+          type="button" (click)="Extract(form)" [disabled]="enableSave(extractType)">
+          Flip
+        </button>
+        <button class="btn btn-default mr-1" (click)="clear(form)" id="cancelCLSlabelConfig" tabindex="0" type="button"
+          [disabled]="enableSave(extractType)">
+          Cancel
+        </button>
+        <button class="btn btn-default" id="backCLSlabelConfig" (click)="back(form)" tabindex="0" type="button">
+          Back
+        </button>
+      </div>
+    </div>
+</div>
+</form>
+
+</div>

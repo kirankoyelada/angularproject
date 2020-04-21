@@ -1,0 +1,66 @@
+<div class="container-fluid">
+    <form #form="ngForm" (keydown.enter)="($event.target.tagName === 'BUTTON')">
+    <div class="MarcEditor">
+        <header class="MARCrecordHeader">
+          <div class="container-fluid Z3950Head" role="grid">
+            <div class="row">
+              <div class="col-sm-8 pl-small pr-small">
+                  <span tabindex="0" class="editMarcHead"></span>
+                <h4><span tabindex="0">Gap Customer File - Macro Execution</span></h4>
+              </div>
+          </div>
+        </div>
+        </header>
+        <div id="marceditgrid" class="editMarcRowsContainer" [style.height.px]="NewHeight">
+         <div class="row m-0 inputGroupWithTo">
+            <div class="col-2 pl-small pr-0">
+              <div class="row">
+                <p class="font-weight-bold mb-0">Select Range</p>
+                <div class="col-5 p-0">
+                  <label class="sr-only" for="selectrangeFrom">Select Range From</label>
+                  <input maxlength="18" class="form-control" type="text" OnlyNumber id="selectrangeFrom"
+                  [ngModel]="fromMarc" (ngModelChange)="valuechange($event,'from')" name="selectrangeFrom" matTooltipPosition="above"
+                  [matTooltip]="(validationMsg && errorMsg!= 'To range must be greater than From range') ? errorMsg : ''" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip" 
+                  [class.pubdate-warn]="(validationMsg && errorMsg != 'To range must be greater than From range')"/>
+                </div>
+                <div class="col-2 p-0">
+                  <p class="mb-0 to">To</p>
+                </div>
+                <div class="col-5 p-0">
+                  <label class="sr-only" for="selectrangeTo">Select Range To</label>
+                  <input maxlength="18" class="form-control" [class.pubdate-warn]="validationMsg" type="text" OnlyNumber id="selectrangeTo" [ngModel]="toMarc"
+                  (ngModelChange)="valuechange($event,'to')" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip" 
+                  name="selectrangeTo" matTooltipPosition="above" (keydown)="onKeydown($event)" [matTooltip]="validationMsg ? errorMsg : ''"/>
+                </div>
+              </div>
+            </div>
+            <div class="col-1 pl-small pr-small">
+              <button class="btn btn-primary" id="btnSearch" [disabled]="validationMsg || !showButtons" (click)="getMarcRecordsByRange()" tabindex="0" type="button">Search</button>
+            </div>
+          </div>
+            <div class="col uploadedFileData mt-2 pl-small pr-small">
+              <div class="fit table-responsive searchResultTableContainer" *ngIf="showData">
+                <fieldset>
+                   <legend class="sr-only">GAP customer records</legend>
+                  <table id="uploadRecordFile" class="table table-bordered table-hover table-sm" role="grid"
+                          aria-describedby="uploadRecordFile" width="100%">
+                  </table>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+        <div class="row marcEditorBtns">
+          <div class="col-12 pl-small pr-0 text-right">
+            <button class="btn btn-default mr-1" id="cancel" [disabled]="!showButtons" (click)="clear()" tabindex="0" type="button">
+            Clear
+          </button>
+          <button class="btn btn-default" id="backUploadedRecFile" tabindex="0" (click)="back()" type="button">Back</button>
+          </div>
+        </div>
+        </div>
+      </form>
+      <app-execute-macro  id="marc-execute-macro" [hasMacroExecutionPermission]="hasAccess(Permissions.RUN_MAC) && marcIDs.length>0"
+      [marcSettings]="marcSettings" [ListMarc]="marcIDs"(clearData)="onClearData($event)" (onResetTableGrid)="onresetTableGrid()" (onMarcRecordChange)="onMacroExecuted($event)"
+      (onMarcRecordShowErrorMsg)="onMarcRecordShowErrorMsg($event)">
+      </app-execute-macro>
+  </div>

@@ -1,0 +1,62 @@
+<div class="container-fluid">
+    <div class="MarcEditor mr-0">
+        <h4 class="userConfigHeader">
+            <span tabindex="0" class="editMarcHead">Macro Admin</span>
+        </h4>
+        <div class="userConfigeration container-fluid">
+            <div class="searchUserArea" [style.height.px]="newMacroHeight">
+                <div class="row m-0 pt-2 pb-3">
+                <div class="col-6 pl-0">
+                    <fieldset>
+                        <legend class="sr-only">Macro Options</legend>
+                        <div class="row m-0">
+                        <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" [value]="true" id="createMacro"
+                            name="macroOptions" tabindex="0"
+                            [(ngModel)]="createMacro" (change)="onModeChange()">
+                            <label for="createMacro">Create/Update Macro</label>
+                        </div>
+                        <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" [value]="false" id="replaceMacro" name="macroOptions"
+                            tabindex="0" [(ngModel)]="createMacro" (change)="onModeChange()">
+                            <label for="replaceMacro">Upload/Replace Script</label>
+                        </div>
+                        </div>
+                    </fieldset>
+                    </div>
+                </div>
+                <div class="row m-0 pb-2">
+                    <div class="col-3 pl-small pr-small" *ngIf="createMacro">
+                        <label for="customerOnly" class="font-weight-bold">Customer Only</label>
+                        <select id="customerOnly" class="form-control dropdown" name="customerOnly"
+                            [(ngModel)]="customerOnly">
+                            <option value="true">True</option>
+                            <option value="false">False</option>
+                        </select>
+                    </div>
+                    <div class="col-3 pl-small pr-small custom-file-block">
+                        <p class="font-weight-bold mb-0">Select a macro file</p>
+                        <div class="custom-file" tabindex="0" (keydown.enter)="openFileUpload()">
+                            <input type="file" class="custom-file-input" tabindex="-1" onclick="this.value=null;"
+                                id="fileUpload" name="fileUpload" required 
+                                (change)="onChange($event.target.files)">
+                            <label class="custom-file-label" for="fileUpload">Browse</label>
+                        </div>
+                        <span class="editErrorMessage" *ngIf="displayWarnMessage"> {{errMsg}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row marcEditorBtns">
+            <div class="col pl-small pr-0 text-right">
+                <button class="btn btn-primary flex-fill mr-1" id="save" tabindex="0" type="button"
+                    (click)="saveMacro()" [disabled]="!this.fileData">
+                    Save
+                </button>
+                <button class="btn btn-default mr-1" id="cancel" tabindex="0" type="button" (click)="cancel()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

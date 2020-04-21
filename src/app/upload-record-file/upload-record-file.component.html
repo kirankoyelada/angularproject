@@ -1,0 +1,81 @@
+<div class="wrapper">
+    <form #form="ngForm" (ngSubmit)="saveUploadRecordFile(form)" (keydown.enter)="($event.target.tagName === 'BUTTON')">
+      <div id="contentFull">
+        <header class="tableHeaderCounts">
+          <div class="container-fluid Z3950Head" role="grid">
+            <div class="row">
+              <div class="col-sm-8 pr-small">
+                  <span tabindex="0" class="editMarcHead"></span>
+                <h4><span tabindex="0">Gap Customer File </span></h4>
+              </div>
+              <div class="col-sm-4 pr-small text-right">
+                <div class="form-group z3950SearchFilter">
+                <button type="button" class="btn btn-primary ml-1 lessPaddingInZoom" (click)="executeMacro()" tabindex="0">Macro Execution</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </header>
+        <div class="marc-outer Z3950Profiles m-0">
+        <div class="MARCrecords" [style.height.px]="NewHeight">
+          <div class="row m-0">
+            <div class="col-3 pl-small pr-small">
+              <div>
+                <label class="font-weight-bold" for="searchCustomer1">Customer</label>
+                <!-- <select id="customerId" name="customerId" [(ngModel)]="customerId" class="form-control dropdown">
+                  <option *ngFor="let customer of customers" [value]="customer.id">
+                    {{customer.customerName}}
+                  </option>
+                </select> -->
+                <input type="text" tabindex="0" class="form-control" id="searchCustomer1" name="searchCustomer1"
+                  placeholder="Search Customer" matInput [(ngModel)]="searchCustomer"
+                  #triggertag="matAutocompleteTrigger" (keydown.enter)="findCustomer()" (focusout)="findCustomer()"
+                  [matAutocomplete]="auto"  />
+                <div class="customersListFilter">
+                  <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                    [displayWith]="displayFn" (optionSelected)="selectCustomer($event.option.value,form)">
+                    <ng-container *ngFor="let customer of customers | customerfilter : searchCustomer">
+                      <mat-option [value]="customer"
+                        *ngIf="customer.customerName === 'Customer not found'; else customerFound" disabled="true">
+                        <i>Customer not found</i>
+                      </mat-option>
+                      <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                        matTooltip="{{customer.customerName}}" #customerFound>
+                        {{customer.customerName!='' ? customer.customerName : ''}}
+                      </mat-option>
+                    </ng-container>
+                  </mat-autocomplete>
+                </div>
+              </div>
+            </div>
+          <div class="col-3 pl-small pr-small custom-file-block">
+            <p class="font-weight-bold">Upload File</p>
+            <div class="custom-file" tabindex="0" (keydown.enter)="openFileUpload()">
+              <input type="file" class="custom-file-input" tabindex="-1" onclick="this.value=null;" id="fileUpload" name="fileUpload" required accept="{{accept}}" (change)="onChange($event.target.files,form)" />
+              <label class="custom-file-label" for="fileUpload">Browse</label>
+            </div>
+            <span class="editErrorMessage" *ngIf="displayWarnMessage"> {{errMsg}}</span>
+          </div>
+          </div>
+          <div class="col uploadedFileData pl-small pr-small mt-1">
+            <div class="fit table-responsive searchResultTableContainer" *ngIf="showData">
+              <fieldset>
+                <legend class="sr-only">GAP customer records</legend>
+                <table id="uploadRecordFile" class="table table-bordered table-hover table-sm" role="grid"
+                  aria-describedby="uploadRecordFile" width="100%">
+                </table>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="row z3950Btns">
+            <div class="col-12 pl-small pr-0 text-right">
+            <button class="btn btn-primary mr-1" id="saveUploadedRecFile" [disabled]='!(isChecked  && isCustomerSelected)' tabindex="0" type="button" (click)="saveUploadRecordFile(form)">Save</button>
+            <button class="btn btn-default mr-1" id="cancelUploadedRecFile" [disabled]='showCancelButton' tabindex="0" type="button" (click)="clearData(form)">Cancel</button>
+            <button class="btn btn-default" id="backUploadedRecFile" tabindex="0" type="button" (click)="back(form)">Back</button>
+            </div>
+        </div>
+        </div>
+      </form>
+      </div>

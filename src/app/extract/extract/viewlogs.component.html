@@ -1,0 +1,334 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-3 pl-small pr-small">
+              <h4><span tabindex="0">CLS Extract - View Logs</span></h4>
+            </div>
+            <div class="col-sm-5 p-0 text-center">
+              <span *ngIf="displayWarnMessage" class="clsLabelErrorMessage" tabindex="0">
+                One or more errors occurred while searching the logs. Please correct them to proceed.
+              </span>
+            </div>
+            <div class="col-sm-4"></div>
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer Z3950Profiles m-0">
+        <div class="MARCrecords" [style.height.px]="NewHeight">
+          <div class="accordion md-accordion mt-1 mb-1 viewLogsAccord" id="CLSCustomerConfigAccordians" role="tablist"
+            aria-multiselectable="true">
+            <div class="card">
+              <div class="card-header" id="CLSCustContDetails">
+                <a data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians" href="#CLSCustConfigContactDetails"
+                  aria-expanded="true" aria-controls="CLSCustConfigContactDetails">
+                  <p class="mb-0 font-weight-bold">Order Process Log<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigContactDetails" class="collapse show" role="tabpanel"
+                aria-labelledby="CLSCustContDetails" data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="row m-0">
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-3">
+                        <label for="institutionType" class="font-weight-bold">Institution</label>
+                        <select id="institutionType" class="form-control dropdown" name="institutionType"
+                          (change)="onInstitutionTypeChange(form)" [(ngModel)]="institutionId">
+                          <option *ngFor="let inst of institutes" [value]="inst.id" [selected]="inst=='institutionId'">
+                            {{inst.displayName}}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="orderProcessLogCust" class="font-weight-bold">Customer</label>
+                        <input class="form-control" id="orderProcessLogCust" name="orderProcessLogCust" tabindex="0"
+                          type="text" [(ngModel)]="searchCustomer" matInput [matAutocomplete]="auto"
+                          #triggertag="matAutocompleteTrigger" (input)="customerNameEntered($event.target.value)" />
+                        <div class="customersListFilter">
+                          <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                            [displayWith]="displayFn" (optionSelected)="selectCustomer($event.option.value,form)">
+                            <ng-container *ngFor="let customer of customers | customerfilter : searchCustomer">
+                              <mat-option [value]="customer"
+                                *ngIf="customer.customerName === 'Customer not found'; else customerFound"
+                                disabled="true">
+                                <i>Customer not found</i>
+                              </mat-option>
+                              <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                                matTooltip="{{customer.customerName}}" #customerFound>
+                                {{customer.customerName!='' ? customer.customerName : ''}}
+                              </mat-option>
+                            </ng-container>
+                          </mat-autocomplete>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="orderProcessLogAccNum" class="font-weight-bold">Account Number</label>
+                        <input class="form-control" id="orderProcessLogAccNum" name="orderProcessLogAccNum" tabindex="0"
+                          type="text" [(ngModel)]="clsExtractOrderProcessLog.accountNumber"
+                          (input)="orderAccountNumbersValidate($event.target.value)" matTooltipPosition="above"
+                          matTooltipClass="my-tooltip editTagEditErrorTooltip" #tooltip="matTooltip"
+                          [ngClass]="{'border-danger': accountNumberError}" [matTooltip]="accountNumberTooltip" />
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="orderProcessLogATS" class="font-weight-bold">ATS</label>
+                        <input class="form-control" id="orderProcessLogATS" name="orderProcessLogATS" tabindex="0"
+                          type="text" [(ngModel)]="clsExtractOrderProcessLog.atsNumber"
+                          (input)="orderATSNumberValidate($event.target.value)" matTooltipPosition="above"
+                          matTooltipClass="my-tooltip editTagEditErrorTooltip" #tooltip="matTooltip"
+                          [ngClass]="{'border-danger': orderATSNumberError}" [matTooltip]="orderATSNumberTooltip" />
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="startDateTime" class="font-weight-bold">Start Date (EST)</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="startDateTime" name="startDateTime"
+                            [(ngModel)]="orderStartDate" [max]="maxDateTime" [owlDateTime]="orderdtstart"
+                            [owlDateTimeTrigger]="orderdtstart" matTooltipPosition="above"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" #tooltip="matTooltip"
+                            (input)="isOrderStartDateEntered($event.target.value)"
+                            [ngClass]="{'border-danger': orderStartDateError}" [matTooltip]="orderStartDateTooltip"
+                            #orderStartDt />
+                          <div class="input-group-append">
+                            <span class="input-group-text" [owlDateTimeTrigger]="orderdtstart">
+                              <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                            </span>
+                          </div>
+                          <owl-date-time (afterPickerOpen)="orderPickerStartDateOpen();" [pickerType]="'calendar'"
+                            (afterPickerClosed)="orderPickerStartDateClosed();" #orderdtstart></owl-date-time>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="endDateTime" class="font-weight-bold">End Date (EST)</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="endDateTime" name="endDateTime"
+                            [(ngModel)]="orderEndDate" [max]="maxDateTime" [owlDateTime]="orderdtend"
+                            [owlDateTimeTrigger]="orderdtend" matTooltipPosition="above"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" #tooltip="matTooltip"
+                            (input)="isOrderEndDateEntered($event.target.value)"
+                            [ngClass]="{'border-danger': orderEndDateError}" [matTooltip]="orderEndDateTooltip"
+                            #orderEndDt />
+                          <div class="input-group-append">
+                            <span class="input-group-text" [owlDateTimeTrigger]="orderdtend">
+                              <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                            </span>
+                          </div>
+                          <owl-date-time (afterPickerOpen)="orderPickerEndDateOpen();" [pickerType]="'calendar'"
+                            (afterPickerClosed)="orderPickerEndDateClosed();" #orderdtend></owl-date-time>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <fieldset>
+                        <legend class="font-weight-bold">Generated Type</legend>
+                        <div class="row m-0">
+                          <div class="col-6 p-0">
+                            <input class="mr-2" type="radio" id="generatedTypeManual" name="generatedType" tabindex="0"
+                              [value]="true" [(ngModel)]="generatedType" (change)="markAsDirty()" />
+                            <label for="generatedTypeManual">Manual</label>
+                          </div>
+                          <div class="col-6 p-0">
+                            <input class="mr-2" type="radio" id="generatedTypeSystem" name="generatedType" tabindex="0"
+                              [value]="false" [(ngModel)]="generatedType" (change)="markAsDirty()" />
+                            <label for="generatedTypeSystem">System</label>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                    <div class="col-2 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="orderProcessLogOutputFileName" class="font-weight-bold">Output File Name</label>
+                        <input class="form-control" id="orderProcessLogOutputFileName"
+                          name="orderProcessLogOutputFileName" tabindex="0" type="text"
+                          [(ngModel)]="clsExtractOrderProcessLog.outputFileName" (input)="markAsDirty()" />
+                      </div>
+                    </div>
+                    <div class="col-1 pl-0">
+                      <button type="button" class="btn btn-primary ml-1 searchCatBtns" title="Search Button"
+                        tabindex="0" [disabled]="disableOrderLogButton()" (click)="searchOrderProcessLog()">
+                        <em class="fa fa-search" aria-hidden="true" aria-label="Search"></em>
+                        <span class="sr-only">Search</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div *ngIf="orderProcessLogTable" class="mb-2" role="table" aria-label="Customer Configuration"
+                    aria-describedby="CLSCustomerAccounts">
+                    <div class="sr-only">CLS Extract View Logs</div>
+                    <div class="container-fluid tableHeader" role="rowgroup">
+                      <div class="row" data-fixed="true" role="row">
+                        <div class="col" row="columnheader"><b>Customer</b></div>
+                        <div class="col" row="columnheader"><b>Account Number</b></div>
+                        <div class="col" row="columnheader"><b>ATS</b></div>
+                        <div class="col" row="columnheader"><b>Start Date & Time</b></div>
+                        <div class="col" row="columnheader"><b>End Date & Time</b></div>
+                        <div class="col" row="columnheader"><b>Generated Type</b></div>
+                        <div class="col" row="columnheader"><b>Output File Name</b></div>
+                        <div class="col" row="columnheader"><b>No. of Bib Records</b></div>
+                        <div class="col" row="columnheader"><b>No. of Item Records</b></div>
+                      </div>
+                    </div>
+                    <div class="container-fluid tableBody viewLogs" role="rowgroup" id="CLSCustomerAccounts">
+                      <ng-container *ngFor="let log of extarctedOrderProcessLogs">
+                      <div class="row" role="row">
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="Boston Public Library">{{log.customerName}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="414134132">{{log.accountNumber}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0" attr.aria-label="76555">{{log.atsNumber}}</span>
+                        </div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="11/07/2019 1:00 AM">{{log.startDate}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="17/07/2019 5:30 PM">{{log.endDate}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="Manual">{{log.generatedType}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="Test">{{log.outputFileName}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="3">{{log.noOfBibRecords}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="4">{{log.noOfItemRecords}}</span></div>
+                      </div>
+                      </ng-container>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" id="CLSCustInternalContDetails">
+                <a class="collapsed" data-toggle="collapse" data-parent="#CLSCustomerConfigAccordians"
+                  href="#CLSCustConfigInternalDetails" aria-expanded="false"
+                  aria-controls="CLSCustConfigInternalDetails">
+                  <p class="font-weight-bold mb-0">NOS Process Log<em class="fas fa-angle-down rotate-icon"></em></p>
+                </a>
+              </div>
+              <div id="CLSCustConfigInternalDetails" class="collapse" role="tabpanel"
+                aria-labelledby="CLSCustInternalContDetails" data-parent="#CLSCustomerConfigAccordians">
+                <div class="card-body">
+                  <div class="row m-0">
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="NOSfileName" class="font-weight-bold">File Name</label>
+                        <input class="form-control" id="NOSfileName" name="NOSfileName" tabindex="0" type="text"
+                          [(ngModel)]="nosProcessLog.fileName" (input)="markAsDirty()" />
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="NOSstartDate" class="font-weight-bold">Start Date (EST)</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="NOSstartDate" name="NOSstartDate"
+                            [(ngModel)]="nosStartDate" [max]="maxDateTime" [owlDateTime]="noststart"
+                            [owlDateTimeTrigger]="noststart" matTooltipPosition="above"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" #tooltip="matTooltip"
+                            (input)="isNOSStartDateEntered($event.target.value)"
+                            [ngClass]="{'border-danger': nosStartDateError}" [matTooltip]="nosStartDateTooltip"
+                            #nosStartDt />
+                          <div class="input-group-append">
+                            <span class="input-group-text" [owlDateTimeTrigger]="noststart">
+                              <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                            </span>
+                          </div>
+                          <owl-date-time (afterPickerOpen)="nosPickerStartDateOpen();" [pickerType]="'calendar'"
+                            (afterPickerClosed)="nosPickerStartDateClosed();" #noststart></owl-date-time>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-3 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="NOSendDate" class="font-weight-bold">End Date (EST)</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="NOSendDate" name="NOSendDate"
+                            [(ngModel)]="nosEndDate" [max]="maxDateTime" [owlDateTime]="nosdtend"
+                            [owlDateTimeTrigger]="nosdtend" matTooltipPosition="above"
+                            matTooltipClass="my-tooltip editTagEditErrorTooltip" #tooltip="matTooltip"
+                            (input)="isNOSEndDateEntered($event.target.value)"
+                            [ngClass]="{'border-danger': nosEndDateError}" [matTooltip]="nosEndDateTooltip" #nosEndDt />
+                          <div class="input-group-append">
+                            <span class="input-group-text" [owlDateTimeTrigger]="nosdtend">
+                              <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                            </span>
+                          </div>
+                          <owl-date-time (afterPickerOpen)="nosPickerEndDateOpen();" [pickerType]="'calendar'"
+                            (afterPickerClosed)="nosPickerEndDateClosed();" #nosdtend></owl-date-time>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-2 pl-0">
+                      <div class="form-group mb-2">
+                        <label for="NOSATS" class="font-weight-bold">ATS</label>
+                        <input class="form-control" id="NOSATS" name="NOSATS" tabindex="0" type="text"
+                          [(ngModel)]="clsExtractOrderProcessLog.atsNumber"
+                          (input)="nosATSNumberValidate($event.target.value)" matTooltipPosition="above"
+                          matTooltipClass="my-tooltip editTagEditErrorTooltip" #tooltip="matTooltip"
+                          [ngClass]="{'border-danger': nosATSNumberError}" [matTooltip]="nosATSNumberTooltip" />
+                      </div>
+                    </div>
+                    <div class="col-1 pl-0">
+                      <button type="button" class="btn btn-primary ml-1 searchCatBtns" title="Search Button"
+                        tabindex="0" [disabled]="disableNOSLogButton()" (click)="searchNOSProcessLog(form)">
+                        <em class="fa fa-search" aria-hidden="true" aria-label="Search"></em>
+                        <span class="sr-only">Search</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div *ngIf="nosProcessLogTable" class="mb-2" role="table" aria-label="Customer Configuration"
+                    aria-describedby="NOSprocessLog">
+                    <div class="sr-only">NOS Process Logs</div>
+                    <div class="container-fluid tableHeader" role="rowgroup">
+                      <div class="row" data-fixed="true" role="row">
+                        <div class="col" row="columnheader"><b>File Name</b></div>
+                        <div class="col" row="columnheader"><b>Start Date & Time</b></div>
+                        <div class="col" row="columnheader"><b>End Date & Time</b></div>
+                        <div class="col" row="columnheader"><b>ATS</b></div>
+                        <div class="col" row="columnheader"><b>No. of Bib Records</b></div>
+                        <div class="col" row="columnheader"><b>No. of Item Records</b></div>
+                      </div>
+                    </div>
+                    <div class="container-fluid tableBody" role="rowgroup" id="NOSprocessLog"
+                      *ngFor="let nos of extratcedNOSProcessLog">
+                      <div class="row" role="row">
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="Boston Public Library">{{nos.fileName}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="11/07/2019 1:00 AM">{{nos.startDate}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="17/07/2019 5:30 PM">{{nos.endDate}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="Manual">{{nos.atsNumber}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="3">{{nos.noOfBibRecords}}</span></div>
+                        <div class="col" role="cell"><span tabindex="0"
+                            attr.aria-label="4">{{nos.noOfItemRecords}}</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row z3950Btns">
+        <div class="col-12 pl-small pr-0 text-right">
+          <button class="btn btn-default mr-1" (click)="clear(form)" id="cancelClsCustomerConfig" tabindex="0"
+            type="button">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="backClsCustomerConfig" tabindex="0" type="button"
+            (click)="back(form)">Back</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

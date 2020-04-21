@@ -1,0 +1,204 @@
+<div *ngIf="marcState" class="container-fluid">
+    <form #form="ngForm" (ngSubmit)="SaveMarcRecord(form)" (keydown.enter)="$event.target.tagName === 'BUTTON'">
+        <div class="MarcEditor">
+
+            <header class="MARCrecordHeader">
+                <div class="container-fluid" role="grid">
+                    <div class="row">
+                        <div class="col-sm-3 pl-small pr-small">
+                            <h4>
+                                <span tabindex="0" class="editMarcHead">{{heading}}</span>
+                                <span *ngIf="operationType === 'z3950-edit' || operationType === 'multiple-edit'" tabindex="0" class="editMarcHeadRecSource"><b>Record Source:</b> {{ recordSource }}</span>
+                            </h4>
+                        </div>
+                        <div class="col-sm-3 p-0 text-center">
+                            <span *ngIf="marcState.displayWarnMessage" class="editErrorMessage" tabindex="0">
+                                One or more errors occurred while saving the record. Please correct them to proceed.
+                            </span>
+                        </div>
+                        <div class="col-sm-6 pr-small text-right">
+                            <button id="btnBarCodeField249" type="button" class="btn btn-primary ml-1" tabindex="0" (click)="openTagCreation()" [disabled]="isBarCodeEnable()" *ngIf="operationType === 'z3950-edit' || this.operationType === 'multiple-edit'" >
+                                Add 949
+                            </button>
+                            <button id="btnDownloadMarc" type="button" class="btn btn-primary ml-1" tabindex="0" data-toggle="modal" (click)="openDownloadPopup()"
+                            data-backdrop="static" data-target="#downloadModalPopup" data-keyboard="true" *ngIf="operationType === 'z3950-edit' || operationType === 'multiple-edit'">
+                                Download
+                            </button>
+                            <div class="modal fade" id="downloadModalPopup" role="dialog" aria-hidden="true" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h5 class="modal-title" tabindex="0">Download</h5>
+                                    <button type="button" class="close" data-dismiss="modal" tabindex="0"
+                                        title="Close">&times;</button>
+                                    </div>
+                                    <form>
+                                    <div class="modal-body">
+                                        <div class="printConfirm text-left">
+                                        <fieldset>
+                                            <legend class="sr-only">Select a file(.mrc) to append</legend>
+                                            <div class="row m-0">
+                                            <div class="col-12 pl-small pr-small custom-file-block">
+                                                <p class="font-weight-bold" tabindex="0">Select a file(.mrc) to append</p>
+                                                <div class="custom-file mt-1 mb-2" tabindex="0" (keydown.enter)="openFileUpload()">
+                                                    <input type="file" class="custom-file-input" tabindex="-1" onclick="this.value=null;" id="fileUpload"
+                                                        name="filename" required accept="{{accept}}" (change)="onChange($event.target.files)">
+                                                    <label class="custom-file-label" for="fileUpload">Browse</label>
+                                                </div>
+                                                <span class="editErrorMessage" *ngIf="marcState.displayWarnMessage"> {{errMsg}}</span>
+                                            </div>
+                                            </div>
+                                        </fieldset>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary" (tap)="downloadMarcRecord()" (keydown.enter)="downloadMarcRecord()"  data-dismiss="modal">OK</button>
+                                        <button type="button" id="closeDownloadBtn" class="btn btn-default"
+                                        data-dismiss="modal">Cancel</button>
+                                    </div>
+                                    </form>
+                                </div>
+                                </div>
+                            </div>
+                            <button id="btnPrintView" type="button" class="btn btn-primary ml-1" tabindex="0"
+                                data-toggle="modal" data-backdrop="static" data-target="#printInfoEdit"
+                                data-keyboard="true" (click)="openPrintPopup()">
+                                Print
+                            </button>
+
+                            <div class="modal fade" id="printInfoEdit" role="dialog" aria-hidden="true" tabindex="-1">
+                                    <div class="modal-dialog modal-sm">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" tabindex="0">Print - Line Spacing</h5>
+                                          <button type="button" class="close" data-dismiss="modal" tabindex="0"
+                                            title="Close">&times;</button>
+                                        </div>
+                                        <form>
+                                          <div class="modal-body">
+                                            <div class="printConfirm text-left">
+                                              <fieldset>
+                                                <legend class="sr-only">Choose Line Space Option</legend>
+                                                <div class="row m-0">
+                                                  <div class="col-5 p-0">
+                                                    <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection" id="doubleSpace"
+                                                      name="spaceOption" value="2" tabindex="0">
+                                                    <label for="doubleSpace">Double Space</label>
+                                                  </div>
+                                                  <div class="col-5 p-0">
+                                                    <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection" id="singleSpace"
+                                                      name="spaceOption" value="1" tabindex="0">
+                                                    <label for="singleSpace">Single Space</label>
+                                                  </div>
+                                                </div>
+                                              </fieldset>
+                                            </div>
+                                          </div>
+                                          <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" (tap)="printMarcRecord()">OK</button>
+                                            <button type="button" id="closePrintViewBtn" class="btn btn-default"
+                                              data-dismiss="modal" (tap)="ClosePrintPopup()">Cancel</button>
+                                          </div>
+                                        </form>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                            <button *ngIf="this.operationType === 'z3950-edit' || this.operationType === 'multiple-edit'" type="button" class="btn btn-primary ml-1"
+                                (click)="CloneMarcRecord()" tabindex="0">Clone</button>
+                            <button class="btn btn-primary ml-1" #addORSBtn *ngIf="this.operationType === 'z3950-edit' || this.operationType === 'multiple-edit'"
+                                pageScroll id="addORSField" tabindex="0"
+                                type="button" (click)="generateORSNumber(form)" (keydown.enter)="generateORSNumber(form)">
+                                ORS ID
+                              </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="marceditgrid" class="editMarcRowsContainer" [style.height.px]="NewHeight" cdk-scrollable [ngStyle]="{'background-color':marcSettings?.backgroundcolor}">
+                <!-- <div>{{form.value | json}}</div> -->
+                <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+                    [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'" (drop)="onDrop($event)">
+                    <smooth-dnd-draggable *ngFor="let field of marcState.marc.fields ;let index= index">
+                        <div class="draggable-item" (focusin)="updateLastFocusedIndex(index)"
+                            [ngStyle]="{'background-color':field.color}"
+                            [ngClass]="{'disableForm': !((isExternalUser && currentCustomerId && (operationType === 'z3950-edit' || this.operationType === 'multiple-edit')) || (cloneMode && hasAccessAny([Permissions.CLN_BIB_MN,Permissions.CLN_BIB_WS])) || (!cloneMode && hasAccessAny([Permissions.CRT_BIB_MN,Permissions.CRT_BIB_WS])))}">
+                            <marc-field id="marcField{{index}}" [position]="index" [field]="field" [overrideValidation]="marcState.overrideMarc21"
+                                [existingMARCData]="existingMARCData" [tagsRemoved]="toBeRemovedTags" [marcSettings]="marcSettings"
+                                [(leaderDataWithHyphons)]="leaderDataWithHyphons" [leaderData]=" leaderData"
+                                (fieldChanged)="onFieldUpdate($event, field)" (fieldOnblur)="onBlurMarcField($event)"
+                                [isDragDisabled]="field.isLeaderCtrlField" [form]="form"
+                                [isDeleteDisabled]="isDeleteDisabled(field.isDeleteDisabled, field.tag)"
+                                [isEditable]="isEditable(field)"
+                                (enterKeypress)="handleEnterKeyPressed($event)" #marcField
+                                (upKeypress)="handleUpDownPressed($event)"
+                                (upDownKeypress)="handleUpDownPressed($event)"
+                                (deleteBtnClick)="deleteMarcField($event, form, field)"
+                                (onLeaderDataChange)="update008Data($event)"
+                                >
+                            </marc-field>
+                        </div>
+                    </smooth-dnd-draggable>
+                </smooth-dnd-container>
+
+            </div>
+            <div class="row marcEditorBtns">
+                <div class="col-2 col-sm-4 pl-0">
+                    <button class="btn btn-primary flex-fill" href="#marcField{{marcState.marc.fields.length-1}}"
+                        pageScroll pageScroll id="addNewMarcField" #addNewBtn tabindex="0" type="button"
+                        (click)="AddNewMarcField(form)"
+                        [disabled]="!((isExternalUser && currentCustomerId && (operationType === 'z3950-edit' || this.operationType === 'multiple-edit')) || (cloneMode && hasAccessAny([Permissions.CLN_BIB_MN,Permissions.CLN_BIB_WS])) || (!cloneMode && hasAccessAny([Permissions.CRT_BIB_MN,Permissions.CRT_BIB_WS])))">
+                        Add New Field
+                    </button>
+                </div>
+                <div class="col-10 col-sm-8 pl-small pr-0 text-right">
+                    <div class="btn-group dropup">
+                        <div class="dropdown">
+                            <button type="submit" class="btn btn-primary dropdown-toggle mr-1" id="saveMarcRec"
+                                data-toggle="dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false"
+                                [disabled]="!((isExternalUser && currentCustomerId && (operationType === 'z3950-edit' || this.operationType === 'multiple-edit')) || (cloneMode && hasAccessAny([Permissions.CLN_BIB_MN,Permissions.CLN_BIB_WS])) || (!cloneMode && hasAccessAny([Permissions.CRT_BIB_MN,Permissions.CRT_BIB_WS])))">
+                                Save
+                                To
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" (keydown.enter)="saveMarcRecordToMain(form)"
+                                    (click)="saveMarcRecordToMain(form)" tabindex="0" id="btnSaveToMain"
+                                    [ngClass]="{'disableForm': !((cloneMode && hasAccess(Permissions.CLN_BIB_MN)) || (!cloneMode && hasAccess(Permissions.CRT_BIB_MN)))}">
+                                    BTCAT
+                                    Main
+                                </a>
+                                <a class="dropdown-item" (keydown.enter)="saveMarcRecordToWorkSpace(form)"
+                                    (click)="saveMarcRecordToWorkSpace(form)" tabindex="0" id="btnSaveToWS"
+                                    [ngClass]="{'disableForm': !((isExternalUser && currentCustomerId && (operationType === 'z3950-edit' || this.operationType === 'multiple-edit')) || (cloneMode && hasAccess(Permissions.CLN_BIB_WS)) || (!cloneMode && hasAccess(Permissions.CRT_BIB_WS)))}">
+                                    BTCAT
+                                    Workspace
+                                </a>
+                                <a class="dropdown-item" (keydown.enter)="saveMarcRecordToCutomerWorkSpace(form)" id="btnSaveToCusWS"
+                                  (click)="saveMarcRecordToCutomerWorkSpace(form)" tabindex="0" *ngIf="isExternalUser && currentCustomerId && (operationType === 'z3950-edit' || this.operationType === 'multiple-edit')">
+                                  CLS Customer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-default mr-1" id="cancelMarcRec" tabindex="0" type="button"
+                        (keydown.enter)="cancel(form)"
+                        [disabled]="!((isExternalUser && currentCustomerId && (operationType === 'z3950-edit' || this.operationType === 'multiple-edit')) || (cloneMode && hasAccessAny([Permissions.CLN_BIB_MN,Permissions.CLN_BIB_WS])) || (!cloneMode && hasAccessAny([Permissions.CRT_BIB_MN,Permissions.CRT_BIB_WS])))"
+                        (click)="cancel(form)">
+                        Cancel
+                    </button>
+                    <button class="btn btn-default" id="backMarcRec" tabindex="0" type="button" (click)="back(form)"
+                        (keydown.enter)="back(form)">
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+        <app-execute-macro *ngIf="marcState.marc" id="marc-execute-macro-{{ index }}" [marcSettings]="marcSettings"
+            [marc]="marcState.marc" [isActive]="isActive"
+            [hasMacroExecutionPermission]="hasAccess(Permissions.RUN_MAC) && ((isExternalUser && currentCustomerId && operationType === 'z3950-edit') || hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS,Permissions.CLN_BIB_MN,Permissions.CLN_BIB_WS]))"
+            (onMarcRecordChange)="onMacroExecuted($event)"
+            (onMarcRecordShowErrorMsg)="onMarcRecordShowErrorMsg($event)">
+        </app-execute-macro>
+    </form>
+</div>

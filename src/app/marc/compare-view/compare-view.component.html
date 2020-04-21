@@ -1,0 +1,90 @@
+
+<div class="wrapper" *ngIf="showMultipleMarcView">  
+    <div id="contentfull">
+        <header class="tableHeaderCounts">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-sm-9">
+                &nbsp;
+              </div>
+              <div class="col-sm-3 text-right">
+                <button type="button" class="btn btn-primary" tabindex="0" [hidden]="selectedMarcs && selectedMarcs.length > 2"
+                    data-toggle="modal"
+                    data-backdrop="static"
+                    data-target="#merge2Popup"
+                    data-keyboard="true"
+                    (click)="setDefaultDestination()"
+                    [disabled]="isZ3950ProfileSearch() || !hasAccess(Permissions.MRG_REC) || isAllCustomerSelected">
+                  Merge
+                </button>
+                <div class="modal fade" id="merge2Popup" role="dialog" aria-hidden="true" tabindex="-1">
+                    <div class="modal-dialog modal-sm modal-dialog-scrollable">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h3 class="modal-title" tabindex="0" cdkFocusInitialTab>Select Destination Record</h3>
+                          <button type="button" class="close" data-dismiss="modal" tabindex="0" title="Close">&times;</button>
+                        </div>
+                        <form>
+                          <div class="modal-body addMoreFields addMoreFieldsContainer">
+                            <div class="addMoreFieldsRow">
+                                <fieldset>
+                                    <legend class="sr-only">Select Destination Record</legend>
+                                    <div class="row m-0">  
+                                      <table class="table table-bordered table-hover table-sm text-left">
+                                        <thead>
+                                          <tr>
+                                            <th class="radioOption"><span class="sr-only">Radio Option to select destination record</span></th>
+                                            <th tabindex="0">Record Number</th>
+                                            <th tabindex="0">Record Source</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr tabindex="0">
+                                            <td class="radioOption">
+                                              <input class="mr-2" type="radio" id="recordNumberLeft" [(ngModel)]="leftValue" name="selectDestinationRecordNumber" [value]="true" tabindex="0">
+                                              <label for="recordNumberLeft" class="sr-only">Record Number: {{selectedMarcs[0].RecordNumber}}</label>
+                                            </td>
+                                            <td>
+                                              <div>{{selectedMarcs[0].RecordNumber}}</div>
+                                            </td>
+                                            <td>{{selectedMarcs[0].RecordSource}}</td>
+                                          </tr>
+                                          <tr tabindex="0">
+                                            <td class="radioOption">
+                                                <input class="mr-2" type="radio" id="recordNumberRight" [(ngModel)]="leftValue" name="selectDestinationRecordNumber" [value]="false" tabindex="0">
+                                                <label for="recordNumberRight" class="sr-only">Record Number: {{selectedMarcs[1].RecordNumber}}</label>
+                                            </td>
+                                            <td>
+                                              <div>{{selectedMarcs[1].RecordNumber}}</div>
+                                            </td>
+                                            <td>{{selectedMarcs[1].RecordSource}}</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>                        
+                                    </div>
+                                  </fieldset>
+                              </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="setDesinationAndRoute()" [disabled]="!hasAccess(Permissions.MRG_REC)">OK</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                <button type="button" class="btn btn-primary ml-1" tabindex="0" (click)="backToSearchResult()">
+                  Back to Results
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <marc-differentiator [marcs]="selectedMarcs" *ngIf="selectedMarcs && selectedMarcs.length == 2">
+        </marc-differentiator>
+        <!-- Multiple marc view shows if compare records more than 2-->
+        <multiple-marc-view  [marcs]="selectedMarcs" *ngIf="selectedMarcs && selectedMarcs.length > 2">
+        </multiple-marc-view> 
+        <!-- Multiple marc view end-->
+      </div>
+</div>

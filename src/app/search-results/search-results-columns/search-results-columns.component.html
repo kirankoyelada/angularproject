@@ -1,0 +1,34 @@
+<div  *ngIf="showModal" class="addMoreColumns collapse" id="addMoreColumns" aria-hidden="true" tabindex="-1" role="dialog">
+  <div class="addMoreColumns-scrollable">
+    <div class="addMoreColumns-content">
+      <div class="addMoreColumns-header">
+        <h4 class="addMoreColumns-title" tabindex="0" >Columns</h4>
+        <button type="button" (click)="onCrossClick($event)" class="close closePopUp" title="Close" tabindex="0">&times;</button>
+      </div>
+      <form (keydown.esc)="onKeyDown($event)">
+        <div id="addMoreColumnsBody" class="addMoreColumns-body addMoreFields addMoreFieldsContainer" cdkScrollable>        
+          <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+            [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'" (drop)="onDropColumn($event)" autoScrollEnabled="true"	>
+            <smooth-dnd-draggable *ngFor="let field of tableFields ;let index= index">
+              <div>
+                <div class="addMoreFieldsRow">
+                  <div class="custom-checkbox-div">
+                    <input [(ngModel)]="field.isChecked" (changed)="onClickPopUp($event)" type="checkbox" tabindex="0"
+                      id="{{field.id}}" name="{{field.id}}" [checked]="field.isChecked" [disabled]="field.isReadOnly" />
+                    <label class="custom-label" for="{{field.id}}" aria-hidden="true"><span> {{field.displayName}}
+                      </span></label>
+                  </div>
+                  <em class="column-drag-handle fas fa-arrows-alt-v" title="Drag up / down" aria-hidden="true" style="cursor:all-scroll !important"></em>
+                </div>
+              </div>
+            </smooth-dnd-draggable>
+          </smooth-dnd-container>
+        </div>
+        <div class="addMoreColumns-footer">
+          <button type="button" class="btn btn-primary divButtonStyle" (click)="addRemoveColumns(tableFields)">Save</button>
+          <button type="button" (click)="resetTableColumns()" class="btn btn-default divCancelButtonStyle ml-1 closePopUp">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

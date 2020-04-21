@@ -1,0 +1,176 @@
+<div *ngIf="mergeMarcState && mergeMarcState.source && mergeMarcState.marc && mergeMarcState.destination" class="container-fluid">
+    <div class="col">
+        <div class="row">
+            <div class="flex-compare-container mt-2 mergeContainer" [style.height.px]="NewHeight">
+                <div class="col col-sm-4 multipleBoxes threeCompareViews pr-small mergeLeftPane">
+                    <div class="compareHeader mergeHeader">
+                        <div class="col pl-small pr-small">
+                            <span tabindex="0"> Record Number:
+                                {{mergeMarcState?.destination?.recordNumber}}
+                                <span class="normalText">{{this.destinationMarcSource}}</span>
+                            </span>
+                            <span class="float-right" (click)="moveAllFields(form, true)"
+                                (keydown.enter)="moveAllFields(form, true)" [ngClass]="{'disableForm': !hasAccess(Permissions.MRG_REC)}">
+                                <em class="fas fa-angle-double-right" title="Move all" tabindex="0" aria-label="Press enter to move all"></em>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="full compareBody destinationDiv">
+                        <div id="destinationDiv" class="MARCrecords" cdk-scrollable
+                            *ngIf="mergeMarcState.destination.fields">
+                            <div class="mergeLeftPara" [style.min-height.px]="minHeight(index)" #leftDiv
+                                [ngStyle]="{'background-color':field.color}"
+                                *ngFor="let field of mergeMarcState.destination.fields;let index= index;">
+                                <span class="moveRightArrow">
+                                    <em class="fas fa-arrow-right" title="Move" tabindex="0" aria-label="Press enter to move"
+                                    [ngClass]="{'disableForm': !hasAccess(Permissions.MRG_REC)}"
+                                    [hidden]="field.tag == '001' || field.tag == '005' || field.tag == '997' || isEmptyField(field)"
+                                    (click)="moveField(field, index, form)"
+                                    (keydown.enter)="moveField(field, index, form)"></em>
+                                </span>
+                                <marc-field-view [field]="field" [marcSettings]="marcSettings"></marc-field-view>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col col-sm-4 multipleBoxes threeCompareViews pr-small">
+                    <div class="compareHeader mergeHeader">
+                        <div class="col pl-small pr-small">
+                            <span tabindex="0"> Final Record Number:
+                                {{mergeMarcState?.marc?.recordNumber}}
+                                <span class="normalText">{{this.destinationMarcSource}}</span>
+                            </span>
+                            <span class="float-right" pageScroll [ngClass]="{'disableForm': !hasAccess(Permissions.MRG_REC)}">
+                                <em class="fas fa-plus" (click)="AddNewMarcField(form)" (keydown.enter)="AddNewMarcField(form)" tabindex="0" aria-label="Press enter to add new row" title="Add New Row"></em>
+                            </span>
+                        </div>
+                    </div>
+                    <div id="marceditgrid" *ngIf="mergeMarcState.marc.fields"
+                        class="full compareBody finalDiv editMarcRowsContainer mergeEditor" cdk-scrollable [ngStyle]="{'background-color':marcSettings?.backgroundcolor}">
+                        <form #form="ngForm">
+                            <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+                                [dragHandleSelector]="'.column-drag-handle'" [autoScrollEnabled]="false"
+                                [lockAxis]="'y'" (drop)="onDrop($event)">
+                                <smooth-dnd-draggable *ngFor="let field of mergeMarcState?.marc?.fields ;let index= index">
+                                    <div class="draggable-item mergeEditorRow" [style.min-height.px]="minHeight(index)"
+                                        [ngClass]="{'disableForm': !hasAccess(Permissions.MRG_REC)}"
+                                        [ngStyle]="{'background-color':field.color}" #finalDiv (focusin)="updateLastFocusedIndex(index)">
+                                        <marc-field id="marcField{{index}}" [position]="index" [field]="field"
+                                            [existingMARCData]="existingMARCData" [tagsRemoved]="mergeMarcState?.toBeRemovedTags"
+                                            [leaderData]="leaderData" [isDragDisabled]="field.isLeaderCtrlField"
+                                            [(leaderDataWithHyphons)]="leaderDataWithHyphons"[isValidateSubfield]="false"
+                                            [overrideValidation]="overrideMarc21"
+                                            [isDeleteDisabled]="isDeleteDisabled(field.isDeleteDisabled, field.tag)"
+                                            [isEditable]="isEditable(field)"
+                                            (fieldOnblur)="onFieldBlur(field)"
+                                            (fieldChanged)="onFieldUpdate(field)" #marcField
+                                            (upKeypress)="handleUpDownPressed($event)"
+                                            (upDownKeypress)="handleUpDownPressed($event)"
+                                            (deleteBtnClick)="deleteMarcField($event, form, field)" [form]="form"
+                                            (onLeaderDataChange)="update008Data($event)"
+                                            (marcFieldDirtyState)="checkState($event, field)"
+                                            (enterKeypress)="handleEnterKeyPressed($event, form)" [marcSettings]="marcSettings">
+                                        </marc-field>
+                                    </div>
+                                </smooth-dnd-draggable>
+                            </smooth-dnd-container>
+                        </form>
+                    </div>
+                </div>
+                <div class="col col-sm-4 multipleBoxes threeCompareViews pr-small mergeRightPane">
+                    <div class="compareHeader mergeHeader">
+                        <div class="col pl-small pr-small destinationLabel">
+                            <em class="fas fa-angle-double-left" title="Move all" tabindex="0" (click)="moveAllFields(form, false)" aria-label="Press enter to move all" #moveallLeft
+                                (keydown.enter)="moveAllFields(form, false)" [ngClass]="{'disableForm': !hasAccess(Permissions.MRG_REC)}"></em>
+                            <span tabindex="0">
+                                Record Number: {{mergeMarcState?.source?.recordNumber}}
+                                <span class="normalText">{{this.sourceMarcSource}}</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="full compareBody sourceDiv">
+                        <div id="sourceDiv" class="MARCrecords" *ngIf="mergeMarcState.source.fields" cdk-scrollable>
+                            <div class="mergeRightPara" [style.min-height.px]="minHeight(index)" #rightDiv
+                                [ngStyle]="{'background-color':field.color}"
+                                *ngFor="let field of mergeMarcState.source.fields;let index= index;">
+                                <span class="moveLeftArrow">
+                                    <em class="fas fa-arrow-left" title="Move" tabindex="0" [ngClass]="{'disableForm': !hasAccess(Permissions.MRG_REC)}"
+                                    [hidden]="field.tag == '001' || field.tag == '005' || field.tag == '997' || isEmptyField(field)"
+                                    (click)="moveField(field, index, form)" aria-label="Press enter to move"
+                                    (keydown.enter)="moveField(field, index, form)"></em>
+                                </span>
+                                <marc-field-view [field]="field" [marcSettings]="marcSettings"></marc-field-view>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mergeBtn">
+            <!--
+            <div class="col-sm-3 pl-0">
+              <div class="custom-checkbox-div overRide21RulesCheckbox" *ngIf="(isExternalUser && currentCustomerId && currentCustomerId === mergeMarcState?.marc?.customerId)">
+                <input tabindex="0" type="checkbox" name="overrideMarc21" (change)="OnOverideMarc21($event)" [(ngModel)]="overrideMarc21"
+                [disabled]="isAllCustomerSelected">
+                <label aria-hidden="true" class="custom-label" for="overrideMarc21"><span>Override MARC 21 rules</span></label>
+              </div>
+            </div>
+            -->
+            <div class="col-sm-9 p-0 text-center">
+                <span *ngIf="displayWarnMessage" class="editErrorMessage" tabindex="0">
+                    One or more errors occurred while saving the merged record. Please correct them to proceed.
+                </span>
+            </div>
+            <div class="col-sm-3 pl-small pr-0 text-right">
+                <button class="btn btn-primary mr-1" id="saveMarcRec" tabindex="0" type="button"
+                    (click)="openModal()" [disabled]="!hasAccess(Permissions.MRG_REC)">
+                    Complete Merge
+                </button>
+                <div class="modal fade" id="mergeConfirmationPopup" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-sm modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" tabindex="0">Confirmation</h5>
+                                <button type="button" class="close" data-dismiss="modal" tabindex="0" title="Close">&times;</button>
+                            </div>
+                            <form>
+                                <div class="modal-body addMoreFields retainDiscardChangesContainer">
+                                    <div class="addMoreFieldsRow text-left">
+                                        Do you want to retain or discard the other record
+                                        ({{mergeMarcState?.source?.recordNumber}} - {{sourceMarcSource}})?
+                                        <p class="retainChangesRadioBtns">
+                                            <span class="mr-4">
+                                                <input class="mr-2" id="retainRetainChanges" [(ngModel)]="retainValue"
+                                                    [value]="true" name="retainDiscardChanges" tabindex="0"
+                                                    type="radio" />
+                                                <label for="retainRetainChanges">Retain</label>
+                                            </span>
+                                            <span>
+                                                <input class="mr-2" id="retainDiscardChanges" [(ngModel)]="retainValue"
+                                                    [value]="false" name="retainDiscardChanges" tabindex="0"
+                                                    type="radio" />
+                                                <label for="retainDiscardChanges">Discard</label>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                        (click)="completeMerge(form)" [disabled]="!hasAccess(Permissions.MRG_REC)">OK</button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary mr-1" id="cancelMarcRec" tabindex="0" type="button" (keydown.enter)="startOver(form)"
+                    (click)="startOver(form)" [disabled]="!hasAccess(Permissions.MRG_REC)">
+                    Start Over
+                </button>
+                <button class="btn btn-default" id="backMarcRec" tabindex="0" type="button" (click)="back(form)" (keydown.enter)="back(form)">
+                    Back
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

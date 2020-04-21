@@ -1,0 +1,30 @@
+<p class="marcViewRow row" [ngStyle]="{'font-size':marcSettings?.fontsize,'font-family':marcSettings?.font}" tabindex="0">
+    <span class="marctag col" data-toggle="tooltip" data-placement="top"  *ngIf="field.tag=='Leader'"
+        [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font}">
+        000
+    </span>
+    <span class="marctag col" data-toggle="tooltip" data-placement="top"
+        *ngIf="!(field.tag=='Leader')" [ngStyle]="{'color': marcSettings?.tagcolor,'font-family':marcSettings?.font}">
+        {{field.tag}}
+    </span>
+    <ng-container>
+            <span class="indicator"
+            [ngStyle]="{'color': marcSettings?.indcolor,'font-family':marcSettings?.font}">
+            <span class="indicator-1">{{field.ind1?field.ind1:""}}</span>{{field.ind2}}
+        </span>
+        <div class="col viewDesc" *ngIf="!(field.tag=='Leader' || (field.type && field.type == 'controlfield')) && field.subfields">
+            <ng-container *ngFor="let subfield of field.subfields;">
+                <span class="subfieldcode white-space"
+                    [ngStyle]="{'color': marcSettings?.subfieldcolor,'font-family':marcSettings?.font}" [innerHTML]="marcSettings?.delimiter+''+subfield.code">
+                </span>
+                <span class="marcDataDesc col white-space" x-ms-format-detection="none" *ngIf="!subfield.authorityId"
+                      [innerHTML]="subfield.data"></span>
+                <span class="marcDataDesc col white-space" *ngIf="subfield.authorityId" class="authLink">
+                    <a [routerLink]="['/authority-view/',subfield.authorityId]" [innerHTML]="subfield.data"></a>
+                </span>
+            </ng-container>
+        </div>
+    </ng-container>
+    <span class="marcDataDesc col white-space" *ngIf="field.tag=='Leader'" [innerHTML]="getLeaderData(field)"></span>
+    <span class="marcDataDesc col white-space" *ngIf="field.type && field.type == 'controlfield'" [innerHTML]="field.data"></span>
+</p>

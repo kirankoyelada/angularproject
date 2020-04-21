@@ -1,0 +1,142 @@
+<div [style.display]="isLoaded?'':'none'" class="container-fluid">
+    <form #form="ngForm" (ngSubmit)="saveMacro(form)" (keydown.enter)="$event.target.tagName === 'BUTTON'">
+      <div class="MarcEditor mr-0">
+        <h4>
+          <span tabindex="0" class="editMarcHead">{{currentMacroText}}</span><span *ngIf="displayWarnMessage"
+            class="editErrorMessage">
+            One or more errors occurred while saving the macro. Please correct them to proceed.
+          </span>
+        </h4>
+        <div class="newRecordMandatoryFields">
+          <ng-container>
+            <div class="col newRecordFields">
+              <div class="row">
+                <div class="col-6 pr-small">
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-6 pl-0 pr-small">
+                        <div class="form-group required mb-2">
+                          <label for="macro-name" class="font-weight-bold">Name</label>
+                          <input [class.pubdate-warn]="!isNameRequired || displayDuplicateWarnMessage"
+                            [matTooltip]="!isNameRequired ? 'Required' : (displayDuplicateWarnMessage) ? 'Duplicate Name' : '' "
+                            matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                             maxlength="100" type="text" class="form-control" id="macro-name"
+                            name="macro-name" tabindex="0" [(ngModel)]="macro.name"
+                            (blur)="ValidateForm('macro-name')" />
+                        </div>
+                      </div>
+                      
+                      <div class="col-6 pl-0 pr-small">
+                        <div class="form-group required mb-2">
+                          <label for="macro-level" class="font-weight-bold">Level</label>
+                          <select [matTooltip]="!isLevelRequired ? 'Required' : ''" matTooltipPosition="above"
+                            matTooltipClass="pubErrorTooltip" #tooltip="matTooltip" (change)="onLevelChanged($event)"
+                            [class.pubdate-warn]="!isLevelRequired" class="form-control dropdown" id="macro-level" tabindex="0"
+                            name="macro-level" [(ngModel)]="macro.level" (blur)="ValidateForm('macro-level')"
+                            (ngModelChange)="ValidateForm('macro-level')">
+                            <option value="Select" selected>Select Level</option>
+                            <option value="Global">Global</option>
+                            <option value="Institutional">Institutional</option>
+                            <option value="Local">Local</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-6 pl-small pr-0">
+                        <div class="form-group mb-2">
+                          <label for="macro-institution" class="font-weight-bold">Institution</label>
+                          <input [matTooltip]="!isInstitutionRequired ? 'Required' : ''" matTooltipPosition="above"
+                            matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                            [class.pubdate-warn]="!isInstitutionRequired" type="text" class="form-control"
+                            id="macro-institution" name="macro-institution" tabindex="0"
+                            [(ngModel)]="macro.institution" [disabled]="disableControl()"
+                            (blur)="ValidateForm('macro-institution')" />
+                        </div>
+                      </div>
+                      <div class="col-6 pl-small pr-0">
+                          <div class="form-group required mb-2">
+                              <label for="macro-clsCustomer" class="font-weight-bold">CLS Customer</label>
+                              <input [class.pubdate-warn]="!isCLSCustomerRequired"
+                                [matTooltip]="!isCLSCustomerRequired ? 'Required' :'' "
+                                matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                                  type="text" class="form-control" id="macro-clsCustomer"
+                                name="macro-clsCustomer" tabindex="0" [(ngModel)]="macro.clsCustomer"
+                                (blur)="ValidateForm('macro-clsCustomer')" />
+                            </div>
+                      </div>
+                      <div class="col-6 pl-small pr-0">
+                          <div class="form-group required mb-2">
+                              <label for="macro-keyAssignment" class="font-weight-bold">Key Assignment</label>
+                              <input [class.pubdate-warn]="!isKeyAssignmentRequired"
+                                [matTooltip]="!isKeyAssignmentRequired ? 'Required' :'' "
+                                matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                                  type="text" class="form-control" id="macro-keyAssignment"
+                                name="macro-keyAssignment" tabindex="0" [(ngModel)]="macro.keyAssignment"
+                                (blur)="ValidateForm('macro-keyAssignment')" />
+                            </div>
+                      </div>
+                      <div class="col-6 pl-small pr-0">
+                          <div class="form-group required mb-2">
+                              <label for="macro-dependency" class="font-weight-bold">Dependency</label>
+                              <input [class.pubdate-warn]="!isDependencyRequired"
+                                [matTooltip]="!isDependencyRequired ? 'Required' :'' "
+                                matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                                 type="text" class="form-control" id="macro-dependency"
+                                name="macro-dependency" tabindex="0" [(ngModel)]="macro.dependency"
+                                (blur)="ValidateForm('macro-dependency')" />
+                            </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 pl-small">
+                  <div class="form-group mb-2">
+                    <label for="macro-description" class="font-weight-bold">Description</label>
+                    <textarea maxlength="500" type="text" class="form-control" id="macro-description"
+                      name="macro-description" rows="15" cols="50" tabindex="0" [(ngModel)]="macro.description"
+                      (keydown.enter)="getMacroDesc();"></textarea>
+                  </div>
+                  <div class="col-6 pl-small pr-0">
+                      <div class="form-group required mb-2">
+                          <label for="macro-variables" class="font-weight-bold">Variables</label>
+                          <input [class.pubdate-warn]="!isVariablesRequired"
+                            [matTooltip]="!isVariablesRequired ? 'Required' :'' "
+                            matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                             type="text" class="form-control" id="macro-variables"
+                            name="macro-variables" tabindex="0" [(ngModel)]="macro.variables"
+                            (blur)="ValidateForm('macro-variables')" />
+                        </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+          <div id="macroEditor" class="editMarcRowsContainer" [style.height.px]="newHeight">
+            Show Macro Editor
+          </div>
+        </div>
+        <div class="row marcEditorBtns">
+          <div class="col-2 col-sm-4 pl-0">
+            <!-- <button class="btn btn-primary flex-fill" href="#marcField{{template.fields.length-1}}" pageScroll
+              id="addNewMarcField" tabindex="0" type="button" (click)="addNewMarcField(form)"
+              [disabled]="!isAddNewEnabled">
+              Add New Field
+            </button> -->
+          </div>
+          <div class="col-10 col-sm-8 pl-small pr-0 text-right">
+            <button class="btn btn-primary flex-fill mr-1" id="save" tabindex="0" type="button"
+              (click)="saveMacro(form)">
+              Save
+            </button>
+            <button class="btn btn-default mr-1" id="cancel" tabindex="0" type="button" (click)="cancel(form)">
+              Cancel
+            </button>
+            <button class="btn btn-default" id="back" tabindex="0" type="button" (click)="back(form)">
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  

@@ -1,0 +1,22 @@
+<div class="wrapper">
+    <div class="container-fluid authRec">
+      <div class="authRecContainer">
+        <div class="authRecHeader col">
+          <div class="row">
+            <div class="col-sm-11 pl-small">
+              <span>
+                Authority Record</span>
+            </div>
+            <div class="col-sm-1 pr-small">
+              <button type="button" (click)="back()" class="btn btn-primary float-right backBtn" tabindex="0">
+                Back
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="authRecBody col" [style.height.px]="NewHeight">
+          <marc-view [authorityId]="authorityId"></marc-view>
+        </div>
+      </div>
+    </div>
+  </div>

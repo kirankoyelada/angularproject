@@ -1,0 +1,268 @@
+<div *ngIf="marcExportState" class="container-fluid">
+  <form [formGroup]="form">
+    <div class="MarcEditor mr-0">
+      <h4 class="userConfigHeader">
+        <span tabindex="0" class="editMarcHead">MARC Extract</span>
+      </h4>
+      <!-- <div>{{ chkCtrlNumberPrefix.valid }}-{{ form.get('chkCtrlNumberPrefix').touched }}-----{{ (!form.get('chkCtrlNumberPrefix').touched || form.get('chkCtrlNumberPrefix').valid) }}</div> -->
+      <div class="userConfigeration container-fluid MARCexport">
+        <div class="searchUserArea" [style.height.px]="newUserHeight">
+          <div class="row p-2">
+            <div class="col-3 pr-small pl-small">
+              <div class="form-group required mb-2">
+                <label for="parameterSetName" class="font-weight-bold">Parameter Set Name</label>
+                <input type="text" [ngClass]="{'border-danger': (parameterSetName.errors  && !marcExportState.paramFocused) && !parameterSetName.touched }"
+                       id="parameterSetName"
+                       class="form-control"
+                       matInput
+                       matTooltipPosition="above"
+                       matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                       [matTooltip]="validateParam()"
+                       [matTooltipDisabled]="(!parameterSetName.errors  && marcExportState.paramFocused ) && !parameterSetName.touched"
+                       #tooltip="matTooltip"
+                       role="tooltip" aria-describedby="parameterSetName"
+                       (focus)="marcExportState.paramFocused=true"
+                       (blur)="onBlur($event)"
+                       [(ngModel)]="marcExportState.currentMarcExportConfig.parameterSetName"
+                       #triggertag="matAutocompleteTrigger"
+                       (input)="onChangeParameterSet($event)"
+                       [matAutocomplete]="auto"
+                       [formControl]="myControl"
+                       formControlName="parameterSetName" #paramSet />
+                <div>
+                  <mat-autocomplete #auto="matAutocomplete" class="indAutoComplete marcExtractAutoComplete" (optionSelected)="selectedParamSet($event.option.value)">
+                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                      {{option}}
+                    </mat-option>
+                  </mat-autocomplete>
+                </div>
+              </div>
+              <div formGroupName="dateRange">
+                <div class="form-group required mb-2">
+                  <label for="startDateTime" class="font-weight-bold">Start Date & Time (EST)</label>
+                  <div class="input-group">
+                    <input type="text"
+                           class="form-control"
+                            [max]="maxDateTime" aria-describedby="startDateTime"
+                           id="startDateTime" name="startDateTime"
+                           [(ngModel)]="marcExportState.currentMarcExportConfig.startDateTime"
+                           matTooltipPosition="above"
+                           [ngClass]="{'border-danger': ((startDateTime.errors || dateRange.errors) && !marcExportState.startDateFocused && startDateTime.touched) }"
+                           matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                           (focus)="marcExportState.startDateFocused=true"
+                           (blur)="marcExportState.startDateFocused=false"
+                           [matTooltip]="validateStartDate()"
+                           [matTooltipDisabled]="(!startDateTime.errors && !dateRange.errors && marcExportState.startDateFocused) || !startDateTime.touched"
+                           #tooltip="matTooltip"
+                           role="tooltip"
+                           [owlDateTime]="dtstart"
+                           [owlDateTimeTrigger]="dtstart"
+                           formControlName="startDateTime" #startDt>
+                    <div class="input-group-append">
+                      <span class="input-group-text" [owlDateTimeTrigger]="dtstart">
+                        <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                      </span>
+                    </div>
+                    <owl-date-time (afterPickerOpen)="pickerStartDateOpen();" (afterPickerClosed)="pickerStartDateClosed();" #dtstart></owl-date-time>
+                  </div>
+                </div>
+
+                <div class="form-group required mb-2">
+                  <label for="endDateTime" class="font-weight-bold">End Date & Time (EST)</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control"
+                           matTooltipPosition="above"
+                           [ngClass]="{'border-danger': ((endDateTime.errors || dateRange.errors) && !marcExportState.endDateFocused && endDateTime.touched) }"
+                           matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                           [matTooltip]="validateEndDate()"
+                            [max]="maxDateTime"
+                           (focus)="marcExportState.endDateFocused=true"
+                           (blur)="marcExportState.endDateFocused=false"
+                           [matTooltipDisabled]="(!endDateTime.errors && !dateRange.errors && marcExportState.endDateFocused) || !endDateTime.touched"
+                           #tooltip="matTooltip"
+                           role="tooltip" aria-describedby="endDateTime"
+                           id="endDateTime" name="endDateTime" [(ngModel)]="marcExportState.currentMarcExportConfig.endDateTime"
+                           [owlDateTime]="dtend"
+                           [owlDateTimeTrigger]="dtend"
+                           formControlName="endDateTime" #endDt>
+                    <div class="input-group-append">
+                      <span class="input-group-text" [owlDateTimeTrigger]="dtend">
+                        <em class="far fa-calendar-alt" aria-hidden="true"></em>
+                      </span>
+                    </div>
+                    <owl-date-time (afterPickerOpen)="pickerEndDateOpen();" (afterPickerClosed)="pickerEndDateClosed($event);" #dtend></owl-date-time>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group required mb-2">
+                <label for="ofTagIndicators" class="font-weight-bold"># of Tag Indicators</label>
+                <select id="ofTagIndicators" class="form-control dropdown"
+                        matTooltipPosition="above"
+                        (change)="onTagIndicatorChange($event)"
+                        [ngClass]="{'border-danger': (ofTagIndicators.errors && !marcExportState.tagIndicatorFocused && ofTagIndicators.touched) }"
+                        matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                        [matTooltip]="validateTagIndicator()"
+                        (focus)="marcExportState.tagIndicatorFocused=true"
+                        (blur)="marcExportState.tagIndicatorFocused=false"
+                        [matTooltipDisabled]="!ofTagIndicators.errors && marcExportState.tagIndicatorFocused || !ofTagIndicators.touched"
+                        #tooltip="matTooltip"
+                        role="tooltip" aria-describedby="ofTagIndicators"
+                        [(ngModel)]="marcExportState.currentMarcExportConfig.tagIndicatorCount"
+                        formControlName="ofTagIndicators">
+                  <ng-container *ngFor="let obj of marcExportState.exportMarcConfigData.tagIndicatorsKeyValue">
+                    <option [value]="obj.value" [selected]="obj.value === marcExportState.currentMarcExportConfig.tagIndicatorCount">
+                      {{ obj.key }}
+                    </option>
+                  </ng-container>
+                </select>
+              </div>
+              <div class="col recordNumberRange">
+                <div class="row">
+                  <p class="font-weight-bold">Record Number Range</p>
+                  <div class="col-6 pl-0 pr-small">
+                    <div class="form-group mb-2">
+                      <div class="input-group">
+                        <label for="startingRecordNumber" class="font-weight-bold">From</label>
+                        <input OnlyNumber type="text" id="startingRecordNumber" class="form-control" matInput name="startingRecordNumber"
+                               matTooltipPosition="above" [matTooltip]="validateStartRecordNumber()"
+                               [ngClass]="{'border-danger': startRecordNoWarn }"
+                               (change)="onStartandEndChange($event,'from')"
+                               [(ngModel)]="marcExportState.currentMarcExportConfig.startingRecordNumber"
+                               matTooltipClass="my-tooltip editTagEditErrorTooltip" formControlName="startingRecordNumber" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6 pl-small pr-0">
+                    <div class="form-group mb-2">
+                      <div class="input-group">
+                        <label for="endingRecordNumber" class="font-weight-bold">To</label>
+                        <input OnlyNumber id="endingRecordNumber" type="text" class="form-control" matInput name="endingRecordNumber"
+                               matTooltipPosition="above" [matTooltip]="validateEndRecordNumber()"
+                               [ngClass]="{'border-danger': endRecordNoWarn && endingRecordNumber.touched}"
+                               (change)="onStartandEndChange($event,'to')"
+                               (focus)="this.marcExportState.toFocused=true" (blur)="this.marcExportState.toFocused=false"
+                               [(ngModel)]="marcExportState.currentMarcExportConfig.endingRecordNumber"
+                               matTooltipClass="my-tooltip editTagEditErrorTooltip" formControlName="endingRecordNumber" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="col-1"></div>
+            <div class="col-3 pl-small pr-small">
+              <div class="limitByCtrlNumPrefix" id="limitByCtrlNumPrefix">
+                <span class="font-weight-bold label">Limit By Control Number Prefix</span>
+                <div class="addMoreFieldsRow" matTooltipPosition="above" aria-describedby="limitByCtrlNumPrefix" tabindex="0"
+                     [ngClass]="{'border-danger': (!(marcExportState.currentMarcExportConfig && marcExportState.currentMarcExportConfig.ctrlNumberPrefix && marcExportState.currentMarcExportConfig.ctrlNumberPrefix.length > 0)  && chkCtrlNumberPrefix.touched) || controlNoPrefix}"
+                     matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                     [matTooltip]="validatectrlPrefix()"
+                     [matTooltipDisabled]="!chkCtrlNumberPrefix.errors && marcExportState.ctrlPrefixFocused || !chkCtrlNumberPrefix.touched"
+                     #tooltip="matTooltip" (blur)="controlNoPrefixBlur()"
+                     role="tooltip">
+                  <checkbox-group [(ngModel)]="marcExportState.currentMarcExportConfig.ctrlNumberPrefix"
+                                  [data]="marcExportState.exportMarcConfigData.ctrlNumberPrefixValues"
+                                  required
+                                  formControlName="chkCtrlNumberPrefix">
+                    <checkbox (focus)="marcExportState.ctrlPrefixFocused=true" (value)="value" (blur)="marcExportState.ctrlPrefixFocused=false"
+                              (toggle)="marcExportState.ctrlPrefixFocused=!marcExportState.ctrlPrefixFocused;this.controlNoPrefix=(this.marcExportState.currentMarcExportConfig.ctrlNumberPrefix.length == 0)?true:false" value="0"></checkbox>
+                    <ng-container *ngFor="let value of marcExportState.exportMarcConfigData.ctrlNumberPrefixValues">
+                      <checkbox (focus)="marcExportState.ctrlPrefixFocused=true" (blur)="marcExportState.ctrlPrefixFocused=false"
+                                (toggle)="marcExportState.ctrlPrefixFocused=!marcExportState.ctrlPrefixFocused;this.controlNoPrefix=(this.marcExportState.currentMarcExportConfig.ctrlNumberPrefix.length == 0)?true:false" value="{{value}}"></checkbox>
+                    </ng-container>
+                  </checkbox-group>
+                </div>
+              </div>
+              <div class="retainRXXtagsBlock">
+                <div class="form-group mb-2">
+                  <label for="retain9XXTags" class="font-weight-bold">Retain 9XX Tags</label>
+                  <textarea type="text" class="form-control" id="retain9XXTags" name="retain9XXTags" [ngModelOptions]="{standalone: true}"
+                            tabindex="0" rows="2" cols="10" ngModel #retain9XXTags="ngModel" disabled></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="col-1"></div>
+            <div class="col-3 pl-small pr-small">
+              <span class="font-weight-bold renumberTag">Renumber Tag</span>
+              <div class="renumberTagBlock">
+                <fieldset>
+                  <legend class="sr-only">Renumber Tag</legend>
+                  <div class="renumberHead">
+                    <div class="renumberCurrent">
+                      Current
+                    </div>
+                    <div class="renumberChange">
+                      Change
+                    </div>
+                    <div class="renumberDuplicate"></div>
+                  </div>
+                  <div class="renumberTagsData">
+                    <div class="renumberTagsDataRow">
+                      <div class="renumberCurrent">
+                        <label class="sr-only" for="currentTag">Current</label>
+                        <input type="text" class="form-control" tabindex="0" id="currentTag" name="currentTag" disabled />
+                      </div>
+                      <div class="renumberChange">
+                        <label class="sr-only" for="changeTag1">Current</label>
+                        <input type="text" class="form-control" tabindex="0" id="changeTag1" name="changeTag1" disabled />
+                      </div>
+                      <div class="renumberDuplicate">
+                        <em aria-label="Press enter to duplicate tag" class="fas fa-plus" tabindex="0"
+                            title="Duplicate Tag"></em>
+                      </div>
+                    </div>
+                    <div class="renumberTagsDataRow">
+                      <div class="renumberCurrent">
+                        <label class="sr-only" for="currentTag2">Current</label>
+                        <input type="text" class="form-control" tabindex="0" id="currentTag2" name="currentTag2" disabled />
+                      </div>
+                      <div class="renumberChange">
+                        <label class="sr-only" for="changeTag3">Current</label>
+                        <input type="text" class="form-control" tabindex="0" id="changeTag3" name="changeTag3" disabled />
+                      </div>
+                      <div class="renumberDuplicate">
+                        <em aria-label="Press enter to delete tag" class="fas fa-trash-alt" tabindex="0"
+                            title="Delete Tag"></em>
+                      </div>
+                    </div>
+                  </div>
+                </fieldset>
+              </div>
+              <div class="retainRXXtagsBlock">
+                <div class="form-group mb-2">
+                  <label for="deleteTags" class="font-weight-bold">Delete Tags</label>
+                  <textarea type="text" class="form-control" id="deleteTags" name="deleteTags"
+                            tabindex="0" disabled></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="col-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row marcEditorBtns">
+        <div class="col pl-small pr-0 text-right">
+          <button [disabled]="!(this.form.valid && (this.form.dirty || executeDisable))" class="btn btn-primary flex-fill mr-1" id="execute" tabindex="0" type="button" (click)="execute()">
+            Execute
+          </button>
+          <button class="btn btn-primary flex-fill mr-1" id="newProfileCreate" tabindex="0" type="button" (click)="newState()">
+            New
+          </button>
+          <button [disabled]="!(this.form.valid && (this.form.dirty))" class="btn btn-primary flex-fill mr-1" id="save" (click)="save()" tabindex="0" type="button">
+            Save
+          </button>
+          <button [disabled]="!(this.form.dirty)" class="btn btn-default mr-1" id="cancel" tabindex="0" type="button" (click)="cancel()">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="back" tabindex="0" type="button" (click)="back()">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

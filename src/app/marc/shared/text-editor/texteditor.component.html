@@ -1,0 +1,4 @@
+<div #codeM [ngClass]="isValid == false?'border-danger':(isISBN_UPC_ISSN_Valid == false?'border-warning':'')"
+    [tooltipClass]="tooltipClass" placement="top"
+    [ngbTooltip]="(isValid == false || isISBN_UPC_ISSN_Valid == false) ?errMsg:''" class="marcEditorContainer"
+    (focus)="focusHandler()" (blur)="onBlur($event)"  tabindex="0" [class.editMarcdisable]="readonly"> </div>

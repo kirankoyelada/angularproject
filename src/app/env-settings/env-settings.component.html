@@ -1,0 +1,234 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull" class="environMentalSettings">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-4 pl-small pr-small">
+              <h4><span tabindex="0">Environmental Settings</span></h4>
+            </div>
+            <div class="col-sm-6 text-right">
+              <span *ngIf="displayWarnMessage" class="clsLabelErrorMessage" tabindex="0">
+                One or more errors occurred while saving the Environmental Settings. Please correct them to proceed.
+              </span>
+            </div>
+            <div class="col-sm-4"></div>
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer Z3950Profiles m-0" >
+      <div class="MARCrecords enviSettings" [style.height.px]="NewHeight" cdk-scrollable>
+        <div class="row m-0">
+          <div class="col-3 p-0 mr-3 mb-2">
+            <label for="searchInstitution" class="font-weight-bold">Institution</label>
+            <input type="text" tabindex="0"  class="form-control sp-peoplepicker-editorInput" id="searchInstitution"
+              name="searchInstitution" (input)="institutionChange($event.target.value)" matInput
+              [(ngModel)]="searchInstitution" Width="70" [matAutocomplete]="auto"[readonly]="disableInst"/>
+              <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption  [displayWith]="displayFnForName" (optionSelected)="selectInstitution($event.option.value,form)">
+              <ng-container *ngFor="let option of filteredInstitutions"  >
+                <mat-option [value]="option"
+                *ngIf="option.name === 'Institution not found'; else institutionFound" disabled="true">
+                <i>Institution not found</i>
+              </mat-option>
+                <mat-option *ngIf="option.name !== 'Institution not found'" #institutionFound [value]="option" >
+                  {{ option.name }}
+                </mat-option>
+              </ng-container>
+              </mat-autocomplete>
+          </div>
+         <div class="col-3 p-0 mr-3 mb-2" *ngIf="isValidInstitution && showCustomer">
+            <label for="searchCustomer" class="font-weight-bold">Customer</label>
+            <input type="text" [disabled]="disableCustomer" tabindex="0" class="form-control sp-peoplepicker-editorInput" id="searchCustomer"
+              name="searchCustomer" [formControl]="customerTermControl"[(ngModel)]="searchCustomer"  matTooltipClass="my-tooltip editTagEditErrorTooltip"
+              matTooltipPosition="above"  matInput
+              [ngClass]="customerError ? 'border-danger' : '' " [matTooltip]="customerError  ? 'Required':''"
+              (blur)="requiredFieldValidation(searchCustomer,'customer')"
+               Width="70" [matAutocomplete]="auto1" #triggertag="matAutocompleteTrigger" [readonly]="disableCustomer"/>
+               <mat-autocomplete #auto1="matAutocomplete" class="userListWidth" autoActiveFirstOption (optionSelected)="openPanel()">
+                <ng-container *ngFor="let customer of filteredCustomers | searchFilter:searchCustomer">
+                  <mat-option [value]="customer"
+                    *ngIf="customer.customerName === 'Customer not found'; else customerFound" disabled="true">
+                    <i>Customer not found</i>
+                  </mat-option>
+                  <mat-option [value]="customer" [disabled]="customer.HasSettings" *ngIf="customer.customerName !== 'Customer not found'"
+                  matTooltip="{{customer.customerName}}" #customerFound>
+                  <div (click)="optionClicked($event, customer)">
+                  <input type="checkbox" (change)="toggleSelection(customer)" [disabled]="customer.HasSettings" (click)="$event.stopPropagation()" [checked]="customer.isSelected" />
+                  {{customer.customerName }}
+                </div>
+                </mat-option>
+                </ng-container>
+              </mat-autocomplete>
+              </div>
+        </div>
+        <div class="row m-0 enviSettingSHeading" *ngIf='isValidInstitution'>
+          <div class="col-4 mb-1 pl-0">
+            <div class="col-12 p-0">
+            <h5 class="font-weight-bold">Font</h5>
+            <div class="form-group mb-2">
+              <label for="fontFamily" class="font-weight-bold">Font Family</label>
+              <select class="form-control dropdown" id="fontFamily" tabindex="0" [(ngModel)]="fontFamily"
+                [ngClass]="fontError ? 'border-danger' : '' " [matTooltip]="fontError  ? 'Required':''"
+                (blur)="requiredFieldValidation(fontFamily,'family')"
+                name="fontFamily" matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above">
+                <ng-container *ngFor="let font of fontFamilies">
+                  <option value={{font}}>{{font}}</option>
+                </ng-container>
+              </select>
+            </div>
+            <div class="form-group mb-2">
+              <label for="fontS" class="font-weight-bold">Size</label>
+              <select class="form-control dropdown" id="fontS" tabindex="0" [(ngModel)]="font_Size"
+                [ngClass]="sizeError ? 'border-danger' : '' " [matTooltip]="sizeError  ? 'Required':''"
+                (blur)="requiredFieldValidation(font_Size,'size')"
+                name="font_Size" matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above">
+                <ng-container *ngFor="let size of fontSize">
+                  <option value={{size}}>
+                    {{size}}
+                  </option>
+                </ng-container>
+              </select>
+            </div>
+          </div>
+          </div>
+
+          <div class="col-4 mb-1 pl-0">
+            <div class="col-12 p-0">
+            <h5 class="font-weight-bold">Color</h5>
+            <div class="form-group mb-2">
+              <label for="tag" class="font-weight-bold">Tag</label>
+              <div class="input-group colorPickerBlock">
+                <input type="text" name="tag" id="tag" class="form-control" [(value)]='strTagDefaultColor' disabled />
+                <div class="input-group-append">
+                  <label for="tagColorValue" class="sr-only">Tag</label>
+                  <input [(colorPicker)]="strTagDefaultColor" [style.background]="strTagDefaultColor"
+                  [cpDisableInput] ='true' readonly
+                    name="tagColorValue" id="tagColorValue" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group mb-2">
+              <label for="indicator" class="font-weight-bold">Indicator</label>
+              <div class="input-group colorPickerBlock">
+                <input type="text" name="indicator" id="indicator" class="form-control"
+                  [(value)]='strIndicatorDefaultColor' disabled />
+                <div class="input-group-append">
+                  <label for="indicatorColorValue" class="sr-only">Tag</label>
+                  <input [(colorPicker)]="strIndicatorDefaultColor" [style.background]="strIndicatorDefaultColor"
+                  [cpDisableInput] ='true' readonly
+                    name="indicatorColorValue" id="indicatorColorValue" />
+                </div>
+              </div>
+            </div>
+            <div class="form-group mb-2">
+              <label for="delimiter" class="font-weight-bold">Delimiter / Subfield</label>
+              <div class="input-group colorPickerBlock">
+                <input type="text" name="delimiter" id="delimiter" class="form-control"
+                  [(value)]='strDelimiterDefaultColor' disabled />
+                <div class="input-group-append">
+                  <label for="delimeterColorValue" class="sr-only">Tag</label>
+                  <input [(colorPicker)]="strDelimiterDefaultColor" name="delimeterColorValue" id="delimeterColorValue"
+                  [cpDisableInput] ='true' readonly
+                    [style.background]="strDelimiterDefaultColor" />
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+          <div class="col-4 mb-1 pl-0">
+            <div class="col-12 p-0">
+            <h5 class="font-weight-bold">Others</h5>
+            <div class="form-group mb-2 enviOthers">
+              <label for="backGroundColor" class="font-weight-bold">Background Color</label>
+              <div class="input-group colorPickerBlock">
+                <input type="text" name="backGroundColor" id="backGroundColor" class="form-control"
+                  [(value)]='strBackgroundDefaultColor' disabled />
+                <div class="input-group-append">
+                  <label for="bgColorValue" class="sr-only">Tag</label>
+                  <input name="bgColorValue" id="bgColorValue" [(colorPicker)]="strBackgroundDefaultColor"
+                  [cpDisableInput] ='true' readonly
+                    [style.background]="strBackgroundDefaultColor" />
+                </div>
+              </div>
+            </div>
+          
+            <div class="form-group">
+              <label for="delimiterSymbol" class="font-weight-bold">Delimiter Symbol</label>
+              <select class="form-control dropdown" id="delimiterSymbol" tabindex="0" [(ngModel)]="delimiterSymbol"
+                [matTooltip]="delimiterError  ? 'Required':''" [ngClass]="delimiterError ? 'border-danger' : '' "
+                (blur)="requiredFieldValidation(delimiterSymbol,'delimiter')"
+                name="delimiterSymbol" matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above">
+                <option *ngFor="let delimiter of delimiters" value={{delimiter}}>{{delimiter}}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <fieldset>
+                <legend class="font-weight-bold">Line Spacing</legend>
+                <div class="row m-0">
+                  <div class="col-5 p-0">
+                    <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection" id="doubleSpace"
+                      name="spaceOption" value="2" tabindex="0">
+                    <label for="doubleSpace">Double Space</label>
+                  </div>
+                  <div class="col-5 p-0">
+                    <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection" id="singleSpace"
+                      name="spaceOption" value="1" tabindex="0">
+                    <label for="singleSpace">Single Space</label>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+            <div class="form-group">
+              <label for="ftpLocation" class="font-weight-bold">FTP Location</label>
+              <input type="text" class="form-control" id="ftpLocation" name="ftpLocation" [(ngModel)]="ftpLocation"
+                [ngClass]="locationError ? 'border-danger' : '' " [matTooltip]="locationError  ? 'Required':''"
+                (blur)="requiredFieldValidation(ftpLocation,'location')"
+                matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                tabindex="0" matInput>
+            </div>
+            <div class="form-group">
+              <p class="font-weight-bold mb-1">Credentials</p>
+              <div class="row m-0">
+                <div class="col-6 p-0 pr-1">
+                  <label for="userName" class="sr-only">User Name</label>
+                  <input type="text" class="form-control" id="userName" name="userName" tabindex="0"
+                    placeholder="User Name" matInput [(ngModel)]="userName"
+                    [ngClass]="userNameError ? 'border-danger' : '' " [matTooltip]="userNameError  ? 'Required':''"
+                    (blur)="requiredFieldValidation(userName,'username')"
+                    matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                   >
+                </div>
+                <div class="col-6 p-0 pl-1">
+                  <label for="password" class="sr-only">Password</label>
+                  <input type="password" class="form-control" id="password" name="password" placeholder="Password"
+                    tabindex="0" matInput [(ngModel)]="password" [ngClass]="passwordError ? 'border-danger' : '' "
+                    (blur)="requiredFieldValidation(password,'password')"
+                    [matTooltip]="passwordError  ? 'Required':''" matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                    matTooltipPosition="above">
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      <div class="row z3950Btns">
+        <div class="col pl-small pr-0 text-right">
+          <button class="btn btn-primary flex-fill" id="btnReset" tabindex="0" type="button" (click)="reset(null)"
+            (enter.keydown)="reset(null)" [disabled]="!searchInstitution">
+            Reset
+          </button>
+          <button class="btn btn-primary flex-fill ml-1" id="save" tabindex="0" type="button"
+            (click)="saveInstitution(form)" [disabled]="!searchInstitution" (enter.keydown)="saveInstitution(form)">
+            Save
+          </button>
+          <button class="btn btn-default ml-1" id="cancel" tabindex="0" type="button" (click)="cancel(form)"
+            (enter.keydown)="cancel(form)">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

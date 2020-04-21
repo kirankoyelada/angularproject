@@ -1,0 +1,18 @@
+<nav class="navbar navbar-expand-md navbar-light fixed-top bg-light">
+   <h1 class="sr-only">Bayker & Taylor</h1>
+    <a class="navbar-brand" style="cursor: pointer;" (click)="logoClick()" tabindex="0"
+      ><img src="assets/images/BTCAT_logo.png" alt="Baker & Taylor - A Follett Company" /></a>
+    <nav>
+      <ul id="profile_links" role="menubar" class="profile_links">
+        <li class="custName" role="menuitem" tabindex="0" *ngIf="isExternalUser">
+          <span>{{ customerName }}</span>
+        </li>
+        <li role="menuitem" tabindex="0">
+          <span>{{ actor }}</span>
+        </li>        
+        <li role="menuitem">
+          <a tabindex="0" (click)="logOut()" (keydown.enter)="logOut()" class="logout">Logout</a>
+        </li>
+      </ul>
+    </nav>
+  </nav>

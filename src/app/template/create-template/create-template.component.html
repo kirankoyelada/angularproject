@@ -1,0 +1,141 @@
+<div *ngIf="templateState" class="container-fluid">
+  <form #form="ngForm" (ngSubmit)="saveTemplate(form)" (keydown.enter)="$event.target.tagName === 'BUTTON'">
+    <div class="MarcEditor mr-0">
+      <h4>
+        <span tabindex="0" class="editMarcHead">{{currentTemplateText}}</span><span *ngIf="displayWarnMessage"
+          class="editErrorMessage" tabindex="0">
+          One or more errors occurred while saving the template. Please correct them to proceed.
+        </span>
+      </h4>
+      <div class="newRecordMandatoryFields">
+        <ng-container >
+          <div class="col newRecordFields" [ngClass]="{'disableForm': !hasWritePermission}">
+            <div class="row">
+              <div class="col-6 pr-small">
+                <div class="col">
+                  <div class="row">
+                    <div class="col-6 pl-0 pr-small">
+                      <div class="form-group required mb-2">
+                        <label for="template-name" class="font-weight-bold">Name</label>
+                        <input [class.pubdate-warn]="!isNameRequired || displayDuplicateWarnMessage" #templateName
+                          [matTooltip]="!isNameRequired ? 'Required' : (displayDuplicateWarnMessage) ? 'Duplicate Name' : '' "
+                          matTooltipPosition="above" matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                           maxlength="100" type="text" class="form-control" id="template-name"
+                          name="template-name" tabindex="0" [(ngModel)]="templateState.template.name"
+                          (blur)="ValidateForm('template-name');onNameChange($event)" />
+                      </div>
+                    </div>
+                    <div *ngIf="templateTypes" class="col-6 pl-small pr-0">
+                      <div class="form-group required mb-2">
+                        <label for="template-type" class="font-weight-bold">Type</label>
+                        <select [matTooltip]="!isTypeRequired ? 'Required' : ''" matTooltipPosition="above"
+                          matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                          [class.pubdate-warn]="!isTypeRequired" class="form-control dropdown" id="template-type" tabindex="0"
+                          name="template-type" [(ngModel)]="templateState.template.type" (blur)="ValidateForm('template-type'); onTypeChange($event)"
+                          (ngModelChange)="ValidateForm('template-type');templateTypeChange($event,templateState.template.type)">
+                          <ng-container *ngFor="let type of templateTypes">
+                            <option value="{{type.name}}">{{type.name | selectconversion:'Type'}}</option>
+                          </ng-container>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-6 pl-0 pr-small">
+                      <div class="form-group required mb-2">
+                        <label for="template-level" class="font-weight-bold">Level</label>
+                        <select [matTooltip]="!isLevelRequired ? 'Required' : ''" matTooltipPosition="above" #level
+                          matTooltipClass="pubErrorTooltip" #tooltip="matTooltip" (change)="onLevelChanged($event)"
+                          [class.pubdate-warn]="!isLevelRequired" class="form-control dropdown" id="template-level" tabindex="0"
+                          name="template-level" [(ngModel)]="templateState.template.level" (blur)="ValidateForm('template-level'); onLevelChange($event)"
+                          (ngModelChange)="ValidateForm('template-level'); templateLevelChange($event, level.value);">
+                          <option value="Select" selected>Select Level</option>
+                          <option value="Global" [disabled]="!hasAccess(Permissions.CED_GTEMP)">Global</option>
+                          <option value="Institutional" [disabled]="!hasAccess(Permissions.CED_ITEMP)">Institutional</option>
+                          <option value="Local" [disabled]="!hasAccess(Permissions.CED_LTEMP)">Local</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-6 pl-small pr-0">
+                      <div class="form-group mb-2">
+                        <label for="template-institution" class="font-weight-bold">Institution</label>
+                        <input [matTooltip]="!isInstitutionRequired ? 'Required' : ''" matTooltipPosition="above"
+                          matTooltipClass="pubErrorTooltip" #tooltip="matTooltip"
+                          [class.pubdate-warn]="!isInstitutionRequired" type="text" class="form-control"
+                          id="template-institution" name="template-institution" tabindex="0"
+                          [(ngModel)]="templateState.template.institution" [disabled]="disableControl()"
+                          (blur)="ValidateForm('template-institution'); onInstitutionChange($event)" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 pl-small">
+                <div class="form-group mb-2">
+                  <label for="template-description" class="font-weight-bold">Description</label>
+                  <textarea maxlength="500" type="text" class="form-control" id="template-description" (blur)="onDescriptionChange($event)"
+                    name="template-description" rows="15" cols="50" tabindex="0" [(ngModel)]="templateState.template.description"
+                    (keydown.enter)="getTemplateDesc();"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <div id="marceditgrid" class="editMarcRowsContainer" [style.height.px]="newHeight" cdk-scrollable (scroll)="onScroll($event)" [ngStyle]="{'background-color':marcSettings?.backgroundcolor}">
+          <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+            [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'" (drop)="onDrop($event)">
+            <smooth-dnd-draggable *ngFor="let field of templateState.template.fields ;let index= index">
+              <div class="draggable-item" (focusin)="updateLastFocusedIndex(index)" [ngClass]="{'disableForm': !hasWritePermission}">
+                <marc-field id="marcField{{index}}"
+                  [(leaderDataWithHyphons)]="leaderDataWithHyphons"
+                  [position]="index"[marcSettings]="marcSettings"
+                  [field]="field"
+                  [existingMARCData]="existingMARCData"
+                  [tagsRemoved]="toBeRemovedTags"
+                  [leaderData]="leaderData"
+                  (fieldChanged)="getUpdatedTag($event)"
+                  (fieldOnblur)="onFieldBlur($event)"
+                  [isDragDisabled]="field.isLeaderCtrlField"
+                  [isDeleteDisabled]="field.isDeleteDisabled"
+                  [isEditable]="field.isFieldEditable"
+                  [form]="form"
+                  [isDeleteDisabled]="field.isDeleteDisabled"
+                  (enterKeypress)="handleEnterKeyPressed($event)"
+                  #marcField
+                  (upKeypress)="handleUpDownPressed($event)"
+                  (upDownKeypress)="handleUpDownPressed($event)"
+                  (marcFieldDirtyState)="checkState($event)"
+                  (deleteBtnClick)="deleteMarcField($event, form, field)"
+                  (onLeaderDataChange)="update008Data($event)"
+                  (copyActivated)="handleCopyActivity($event)"
+                  (cutActivated)="handleCutActivity($event)"
+                  (pasteActivated)="handlePasteActivity($event)"
+                  >
+                </marc-field>
+              </div>
+            </smooth-dnd-draggable>
+          </smooth-dnd-container>
+        </div>
+      </div>
+      <div class="row marcEditorBtns">
+        <div class="col-2 col-sm-4 pl-0">
+          <button class="btn btn-primary flex-fill" href="#marcField{{templateState.template.fields.length-1}}" pageScroll
+            id="addNewMarcField" tabindex="0" type="button" (click)="addNewMarcField(form)" #addNewBtn (keydown.enter)="addNewMarcField(form)"
+            [disabled]="!templateState.isAddNewEnabled || !hasWritePermission">
+            Add New Field
+          </button>
+        </div>
+        <div class="col-10 col-sm-8 pl-small pr-0 text-right">
+          <button class="btn btn-primary flex-fill mr-1" id="saveNewTemplate" tabindex="0" type="button" (keydown.enter)="saveTemplate(form)"
+            (click)="saveTemplate(form)" [disabled]="!hasWritePermission">
+            Save
+          </button>
+          <button class="btn btn-default mr-1" id="cancelMarcRec" tabindex="0" type="button" (click)="cancel(form)" (keydown.enter)="cancel(form)" [disabled]="!hasWritePermission">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="backMarcRec" tabindex="0" type="button" (click)="back(form)" (keydown.enter)="back(form)">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

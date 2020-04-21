@@ -1,0 +1,330 @@
+<<<<<<< Updated upstream
+import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
+import { Title } from "@angular/platform-browser";
+import { SpinnerService } from "src/app/shared/interceptor/spinner.service";
+import { MacroService } from "../shared/service/macro.service";
+import { Constants } from "src/app/constants/constants";
+import { MarcSubFieldDTO, MarcDTO } from "src/app/_dtos/btcat.vm.dtos";
+import { MacroRequest } from "../shared/macro";
+import { Marc, MarcField } from "src/app/marc/shared/marc";
+import { MarcDataAdapter } from "src/app/services/marc-data-adapter.service";
+import { ConfirmationDialogComponent } from "src/app/components/shared/confirmation-dialog/confirmation-dialog.component";
+import { MatDialog } from "@angular/material";
+=======
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { SpinnerService } from 'src/app/shared/interceptor/spinner.service';
+import { MacroService } from '../shared/service/macro.service';
+import { Constants } from 'src/app/constants/constants';
+import { MarcSubFieldDTO, MarcDTO } from 'src/app/_dtos/btcat.vm.dtos';
+import { MacroRequest } from '../shared/macro';
+import { Marc, MarcField } from 'src/app/marc/shared/marc';
+import { MarcAdapter } from 'src/app/marc/shared/service/marc-adapter.service';
+>>>>>>> Stashed changes
+
+declare var $: any;
+
+@Component({
+  selector: "app-execute-macro",
+  templateUrl: "./execute-macro.component.html",
+  styleUrls: ["./execute-macro.component.css"]
+})
+export class ExecuteMacroComponent implements OnInit {
+  macroList: string[];
+  @Input() marc: Marc;
+  @Input() marcSettings: any;
+  finalDataArray: any;
+  marcItem: Marc;
+  isActive: any;
+  macroName: any;
+  @Output() onMarcRecordChange = new EventEmitter<Marc>();
+
+  constructor(
+    private _titleService: Title,
+    private spinnerService: SpinnerService,
+<<<<<<< Updated upstream
+    private dialog: MatDialog,
+    private macroService: MacroService,
+    private marcDataAdapter: MarcDataAdapter
+  ) {}
+
+  ngOnInit() {
+=======
+    private macroService: MacroService, private marcAdapter: MarcAdapter) { }
+
+  ngOnInit() {
+
+>>>>>>> Stashed changes
+    this.macroService.getallMacros().subscribe(result => {
+      this.macroList = result;
+    });
+  }
+
+<<<<<<< Updated upstream
+  executeMacroinMarcEditor(macroName: any) {
+    this.isActive = true;
+=======
+  executeMacroinMarcEditor(macroName : any){
+    this.isActive =true;
+>>>>>>> Stashed changes
+    let isValid = true;
+    this.macroName = macroName;
+    let finalDataArray = [];
+    const fixedFieldArray = [];
+    let leaderField: any;
+    if (this.marc && this.marc.fields && this.marc.fields.length > 0) {
+      // Fixed Fields
+      this.marc.fields.forEach(field => {
+        if (
+          field.tag &&
+          field.tag != null &&
+          field.tag.toString().trim() !== ""
+        ) {
+          field.tag = field.tag.toString();
+          if (Constants.ControlFields.findIndex(t => t === field.tag) !== -1) {
+            if (field.data != null) {
+              field.data = field.data.replace(/#/g, " ");
+            }
+            if (field.subFieldDescription != null) {
+              field.subFieldDescription = field.subFieldDescription.replace(
+                /#/g,
+                " "
+              );
+            }
+            fixedFieldArray.push(field);
+          } else if (field.tag === "Leader") {
+            leaderField = field;
+          }
+        }
+      });
+
+      if (fixedFieldArray && fixedFieldArray.length > 0) {
+        finalDataArray = fixedFieldArray.sort((a, b) =>
+          a.tag > b.tag ? 1 : b.tag > a.tag ? -1 : 0
+        );
+      }
+
+      if (leaderField) {
+        leaderField.data = leaderField.data.replace(/#/g, " ");
+        leaderField.subFieldDescription = leaderField.subFieldDescription.replace(
+          /#/g,
+          " "
+        );
+        finalDataArray.unshift(leaderField);
+      }
+      // Sub fields
+      this.marc.fields.forEach(field => {
+        if (
+          field.tag &&
+          field.tag != null &&
+          field.tag.toString().trim() !== ""
+        ) {
+          field.tag = field.tag.toString();
+          if (
+            !(
+              Constants.ControlFields.findIndex(t => t === field.tag) !== -1 ||
+              field.tag === "Leader"
+            )
+          ) {
+            if (
+              field.subFieldDescription &&
+              field.subFieldDescription != null &&
+              field.subFieldDescription.trim() !== ""
+            ) {
+              const subFieldData = field.subFieldDescription
+                .trim()
+                .split(this.marcSettings.delimiter);
+              if (
+                subFieldData &&
+                subFieldData != null &&
+                subFieldData.length > 1
+              ) {
+                if (subFieldData[0] === "" && subFieldData[1] !== "") {
+                  const exitsubfileds = field.subfields;
+                  field.subfields = [];
+                  let i = 0;
+                  subFieldData.forEach(f => {
+                    const subField = new MarcSubFieldDTO();
+                    if (f !== "") {
+                      const code = f.charAt(0);
+                      if (code && code != null && code !== "") {
+                        let data = f.slice(1);
+                        if (data && data != null && data.trim() !== "") {
+                          if (data.slice(-1).trim() === "") {
+                            data = data.slice(0, -1);
+                          }
+                          if (data.slice(0, 1).trim() === "") {
+                            data = data.substr(1);
+                          }
+                          subField.code = code;
+                          subField.data = data;
+                          if (
+                            exitsubfileds[i] &&
+                            exitsubfileds[i].authorityId != null
+                          ) {
+                            subField.authorityId = exitsubfileds[i].authorityId;
+                          }
+
+                          field.subfields.push(subField);
+                        } else {
+                          isValid = false;
+                        }
+                      }
+                      i++;
+                    }
+                  });
+                }
+              }
+            } else {
+              field.subfields = [];
+            }
+            if (field.ind1 === "#") {
+              field.ind1 = " ";
+            }
+            if (field.ind2 === "#") {
+              field.ind2 = " ";
+            }
+            finalDataArray.push(field);
+          }
+        }
+      });
+    }
+
+    if (finalDataArray.length > 0) {
+      this.marc.fields = finalDataArray;
+    }
+
+    let request = {
+      MacroName: macroName,
+      MarcRecord: this.marc
+    };
+
+    this.spinnerService.spinnerStart();
+    this.macroService.executeMacro(request).subscribe(result => {
+<<<<<<< Updated upstream
+      
+      if (result.Message) { 
+        this.spinnerService.spinnerStop();
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+          width: "500px",
+          height: "auto",
+          disableClose: true,
+          data: {
+            isErrorMsg: true,
+            isCopyErrorMsg:false,
+            isCancelConfirm: false,
+            message:
+              "An error occurred while executing the macro. Please contact the system administrator."
+          }
+        });
+        dialogRef.afterClosed().subscribe(() => {});
+      } else {
+        let destinationRecord = this.marcDataAdapter.transform(
+          result.MarcRecord
+        );
+        this.marcItem = this.buildMacroExecuteFinalMarc(
+          destinationRecord,
+          this.marc
+        );
+        this.spinnerService.spinnerStop();
+        this.onMarcRecordChange.emit(this.marcItem);
+      }
+=======
+      let destinationRecord = this.marcAdapter.transform(result.MarcRecord);
+      this.marcItem = (this.buildMacroExecuteFinalMarc(destinationRecord,this.marc));
+      this.onMarcRecordChange.emit(this.marcItem);
+      this.spinnerService.spinnerStop();
+>>>>>>> Stashed changes
+    });
+  }
+
+<<<<<<< Updated upstream
+  // Build Final marc from after macro execute for Marc
+  private buildMacroExecuteFinalMarc(currentMarc: Marc, oldMarc: Marc): Marc {
+    const color = "#b6e2e9";
+    const maxLength = currentMarc.fields.length;
+    let currentMarcFields = currentMarc.fields;
+    let oldMarcFields = oldMarc.fields;
+
+    for (let i = 0; i < maxLength; i++) {
+      if (
+        !(
+          currentMarcFields[i].tag == "Leader" &&
+          this.getLeaderData(currentMarcFields[i]) == this.getLeaderData(oldMarcFields[i])
+        )
+      ) {
+
+        if (currentMarcFields[i]) {
+          if (oldMarcFields.filter(x => x.tag === currentMarcFields[i].tag).length === 1) { 
+
+            var item = oldMarcFields.filter(x => x.tag === currentMarcFields[i].tag);
+            if (
+              currentMarcFields[i].tag === item[0].tag &&
+              (currentMarcFields[i].ind1 != item[0].ind1 ||
+                currentMarcFields[i].ind2 != item[0].ind2 ||
+                currentMarcFields[i].subFieldDescription !=
+                item[0].subFieldDescription)
+            ) {
+              currentMarcFields[i].color = color;
+            }
+          } else if (
+            oldMarcFields.filter(x => x.tag === currentMarcFields[i].tag).length == 0
+          ) {
+            currentMarcFields[i].color = color;
+          } else if (
+            currentMarcFields.filter(x => x.tag === currentMarcFields[i].tag).length > 1
+          ) {
+            var list = currentMarcFields.filter(x => x.tag === currentMarcFields[i].tag);
+            list.forEach(element => {
+              if (
+                oldMarcFields.filter(
+                  x =>
+                    x.subFieldDescription === element.subFieldDescription &&
+                    x.tag === element.tag
+                ).length > 0
+              ) {
+                i = i + 1;
+              }else{
+                currentMarcFields[i].color = color;
+              }
+            }); 
+=======
+     // Build Final marc from after macro execute for Marc
+     private buildMacroExecuteFinalMarc(currentMarc: Marc,oldMarc : Marc): Marc {
+      const color = "#b6e2e9";
+      const maxLength = currentMarc.fields.length;
+      let srcFields = currentMarc.fields;
+      let destFields = oldMarc.fields;
+      for (let i = 0; i < maxLength; i++) {
+        if (!(srcFields[i].tag == 'Leader' && this.getLeaderData(srcFields[i]) == this.getLeaderData(destFields[i]))) {
+          if (srcFields[i].tag != destFields[i].tag || srcFields[i].ind1 != destFields[i].ind1
+             || srcFields[i].ind2 != destFields[i].ind2 || srcFields[i].subFieldDescription != destFields[i].subFieldDescription) {
+            srcFields[i].color = color;
+>>>>>>> Stashed changes
+          }
+        }
+      }
+    }
+    currentMarc.fields = currentMarcFields;
+    return currentMarc;
+  }
+
+  private getLeaderData(field: MarcField): string {
+    if (field && field.tag == "Leader" && field.data) {
+      return field.data.substring(5, 10) + field.data.substring(17, 20);
+    }
+    return "";
+  }
+
+  openNav() {
+    $(".MarcEditor").css("margin-right", "220px");
+    $(".macroSideNav").width(210);
+    $(".macroSideNavHeaderCollapsed").hide();
+  }
+
+  closeNav() {
+    $(".MarcEditor").css("margin-right", "1rem");
+    $(".macroSideNav").width(0);
+    $(".macroSideNavHeaderCollapsed").show();
+  }
+}

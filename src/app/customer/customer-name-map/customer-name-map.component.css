@@ -1,0 +1,141 @@
+
+.ml5{
+  margin-left: 5px;
+}
+/*People Picker Css*/
+.sp-peoplepicker-userSpan{
+    cursor: pointer;
+    white-space: inherit;
+    display: inline-block;
+    margin: 2px 5px 0px 0px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    padding: .1rem .2rem;
+  }
+  .sp-peoplepicker-topLevel,.sp-peoplepicker-topLevelDisabled{
+      cursor:text;
+      /*height:100%;
+      /*width:371px;*/
+      max-width:100%;
+      position:relative;
+      padding:1px 1px 2px 2px;
+      border:1px solid #cccccc;
+      line-height: normal;
+      height: auto;
+      min-height: 32px;
+  }
+  .customerNameMappingTable em.fa {
+    color: #7c7c7c;
+    cursor: pointer;
+    position: relative;
+    left: 5px;
+}
+  .disabled{
+      opacity: 0.4;
+  }
+  .customerNameMappingTable td.td-1-small {
+    width: 50px;
+    max-width: 50px;
+    min-width: 50px;
+    text-align:left !important;
+}
+.customerNameMappingTable td.td-1-small input {
+    float:right;
+    position: relative;
+    top:0px;
+}
+.nestedTableTR > td {
+    padding: 0 !important;
+    border: none !important;
+    border-width:0px !important;
+}
+.customerNameMappingTable th.customerID, .customerNameMappingTable td.customerID {
+    min-width: 10%;
+    max-width: 10%;
+    width: 10%;
+}
+.customerNameMappingTable th.accountName, .customerNameMappingTable td.accountName {
+    min-width: 20%;
+    max-width: 20%;
+    width: 20%;
+}
+.customerNameMappingTable th.customerName, .customerNameMappingTable td.customerName {
+    min-width: 25%;
+    max-width: 25%;
+    width: 25%;
+}
+  input.sp-peoplepicker-editorInput[type=text]{
+  border:0px;
+  padding:.375rem .75rem;
+  margin-left:0px;
+  vertical-align:inherit;
+  background-color:transparent;
+  height:26px;
+  
+  }
+  .existingCustomer p {
+    margin-bottom: .1rem;
+}
+  input.sp-peoplepicker-editorInput{
+      border:none;
+      display:block;
+      width: 100% !important    
+  }
+  
+  .sp-autoFill-scroll{
+  width:100%;
+  border:none;
+  margin:0px;
+  padding:0px;
+  min-width:300px !important;
+  padding-top:3px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  margin-right:10px;
+  list-style-type:none;
+  box-shadow:0px 0px 0px 0px transparent;
+  height:170px;
+  /* [ReplaceColor(themeColor:"BackgroundOverlay",opacity:"1.0")] */ background-color:#fff;
+  }
+
+  .sp-peoplepicker-delImage, .sp-peoplepicker-delImage:link{
+    margin-left: 5px;
+    color: #464646;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .user-list{
+      cursor: pointer;
+  }
+  .user-list:hover {
+      background-color: #ccc; 
+      color:  rgb(0,0,0); 
+      border: none; 
+  }
+  .ppWarningMsg{
+      margin-left:5px;
+      color:orange;
+  }
+
+.checkBoxNexpandCol {
+    max-width: 50px;
+    width: 50px;
+    min-width: 50px;
+    text-align:right;
+}
+.checkBoxNexpandCol input[type=checkbox]{
+    box-sizing: border-box;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    right:0;
+    top:0;
+  }
+.checkBoxNexpandCol input {
+    left: 4px;
+}
+.col.checkBoxNexpandCol.onlyCheckBox input {
+    left: 20px;
+}

@@ -1,0 +1,79 @@
+<div class="container-fluid">
+  <form #form="ngForm" (ngSubmit)="saveUserPrefernces(form)">
+    <div class="MarcEditor mr-0">
+      <h4 class="userConfigHeader">
+        <span tabindex="0" class="editMarcHead">User Preferences</span>
+      </h4>
+      <div class="userConfigeration container-fluid">
+        <div class="searchUserArea" [style.height.px]="newUserHeight">
+          <div class="row p-2">
+          <div class="col-sm-2 pr-0 pl-0">
+            <div class="form-group mb-2">
+              <div class="form-group" [ngClass]="{'is-hide':isHide}">
+                <label for="controlNumber" class="font-weight-bold">Control Number</label>
+                <select id="controlNumber" name="controlNumber" [(ngModel)]="controlNumber" class="form-control dropdown">
+                  <option *ngFor="let ctrlNumber of controlNumbers" [value]="ctrlNumber.key">
+                    {{ctrlNumber.name}}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-2 pr-small">
+            <div class="form-group mb-2">
+              <div class="form-group"  [ngClass]="{'is-hide':isHide}">
+                <label for="location" class="font-weight-bold">Location</label>
+                <select id="location" name="location" [(ngModel)]="location" class="form-control dropdown">
+                  <option *ngFor="let location of locations" [value]="location.key">
+                    {{location.name}}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-2 pr-small">
+            <div class="form-group mb-0 labelNcheckbox" [ngClass]="{'is-hide':isHide}">
+              <label aria-hidden="true" for="revealSpaces" class="font-weight-bold">Reveal Spaces</label>
+              <input tabindex="0" type="checkbox" name="revealSpaces" id="revealSpaces" [(ngModel)]="revealSpaces">
+            </div>
+          </div>
+          <!-- <div class="col-sm-3 pr-small">
+            <fieldset>
+              <legend class="font-weight-bold">Print - Line Spacing</legend>
+              <div class="row m-0">
+                <div class="col-5 p-0">
+                  <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection"
+                    id="doubleSpace" name="spaceOption" value="2" tabindex="0">
+                  <label for="doubleSpace">Double Space</label>
+
+                </div>
+              <div class="col-5 p-0">
+                <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection"
+                  id="singleSpace" name="spaceOption" value="1" tabindex="0">
+                <label for="singleSpace">Single Space</label>
+              </div>
+              </div>
+            </fieldset>
+          </div> -->
+        </div>
+        </div>
+      </div>
+
+      <div class="row marcEditorBtns">
+        <div class="col pl-small pr-0 text-right">
+          <button class="btn btn-primary flex-fill mr-1" id="save" tabindex="0" type="button"
+            (click)="saveUserPrefernces(form)">
+            Save
+          </button>
+          <button class="btn btn-default mr-1" id="cancel" (click)="clear(form)" tabindex="0" type="button">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="back" tabindex="0" type="button" (click)="back(form)">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+</div>

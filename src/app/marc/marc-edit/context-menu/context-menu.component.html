@@ -1,0 +1,9 @@
+<div class="contextmenu" [ngStyle]="{'left.px': x, 'top.px': y}">
+
+  <mat-select #mySelect   matNativeControl required [(ngModel)]="selectedData"
+    (selectionChange)="valueSelected()">
+    <mat-option *ngFor="let subField of filteredSubFields" 
+    [value]="subField.value">{{ subField.display }}</mat-option>
+  </mat-select>
+
+</div>

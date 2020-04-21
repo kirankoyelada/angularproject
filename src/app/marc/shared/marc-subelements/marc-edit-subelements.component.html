@@ -1,0 +1,117 @@
+<div class="col pl-0 pr-0 marcDataSubElements" *ngIf="field.tag === 'Leader' && field.isValid">
+	<div class="form-inline h-100">
+		<div class="col-12 h-100">
+			<div class="row">
+				<ng-container *ngFor="let subEle of tagData.subElements; let index = index">
+					<div class="form-group col-4" *ngIf="subEle.isvisible == true">
+						<label for="dateEnteredOn-life{{ index }}{{fieldIndex}}"
+							*ngIf="subEle.values === null && subEle.isvisible == true"
+							class="mr-2 col-form-label-sm">{{ subEle.description }}</label>
+						<input type="text" class="form-control form-control-sm" autocorrect="off" spellcheck="false"
+							name="dateEnteredOn-life{{ index }}{{fieldIndex}}" #subele1
+							*ngIf="subEle.values === null && subEle.isvisible == true"
+							[ngStyle]="{'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+							id="dateEnteredOn-life{{ index }}{{fieldIndex}}" [maxLength]="subEle.length"
+							[minLength]="subEle.length" moveNextByMaxLength [active]="canMoveNextByMaxLength"
+							(input)="validateLeaderDataOnChange($event, subEle, field, false)"
+							[value]="getLeaderTagData(field.data, subEle)" [readonly]="(!subEle.isEditable && !overrideValidation) ||( subEle.isEditable && subEle.element==='00-04')"
+							[class.border-danger]="subEle.isValid == false" matTooltipPosition="above"
+							matTooltipClass="input-leader-tooltip editErrorTooltip"
+							[matTooltip]="subEle.isValid == false ?'Invalid data':''" #tooltip="matTooltip" tabindex="0"
+               [matTooltipDisabled]="subEle.isValid"
+              (keydown.shift.enter)="onShiftEnterPress($event)"
+              (keydown.alt.delete)="onDelete()"
+              (keydown.control.z)="deActivateMoveNextByMaxLength($event)" />
+						<span class="sr-only" id="invalidData">Invalid data</span>
+						<label *ngIf="subEle.values != null && subEle.isvisible == true"
+							for="dateEnteredOn-life{{ index }}{{fieldIndex}}"
+							class="mr-2 col-form-label-sm">{{ subEle.description }}</label>
+						<input type="text" class="form-control form-control-sm" autocorrect="off" spellcheck="false"
+							name="dateEnteredOn-life{{ index }}{{fieldIndex}}" #subele1
+							*ngIf="subEle.values != null && subEle.isvisible == true"
+							[ngStyle]="{'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+							id="dateEnteredOn-life{{ index }}{{fieldIndex}}" matInput [matAutocomplete]="auto"
+							[maxLength]="subEle.length" [value]="getLeaderTagData(field.data, subEle)"
+							[minLength]="subEle.length" (keyup)="onKeyUp($event, subEle, field, false,index,trigger);"
+							(keydown)="onKeyDown($event, subEle)" (focus)="onSubelementFocus($event, true, subEle, index)"
+							(input)="validateLeaderDataOnChange($event, subEle, field, false,index,trigger);"
+							#trigger="matAutocompleteTrigger" (blur)="onBlurChange($event,subEle,trigger,true)"
+							[readonly]="!subEle.isEditable && !overrideValidation" [class.border-danger]="subEle.isValid == false"
+							matTooltipPosition="above" matTooltipClass="input-leader-tooltip editErrorTooltip"
+							[matTooltip]="subEle.isValid == false ?'Invalid data':''" #tooltip="matTooltip" tabindex="0"
+               [matTooltipDisabled]="subEle.isValid" moveNextByMaxLength [active]="canMoveNextByMaxLength"
+              (keydown.shift.enter)="onShiftEnterPress($event)"
+              (keydown.alt.delete)="onDelete()"
+              (keydown.control.z)="deActivateMoveNextByMaxLength($event)" />
+						<mat-autocomplete autoActiveFirstOption #auto="matAutocomplete"
+							class="subEleAutoComplete{{ index }}"
+							(optionSelected)="validateLeaderDataOnChange($event, subEle, field, true,index) ">
+							<mat-option *ngFor="let sub of values[index] | async" [value]="sub.code"
+								title="{{ sub.description }}">
+								{{ sub.description }}
+							</mat-option>
+						</mat-autocomplete>
+					</div>
+				</ng-container>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col pl-0 pr-0 marcDataSubElements" *ngIf="field.tag !== 'Leader' && field.isValid">
+	<div class="form-inline h-100">
+		<div class="col-12 h-100">
+			<div class="row">
+				<ng-container *ngFor="let subEle of tagData.subElements; let index = index">
+					<div class="form-group col-4">
+						<label for="dateEnteredOn-life{{ index }}{{fieldIndex}}" *ngIf="subEle.values == null"
+							class="mr-2 col-form-label-sm">{{subEle.description}}</label>
+						<input type="text" class="form-control form-control-sm" autocorrect="off" spellcheck="false"
+							name="dateEnteredOn-life{{ index }}{{fieldIndex}}" *ngIf="subEle.values == null"
+							id="dateEnteredOn-life{{ index }}{{fieldIndex}}" [maxLength]="subEle.length"
+							[minLength]="subEle.length" moveNextByMaxLength [active]="canMoveNextByMaxLength"
+							(keydown)="onKeyDown($event, subEle)" [class.border-danger]="subEle.isValid == false"
+							[value]="getTagData(field.data, subEle)" matTooltipPosition="above"
+							[ngStyle]="{'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+							matTooltipClass="input-leader-tooltip editErrorTooltip"
+							(blur)="onBlurChange($event,subEle,trigger, false)"
+							[readonly]="field.tag ==='008' && subEle.element==='00-05' && !overrideValidation"
+							[matTooltip]="subEle.isValid == false ?'Invalid data':''" #tooltip="matTooltip" tabindex="0"
+							 [matTooltipDisabled]="subEle.isValid"
+              (input)="validateDataOnChange($event, subEle, field, false,index)"
+              (keydown.alt.delete)="onDelete()"
+              (keydown.shift.enter)="onShiftEnterPress($event)"
+              (keydown.control.z)="deActivateMoveNextByMaxLength($event)" />
+						<label *ngIf="subEle.values != null" for="dateEnteredOn-life{{ index }}{{fieldIndex}}"
+							class="mr-2 col-form-label-sm">{{subEle.description}}</label>
+						<input type="text" class="form-control form-control-sm" autocorrect="off" spellcheck="false"
+							name="dateEnteredOn-life{{ index }}{{fieldIndex}}" *ngIf="subEle.values != null"
+              id="dateEnteredOn-life{{ index }}{{fieldIndex}}" matInput [matAutocomplete]="auto"
+			  (focus)="onSubelementFocus($event, false, subEle, index)"
+			  [ngStyle]="{'font-family':marcSettings?.font,'font-size':marcSettings?.fontsize}"
+							[maxLength]="subEle.length" [value]="getTagData(field.data, subEle)"
+							(input)="validateDataOnChange($event, subEle, field, false,index,trigger)"
+							[minLength]="subEle.length" moveNextByMaxLength [active]="canMoveNextByMaxLength"
+							[class.border-danger]="subEle.isValid == false" matTooltipPosition="above"
+							matTooltipClass="input-leader-tooltip editErrorTooltip"
+							(keyup)="onKeyUp($event, subEle, field, false,index,trigger);" (keydown)="onKeyDown($event, subEle)"
+							[matTooltip]="subEle.isValid == false ?( subEle.element !='35-37' ?'Invalid data' :(isValidLang ?'Invalid data':'Selected language is discontinued.')):''"
+							#tooltip="matTooltip" tabindex="0"  [matTooltipDisabled]="subEle.isValid"
+              #trigger="matAutocompleteTrigger" (blur)="onBlurChange($event,subEle,trigger, false)"
+              (keydown.shift.enter)="onShiftEnterPress($event)"
+              (keydown.alt.delete)="onDelete()"
+              (keydown.control.z)="deActivateMoveNextByMaxLength($event)" />
+						<mat-autocomplete autoActiveFirstOption #auto="matAutocomplete"
+							class="subEleAutoComplete{{ index }}"
+							(optionSelected)="validateDataOnChange($event, subEle, field, true,index)">
+							<mat-option *ngFor="let sub of values[index] | async" title="{{ sub.description }}"
+								[value]="sub.code"
+								[disabled]="((subEle.length > 1 && subEle.length != subEle.values[0].code.length)|| sub.isDisable == true) ? true : false ">
+								{{ sub.description }}
+							</mat-option>
+						</mat-autocomplete>
+					</div>
+				</ng-container>
+			</div>
+		</div>
+	</div>
+</div>

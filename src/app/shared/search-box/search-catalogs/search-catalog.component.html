@@ -1,0 +1,75 @@
+<div class="modal fade" id="catalogFields" role="dialog" aria-hidden="true" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" tabindex="0">Search Catalogs</h3>
+        <button type="button" (click)="resetCatalogItems()" class="close" data-dismiss="modal" tabindex="0"
+          title="Close">&times;</button>
+      </div>
+      <form>
+        <div class="modal-body catalogFields catalogFieldsContainer">
+          <div class="catalogFieldsRow" *ngIf="searchCatalogItems && searchCatalogItems.length > 0 && hasAllCatalogs">
+            <fieldset>
+              <legend class="sr-only">Catalog Selection</legend>
+              <div class="row m-0">
+              <div class="col-6 p-0">
+                <input class="mr-2" type="radio" (click)="toggleSelectionCatalogItems(true)" id="databaseCatalog" [disabled]="disableDatabaseRadioButton"
+                name="catalogsselectionToggle" [checked]="isDefaultCatalogsSelected === true && !isDeletedDBSelected"
+                tabindex="0">              
+                <label for="databaseCatalog"><b>Databases</b></label>
+              </div>
+              <div class="col-6 p-0">
+                <input class="ml-2 mr-2" type="radio" (click)="toggleSelectionCatalogItems(false)"
+                id="z3950ProfileCatalog" name="catalogsselectionToggle" [disabled]="disableZ3950RadioButton"
+                [checked]="isDefaultCatalogsSelected === false && !isDeletedDBSelected" tabindex="0">
+                <label for="z3950ProfileCatalog"><b>Z39.50 Profiles</b></label>
+              </div>
+              <div class="col-6 p-0">
+                <input class="mr-2" type="radio" (click)="toggleSelectionCatalogItems(null)" id="noCatalog"
+                name="catalogsselectionToggle" [checked]="isDefaultCatalogsSelected === null && !isDeletedDBSelected"
+                tabindex="0">
+                <label for="noCatalog"><b>None</b></label>
+              </div>
+              <div class="col-6 p-0">
+                <input class="ml-2 mr-2" type="radio" (click)="toggleSelectionCatalogItems('deletedDB')" id="deletedDB"
+                name="catalogsselectionToggle"
+                [disabled]="!(hasSearchDeleteMainRecordsPermission || hasSearchDeleteWSRecordsPermission ||
+                hasSearchCustomerDelWSPermission || hasSearchDelRecordsPermission)||disableDeleteRadioButton" tabindex="0"
+                [checked]="isDeletedDBSelected">
+                <label for="deletedDB"><b>Deleted DB</b></label>
+              </div>
+            </div>
+            </fieldset>
+          </div>
+          <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+            [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'" (drop)="onSearchFieldDrop($event)"
+            autoScrollEnabled="true">
+            <smooth-dnd-draggable *ngFor="let item of searchCatalogItems;let index= index">
+              <div class="catalogFieldsRow" *ngIf="item.profileName!='BTCAT Authority Main'">
+                <input [(ngModel)]="item.isActive" [disabled]="!enableCheckBox(item.id)" type="checkbox" tabindex="0"
+                  id="{{item.id}}" name="{{item.id}}" [checked]="item.isActive" />
+                <label class="custom-label" for="{{item.id}}" aria-hidden="true">
+                  <span>
+                    {{item.profileName}} </span>
+                </label>
+                <em aria-hidden="true" style="cursor:all-scroll !important" title="Drag up / down"
+                  class="column-drag-handle fas fa-arrows-alt-v">
+                </em>
+              </div>
+            </smooth-dnd-draggable>
+          </smooth-dnd-container>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" tabindex="0"
+            (click)="submit(searchCatalogItems)" [disabled]="DisableSearchCatalogSave(searchCatalogItems)">Save</button>
+          <button type="button" class="btn btn-default" (click)="resetCatalogItems()" data-dismiss="modal" tabindex="0">
+            Cancel
+          </button>
+        </div>
+      </form>
+      <!-- <ng-template #loading>
+        Loading Search Items ...
+      </ng-template> -->
+    </div>
+  </div>
+</div>

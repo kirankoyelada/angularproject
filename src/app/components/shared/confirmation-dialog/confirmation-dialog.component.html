@@ -1,0 +1,24 @@
+<div class="alertConfirmation" >
+  <div class="mat-header">
+    <h5 *ngIf="data.isCancelConfirm"> Confirmation </h5>
+    <h5 *ngIf="data.isCancelConfirm === false && data.isErrorMsg != true"> {{data.title}} </h5>
+    <h5 *ngIf="data.isErrorMsg === true"> Error </h5>
+  </div>
+  <div mat-dialog-content >
+    <span *ngIf="!data.isErrorMsg" [innerHtml]="data.message"></span>
+    <span [innerHtml]="data.message" *ngIf="data.isErrorMsg === true" ></span>
+    <div class="errorNav" [innerHtml]="data.stackMessage" *ngIf="data.isCopyErrorMsg===true"></div>
+  </div>
+  <div class="matActionsBtns">
+  <span class="copyErrorMsgAlert" style="color:#004165" *ngIf="showCopyMsg === true" >Copied to Clipboard.</span>
+  <div mat-dialog-actions class="mat-actions">
+    <button mat-button *ngIf="data.isCopyErrorMsg" (click)="copyMessage(data.stackMessage)" class="btn btn-primary float-right"  value="click to copy" >Copy Error</button>
+    <button mat-button *ngIf="data.isCancelConfirm" aria-label="{{readContent()}} Ok" [mat-dialog-close]="true" cdkFocusInitial class="btn btn-primary"
+      tabindex="0">{{ this.buttonOneLabel }}</button>
+    <button mat-button *ngIf="data.isCancelConfirm && this.buttonTwoVisible" matDialogClose tabindex="0" class="btn btn-default">Cancel</button>
+    <button mat-button *ngIf="!data.isCancelConfirm && !data.isORSMsg" aria-label="{{readContent()}} Ok" [mat-dialog-close]="true" class="btn btn-primary"
+      tabindex="0">OK</button>
+      <button mat-button *ngIf="data.isORSMsg" (click)="copyORSValue(data.orsNumber)" class="btn btn-primary"  [mat-dialog-close]="true" value="OK" >OK</button>
+  </div>
+</div>
+</div>

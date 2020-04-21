@@ -1,0 +1,15 @@
+<app-header></app-header>
+<app-search-box [isSearchView]="true" (showSpinner)="showSpinner($event)" (sendSearchResult)="getSearchResult($event)" 
+(sendZ3950SearchResult)="getZ3950SearchResult($event)" (sendAuthoritySearchResult)="getAuthoritySearchResult($event)" 
+[facetValue]="facetValue"></app-search-box>
+<app-menu [showBackBtn]="showBackBtn"></app-menu>
+<!-- <div *ngIf="startSpinner" class="searchSpinner">
+  <mat-progress-spinner [diameter]="70" [mode]="'indeterminate'">
+  </mat-progress-spinner>
+</div> -->
+<section class="main_container mt-3">  
+  <app-search-results *ngIf="showSearchResult" [basicSearchResponse]="basicSearchResponse" [facetResponse]="facetResponse" (emitFacetValue)="getFacetValue($event)"></app-search-results>
+
+  <!-- <app-authority-results *ngIf="showAuthoritySearchResult" [authoritySearchResponse]="authoritySearchResponse"></app-authority-results> -->
+</section>
+  

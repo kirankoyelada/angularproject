@@ -1,0 +1,86 @@
+<div class="wrapper" *ngIf="divTemplateGridResult">
+ <div id="content" class="">
+    <header class="tableHeaderCounts">
+      <div class="container-fluid TemplateHead" role="grid">
+        <div class="row">
+          <div class="col-sm-3 pl-small pr-small">
+            <h4>
+              <span tabindex="0" [ngClass]="isTemplatesPage ? 'templateEditInfoSmall':'templateEditInfoBig'">Templates <br>
+                <span class="templateEditInfo">
+                  {{isTemplatesPage? "Double click a template to edit." : "Double click a template to create a new record."}}
+                </span>
+              </span>
+            </h4>
+          </div>
+          <div class="col-sm-6 p-0 templateRefineFilters">
+            <div class="row">
+                <div class="form-group mb-0 refineFilterType col-3 pl-0">
+                    <label for="refineFilterType" class="sr-only">Type</label>
+                    <select (change)="OnTypeChanged($event)" class="form-control dropdown" id="refineFilterType" tabindex="0" name="refineFilterType">
+                        <option value="Select Type" selected>Select Type</option>
+                        <ng-container *ngFor="let type of templateTypes">
+                            <option value="{{type.name}}">{{type.name}}</option>
+                        </ng-container>
+                    </select>
+                </div>
+            <div class="form-group mb-0 refineFilterLevel col-6 p-0">
+              <div class="row">
+              <div class="custom-checkbox-div refineFilterLevelLocal col p-0">
+                <input checked="true" class="refineLevel" (change)="OnLevelChanged($event)" tabindex="0" type="checkbox" id="refineFilterLevelLocal" name="refineFilterLevelLocal">
+                <label aria-hidden="true" class="custom-label ml-1" for="refineFilterLevelLocal"> Local</label>
+              </div>
+              <div class="custom-checkbox-div refineFilterLevelGlobal col pr-0">
+                <input checked="true" class="refineLevel" (change)="OnLevelChanged($event)" tabindex="0" type="checkbox" id="refineFilterLevelGlobal" name="refineFilterLevelGlobal">
+                <label aria-hidden="true" class="custom-label ml-1" for="refineFilterLevelGlobal"> Global</label>
+              </div>
+              <div class="custom-checkbox-div refineFilterLevelInstitutional col p-0">
+                <input checked="true" class="refineLevel" (change)="OnLevelChanged($event)" tabindex="0" type="checkbox" id="refineFilterLevelInstitutional" name="refineFilterLevelInstitutional">
+                <label aria-hidden="true" class="custom-label ml-1" for="refineFilterLevelInstitutional">Institutional</label>
+              </div>
+            </div>
+            </div>
+            <div class="form-group mb-0 refineFilterInstitutions col-3 p-0">
+              <label for="refineFilterInstitutions" class="sr-only">Institution</label>
+              <input [disabled]="disableInstitution" (keyup)="getTemplatesBySearchTerm($event);" type="text" class="form-control" id="refineFilterInstitutions" name="refineFilterInstitutions" placeholder="Institution">
+            </div>
+          </div>
+          </div>
+          <div class="col-sm-3 pr-small pl-small text-right">
+            <div class="form-group templatesSearchFilter">
+              <label for="templatesSearchFilter" class="sr-only">Templates Search Filter</label>
+              <input type="text" class="form-control" (keyup)="getTemplatesBySearchTerm($event);" id="templatesSearchFilter" name="templatesSearchFilter" tabindex="0" placeholder="Search">
+            </div>
+            <button type="button" (click)="clearSearch()" class="btn btn-primary ml-1 lessPaddingInZoom" tabindex="0">Reset Filters</button>
+            <button type="button" [hidden]="!isTemplatesPage" [disabled]="!hasAccessAny([Permissions.CED_GTEMP,Permissions.CED_ITEMP, Permissions.CED_LTEMP])" (click)="clickNewTemplate()" class="btn btn-primary ml-1 lessPaddingInZoom" tabindex="0">New</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="flex-container" [style.height.px]="NewHeight">
+      <div class="fit table-responsive templatesSearchResultTableContainer mb-2">
+        <fieldset>
+          <legend class="sr-only">Templates</legend>
+          <table id="templates" class="table table-bordered table-hover table-sm" role="grid"
+                aria-describedby="templates" width="100%">
+
+          </table>
+        </fieldset>
+      </div>
+      <header class="TemplateRecordHeader" *ngIf="marcItem">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-9 pl-small">
+              <span class="font-weight-bold" tabindex="0">MARC</span>
+            </div>
+          </div>
+        </div>
+      </header>
+        <div class="marc-outer">
+          <div class="MARCrecords MARCrecordsView" *ngIf="marcItem"  [ngStyle]="{'background-color':marcSettings?.backgroundcolor}">
+            <marc-view [marcItem] = "marcItem" ></marc-view>
+          </div>
+        </div>
+      </div>
+ </div>
+</div>
+

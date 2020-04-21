@@ -1,0 +1,866 @@
+<div class="wrapper">
+  <form #form="ngForm">
+    <div id="contentFull">
+      <header class="tableHeaderCounts">
+        <div class="container-fluid Z3950Head" role="grid">
+          <div class="row">
+            <div class="col-sm-3 pl-small pr-small">
+              <h4><span tabindex="0">CLS Label Configuration</span></h4>
+            </div>
+            <div class="col-sm-5 p-0 text-center">
+              <span *ngIf="displayWarnMessage" class="clsLabelErrorMessage" tabindex="0">
+                One or more errors occurred while saving the CLS label
+                Configuration. Please correct them to proceed.
+              </span>
+            </div>
+            <div class="col-sm-4 headerLinks text-right">
+                <a class="emptyHrefLink menu-item" [ngClass]="{'disableForm': !hasAccess(Permissions.CLS_CUST_CONFIG)}" (click)="goToCustomerConfiguration()" tabindex="0" (keydown.enter)="goToCustomerConfiguration()">
+                  Customer Configuration<span class="sr-only">Press enter to activate</span></a>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="marc-outer Z3950Profiles">
+        <div class="MARCrecords" [style.height.px]="NewHeight">
+          <div class="col">
+            <div class="row">
+              <div class="col-sm-3 pr-0 pl-small">
+                <div class="form-group mb-3">
+                  <label for="institutionType" class="font-weight-bold">Institution</label>
+                  <select id="institutionType" class="form-control dropdown" name="institutionType"
+                  (change)="onInstitutionTypeChange(form)" [(ngModel)]="institutionId">
+                      <option *ngFor="let inst of institutes" [value]="inst.id" [selected]="inst=='institutionId'">{{inst.displayName}}</option>
+                  </select> 
+                  </div>
+              </div>
+              <div class="col-sm-3 pr-0 pl-small">
+                <div class="form-group mb-3">
+                  <label for="customer-name" class="font-weight-bold">Customer Name</label>
+                  <input class="form-control" [formControl]="myControl" id="customer-name" name="customer-name"
+                    tabindex="0" placeholder="Search Customer" matInput [(ngModel)]="searchCustomer"
+                    #triggertag="matAutocompleteTrigger" [matAutocomplete]="auto"
+                    (input)="customerNameEntered($event.target.value, form)" />
+                  <div class="usersListFilter">
+                    <mat-autocomplete #auto="matAutocomplete" class="userListWidth" autoActiveFirstOption
+                      [displayWith]="displayFn" (optionSelected)="
+                        getLabelConfigForSelectedCustomer(
+                          $event.option.value,
+                          form
+                        )
+                      ">
+                      <ng-container *ngFor="
+                          let customer of existingCustomers
+                            | customerfilter: searchCustomer
+                        ">
+                        <mat-option [value]="customer" *ngIf="
+                            customer.customerName === 'Customer not found';
+                            else customerFound
+                          " disabled="true">
+                          <i>Customer not found</i>
+                        </mat-option>
+                        <mat-option [value]="customer" *ngIf="customer.customerName !== 'Customer not found'"
+                          matTooltip="{{
+                            customer.customerName
+                          }}" #customerFound>
+                          {{customer.customerName}}
+                        </mat-option>
+                      </ng-container>
+                    </mat-autocomplete>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-3 pr-0" *ngIf="loadControlsScreen">
+                <div class="form-group mb-3" [ngClass]="{ 'is-hide': isHide }">
+                  <div class="form-group mb-2 required">
+                    <label for="barcode-comment" class="font-weight-bold">
+                      Barcode Comment</label>
+                    <input class="form-control" id="barcode-comment" name="barcode-comment" tabindex="0" [(ngModel)]="
+                        clsCustomerLabelConfigurationDto.barcodeComment
+                      " (input)="markAsDirtyField(form)" (blur)="validateBarCodeComment(form)"
+                      [ngClass]="{'border-danger': barcodeCommentRequired}"
+                      [matTooltip]="barcodeCommentRequired ? 'Required' : ''"
+                      matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-3 pr-0" *ngIf="loadControlsScreen">
+                <div class="form-group mb-3">
+                  <div class="form-group mb-2">
+                    <label for="barcodeSymbology" class="font-weight-bold">Barcode Symbology</label>
+                    <select class="form-control dropdown" id="barcodeSymbology" name="barcodeSymbology" tabindex="0" [(ngModel)]="
+                        clsCustomerLabelConfigurationDto.barcodeSymbology
+                      " (change)="markAsDirtyField(form)">
+                      <option *ngFor="let barCodeSymbology of barCodeSymbologies" [value]="barCodeSymbology.key">
+                        {{ barCodeSymbology.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-3 pr-0 pl-small" *ngIf="loadControlsScreen">
+                <div class="form-group mb-3">
+                  <div class="form-group mb-2 required">
+                    <label for="barcodeSubfieldIn949Tag" class="font-weight-bold">Barcode Subfield in 949 tag</label>
+                    <input class="form-control" type="text" id="barcodeSubfieldIn949Tag" name="barcodeSubfieldIn949Tag"
+                      tabindex="0" [(ngModel)]="
+                        clsCustomerLabelConfigurationDto.barcodeSubFieldIn949
+                      " (input)="markAsDirtyField(form)"
+                      (blur)="validateBarCodeSubField949Tag(form,$event.target.value)"
+                      [ngClass]="{'border-danger':barCode949TagError}" [matTooltip]="barCode949TagToolTip"
+                      matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above" minlength="1"
+                      maxlength="1" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-3 pl-0 pr-0 mb-3" *ngIf="loadControlsScreen">
+                <p class="font-weight-bold mb-0">Template Overwrite</p>
+                <div class="container-fluid p-0">
+                  <div class="row m-0">
+                    <div class="col pl-small pr-small">
+                      <fieldset>
+                        <legend class="sr-only">
+                          Choose Template Overwrite
+                        </legend>
+                        <div class="row m-0">
+                          <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" name="templateOverwriteOption" id="templateOverwriteYes"
+                              tabindex="0" [value]="true" [(ngModel)]="
+                                clsCustomerLabelConfigurationDto.templateOverwrite
+                              " (click)="markAsDirtyField(form)" />
+                            <label for="templateOverwriteYes">Yes</label>
+                          </div>
+                          <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" name="templateOverwriteOption" id="templateOverwriteNo"
+                              tabindex="0" [value]="false" [(ngModel)]="
+                                clsCustomerLabelConfigurationDto.templateOverwrite
+                              " (click)="markAsDirtyField(form)" />
+                            <label for="templateOverwriteNo">No</label>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-3 pr-0 mb-3" *ngIf="loadControlsScreen">
+                <p class="font-weight-bold mb-0">
+                  Display Human Readable Check Digit
+                </p>
+                <div class="container-fluid p-0">
+                  <div class="row m-0">
+                    <div class="col pl-small pr-small">
+                      <fieldset>
+                        <legend class="sr-only">
+                          Display Human Readable Check Digit
+                        </legend>
+                        <div class="row m-0">
+                          <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" name="displayHumanReadableCheckDigit"
+                              id="displayHumanReadableCheckDigitYes" tabindex="0" [value]="true"
+                              (click)="markAsDirtyField(form)" [(ngModel)]="
+                                clsCustomerLabelConfigurationDto.displayHumanReadableCheckDigit
+                              " />
+                            <label for="displayHumanReadableCheckDigitYes">Yes</label>
+                          </div>
+                          <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" [value]="false" name="displayHumanReadableCheckDigit"
+                              id="displayHumanReadableCheckDigitNo" tabindex="0" (click)="markAsDirtyField(form)"
+                              [(ngModel)]="
+                                clsCustomerLabelConfigurationDto.displayHumanReadableCheckDigit
+                              " />
+                            <label for="displayHumanReadableCheckDigitNo">No</label>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-3 pr-0 mb-3" *ngIf="loadControlsScreen">
+                <p class="font-weight-bold mb-0">Check Digit</p>
+                <div class="container-fluid p-0">
+                  <div class="row m-0">
+                    <div class="col pl-small pr-small">
+                      <fieldset>
+                        <legend class="sr-only">Check Digit</legend>
+                        <div class="row m-0">
+                          <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" name="CheckDigitOption" id="CheckDigitYes" tabindex="0"
+                              [value]="true" (click)="markAsDirtyField(form)" [(ngModel)]="
+                                clsCustomerLabelConfigurationDto.checkDigit
+                              " />
+                            <label for="CheckDigitYes">Yes</label>
+                          </div>
+                          <div class="col-3 p-0">
+                            <input class="mr-2" type="radio" name="CheckDigitOption" id="CheckDigitNo" tabindex="0"
+                              [value]="false" (click)="markAsDirtyField(form)" [(ngModel)]="
+                                clsCustomerLabelConfigurationDto.checkDigit
+                              " />
+                            <label for="CheckDigitNo">No</label>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-5 pr-small pl-small mb-0" *ngIf="loadControlsScreen">
+                <p class="font-weight-bold mb-0">Label Values</p>
+                <div class="container-fluid labelValues">
+                  <span class="font-weight-bold">Spine Label</span>
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="spineLabelFontFamily" class="sr-only">Spine Label Font Family</label>
+                          <select class="form-control dropdown" id="spineLabelFontFamily" name="spineLabelFontFamily"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.spineLabel.font
+                            ">
+                            <option *ngFor="let fontFamily of fontFamilys" [value]="fontFamily.key">
+                              {{ fontFamily.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="spineLabelFontSize" class="sr-only">Spine Label Font Size</label>
+                          <select class="form-control dropdown" id="spineLabelFontSize" name="spineLabelFontSize" tabindex="0"
+                            (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.spineLabel
+                                .fontSize
+                            ">
+                            <option *ngFor="let fontSize of fontSizes" [value]="fontSize.key">
+                              {{ fontSize.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="spineLabelFontWeight" class="sr-only">Spine Label Font Weight</label>
+                          <select class="form-control dropdown" id="spineLabelFontWeight" name="spineLabelFontWeight"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.spineLabel
+                                .fontWeight
+                            ">
+                            <option *ngFor="let fontWeight of fontWeights" [value]="fontWeight.key">
+                              {{ fontWeight.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0 pr-0">
+                        <div class="form-group mb-2">
+                          <label for="spineLabelFontAlignment" class="sr-only">Spine Label Font Alignment</label>
+                          <select class="form-control dropdown" id="spineLabelFontAlignment" name="spineLabelFontAlignment"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.spineLabel
+                                .alignment
+                            ">
+                            <option *ngFor="let fontAlignment of fontAlignments" [value]="fontAlignment.key">
+                              {{ fontAlignment.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="font-weight-bold">One-line Spine Label</span>
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="oneLineSpineLabelFontFamily" class="sr-only">One-line Spine Label Font
+                            Family</label>
+                          <select class="form-control dropdown" id="oneLineSpineLabelFontFamily"
+                            name="oneLineSpineLabelFontFamily" tabindex="0" (change)="markAsDirtyField(form)"
+                            [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.oneLineSpineLabel
+                                .font
+                            ">
+                            <option *ngFor="let fontFamily of fontFamilys" [value]="fontFamily.key">
+                              {{ fontFamily.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="oneLineSpineLabelFontSize" class="sr-only">One-line Spine Label Font Size</label>
+                          <select class="form-control dropdown" id="oneLineSpineLabelFontSize" name="oneLineSpineLabelFontSize"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.oneLineSpineLabel
+                                .fontSize
+                            ">
+                            <option *ngFor="let fontSize of fontSizes" [value]="fontSize.key">
+                              {{ fontSize.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="oneLineSpineLabelFontWeight" class="sr-only">One-line Spine Label Font
+                            Weight</label>
+                          <select class="form-control dropdown" id="oneLineSpineLabelFontWeight"
+                            name="oneLineSpineLabelFontWeight" tabindex="0" (change)="markAsDirtyField(form)"
+                            [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.oneLineSpineLabel
+                                .fontWeight
+                            ">
+                            <option *ngFor="let fontWeight of fontWeights" [value]="fontWeight.key">
+                              {{ fontWeight.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0 pr-0">
+                        <div class="form-group mb-2">
+                          <label for="oneLineSpineLabelFontAlignment" class="sr-only">One-line Spine Label Font
+                            Alignment</label>
+                          <select class="form-control dropdown" id="oneLineSpineLabelFontAlignment"
+                            name="oneLineSpineLabelFontAlignment" tabindex="0" (change)="markAsDirtyField(form)"
+                            [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.oneLineSpineLabel
+                                .alignment
+                            ">
+                            <option *ngFor="let fontAlignment of fontAlignments" [value]="fontAlignment.key">
+                              {{ fontAlignment.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="font-weight-bold">Eye Readable Barcode</span>
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="eyeReadableBarcodeFontFamily" class="sr-only">Eye Readable Barcode Font
+                            Family</label>
+                          <select class="form-control dropdown" id="eyeReadableBarcodeFontFamily"
+                            name="eyeReadableBarcodeFontFamily" tabindex="0" (change)="markAsDirtyField(form)"
+                            [(ngModel)]="
+                              clsCustomerLabelConfigurationDto
+                                .eyeReadableBarcode.font
+                            ">
+                            <option *ngFor="let fontFamily of fontFamilys" [value]="fontFamily.key">
+                              {{ fontFamily.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="eyeReadableBarcodeFontSize" class="sr-only">Eye Readable Barcode Font Size</label>
+                          <select class="form-control dropdown" id="eyeReadableBarcodeFontSize" name="eyeReadableBarcodeFontSize"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto
+                                .eyeReadableBarcode.fontSize
+                            ">
+                            <option *ngFor="let fontSize of fontSizes" [value]="fontSize.key">
+                              {{ fontSize.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="eyeReadableBarcodeFontWeight" class="sr-only">Eye Readable Barcode Font
+                            Weight</label>
+                          <select class="form-control dropdown" id="eyeReadableBarcodeFontWeight"
+                            name="eyeReadableBarcodeFontWeight" tabindex="0" (change)="markAsDirtyField(form)"
+                            [(ngModel)]="
+                              clsCustomerLabelConfigurationDto
+                                .eyeReadableBarcode.fontWeight
+                            ">
+                            <option *ngFor="let fontWeight of fontWeights" [value]="fontWeight.key">
+                              {{ fontWeight.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0 pr-0">
+                        <div class="form-group mb-2">
+                          <label for="eyeReadableBarcodeFontAlignment" class="sr-only">Eye Readable Barcode Font
+                            Alignment</label>
+                          <select class="form-control dropdown" id="eyeReadableBarcodeFontAlignment"
+                            name="eyeReadableBarcodeFontAlignment" tabindex="0" (change)="markAsDirtyField(form)"
+                            [(ngModel)]="
+                              clsCustomerLabelConfigurationDto
+                                .eyeReadableBarcode.alignment
+                            ">
+                            <option *ngFor="let fontAlignment of fontAlignments" [value]="fontAlignment.key">
+                              {{ fontAlignment.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="font-weight-bold">Branch Label</span>
+                  <div class="col">
+                    <div class="row">
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="branchLabelFontFamily" class="sr-only">Branch Label Font Family</label>
+                          <select class="form-control dropdown" id="branchLabelFontFamily" name="branchLabelFontFamily"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.branchLabel.font
+                            ">
+                            <option *ngFor="let fontFamily of fontFamilys" [value]="fontFamily.key">
+                              {{ fontFamily.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="branchLabelFontSize" class="sr-only">Branch Label Font Size</label>
+                          <select class="form-control dropdown" id="branchLabelFontSize" name="branchLabelFontSize" tabindex="0"
+                            (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.branchLabel
+                                .fontSize
+                            ">
+                            <option *ngFor="let fontSize of fontSizes" [value]="fontSize.key">
+                              {{ fontSize.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0">
+                        <div class="form-group mb-2">
+                          <label for="branchLabelFontWeight" class="sr-only">Branch Label Font Weight</label>
+                          <select class="form-control dropdown" id="branchLabelFontWeight" name="branchLabelFontWeight"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.branchLabel
+                                .fontWeight
+                            ">
+                            <option *ngFor="let fontWeight of fontWeights" [value]="fontWeight.key">
+                              {{ fontWeight.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-3 pl-0 pr-0">
+                        <div class="form-group mb-2">
+                          <label for="branchLabelFontAlignment" class="sr-only">Branch Label Font Alignment</label>
+                          <select class="form-control dropdown" id="branchLabelFontAlignment" name="branchLabelFontAlignment"
+                            tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                              clsCustomerLabelConfigurationDto.branchLabel
+                                .alignment
+                            ">
+                            <option *ngFor="let fontAlignment of fontAlignments" [value]="fontAlignment.key">
+                              {{ fontAlignment.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-7 pr-small pl-small mb-0" *ngIf="loadControlsScreen">
+                <p class="font-weight-bold mb-0">Label Configuration</p>
+                <div class="labelConfiguration">
+                  <div class="container-fluid p-0">
+                    <div class="accordion md-accordion" id="CLSLabelConfigAccordians" role="tablist"
+                      aria-multiselectable="true">
+                      <ng-container *ngFor="
+                          let item of clsCustomerLabelConfigurationDto.labelConfigurations;
+                          let i = index
+                        ">
+                        <div class="card">
+                          <div class="card-header" id="card-{{ getlableTypeId(item.labelType) }}">
+                            <a data-toggle="collapse" data-parent="#CLSLabelConfigAccordians" href="#CLSCustConfigCatalogs{{
+                                getlableTypeId(item.labelType)
+                              }}" aria-expanded="true" [(ngModel)]="item.labelType" ngDefaultControl
+                              name="card-{{ getlableTypeId(item.labelType) }}">
+                              <p class="mb-0 font-weight-bold">
+                                {{ item.labelType}}<em class="fas fa-angle-down rotate-icon"></em>
+                              </p>
+                            </a>
+                          </div>
+                          <div id="CLSCustConfigCatalogs{{
+                              getlableTypeId(item.labelType)
+                            }}" [class.show]="i === 0" class="collapse " role="tabpanel"
+                            data-parent="#CLSLabelConfigAccordians">
+                            <div class="card-body">
+                              <span class="font-weight-bold">Label Attributes</span>
+                              <div class="col">
+                                <div class="row">
+                                  <div class="col-3 pl-0">
+                                    <div class="form-group mb-2">
+                                      <label for="labelAttributesFontFamily{{
+                                          getlableTypeId(item.labelType)
+                                        }}" class="sr-only">Label Attributes Font Family</label>
+                                      <select class="form-control dropdown" id="labelAttributesFontFamily{{
+                                          getlableTypeId(item.labelType)
+                                        }}" name="labelAttributesFontFamily{{
+                                          getlableTypeId(item.labelType)
+                                        }}" tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                                          item.labelPrintConfiguration.font
+                                        ">
+                                        <ng-container *ngFor="
+                                            let font of getfontFamily(
+                                              item.fontConfiguration
+                                            )
+                                          ">
+                                          <option [value]="font">
+                                            {{ font }}
+                                          </option>
+                                        </ng-container>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div class="col-3 pl-0">
+                                    <div class="form-group mb-2">
+                                      <label for="labelAttributesFontSize{{
+                                          getlableTypeId(item.labelType)
+                                        }}" class="sr-only">Label Attributes Font Size</label>
+                                      <select class="form-control dropdown" id="labelAttributesFontSize{{
+                                          getlableTypeId(item.labelType)
+                                        }}" name="labelAttributesFontSize{{
+                                          getlableTypeId(item.labelType)
+                                        }}" tabindex="0" (change)="
+                                          labelAttributeFontSizeIsChanged(
+                                            form
+                                          )
+                                        " [(ngModel)]="
+                                          item.labelPrintConfiguration.fontSize
+                                        ">
+                                        <option *ngFor="
+                                            let fontSize of getfontSize(item)
+                                          " [value]="fontSize">
+                                          {{ fontSize }}
+                                        </option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div class="col-3 pl-0">
+                                    <div class="form-group mb-2">
+                                      <label for="labelAttributesFontWeight{{
+                                          getlableTypeId(item.labelType)
+                                        }}" class="sr-only">Label Attributes Font Weight</label>
+                                      <select class="form-control dropdown" id="labelAttributesFontWeight{{
+                                          getlableTypeId(item.labelType)
+                                        }}" name="labelAttributesFontWeight{{
+                                          getlableTypeId(item.labelType)
+                                        }}" tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                                          item.labelPrintConfiguration
+                                            .fontWeight
+                                        ">
+                                        <option *ngFor="let fontWeight of fontWeights" [value]="fontWeight.key">
+                                          {{ fontWeight.name }}
+                                        </option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div class="col-3 pl-0 pr-0">
+                                    <div class="form-group mb-2">
+                                      <label for="labelAttributesFontAlignment{{
+                                          getlableTypeId(item.labelType)
+                                        }}" class="sr-only">Label Attributes Font Alignment</label>
+                                      <select class="form-control dropdown" id="labelAttributesFontAlignment{{
+                                          getlableTypeId(item.labelType)
+                                        }}" name="labelAttributesFontAlignment{{
+                                          getlableTypeId(item.labelType)
+                                        }}" tabindex="0" (change)="markAsDirtyField(form)" [(ngModel)]="
+                                          item.labelPrintConfiguration.alignment
+                                        ">
+                                        <option *ngFor="
+                                            let fontAlignment of fontAlignments
+                                          " [value]="fontAlignment.key">
+                                          {{ fontAlignment.name }}
+                                        </option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col">
+                                <div class="row">
+                                  <div class="col-6 pl-0"></div>
+                                  <div class="col-4 pl-0">
+                                    <div class="row">
+                                      <div class="col-6">
+                                        <p>
+                                          <span class="font-weight-bold">Max. Line:
+                                          </span>{{ getMaxLines(item, item.lableType) }}
+                                        </p>
+                                      </div>
+                                      <div class="col-6 pl-0 text-right">
+                                        <p>
+                                          <span class="font-weight-bold">Max. Chars:
+                                          </span>{{ getMaxChars(item, item.lableType) }}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="col-2 pl-0"></div>
+                                </div>
+                              </div>
+                              <div class="col">
+                                <div class="row">
+                                  <div class="col-6">
+                                    <div class="row">
+                                      <div class="col pl-0">
+                                        <div class="LCcheckboxRow row" id="LCcheckboxRow">
+                                          <span class="bibTagLabels invisible col-6">Labels</span>
+                                          <div class="col-3 pl-0">
+                                            <span class="bibTagLabels">Tag</span>
+                                          </div>
+                                          <div class="col-3 pl-0">
+                                            <span class="bibTagLabels">Subfield</span>
+                                          </div>
+                                          <ng-container *ngFor="
+                                              let fieldItem of item.labelFields;
+                                              let childIndex = index">
+                                            <div class="custom-checkbox-div col-6">
+                                              <input tabindex="0" type="checkbox" id="LCcallNumber{{
+                                                  getdisplayName(
+                                                    item.labelType,
+                                                    fieldItem.displayName
+                                                  )
+                                                }}" [(ngModel)]="
+                                                  fieldItem.isChecked
+                                                " (click)="
+                                                  chcekBoxSelected(
+                                                    form,
+                                                    fieldItem,
+                                                    item
+                                                  )
+                                                " name="LCcallNumber{{
+                                                  getdisplayName(
+                                                    item.labelType,
+                                                    fieldItem.displayName
+                                                  )
+                                                }}" [ngModelOptions]="{
+                                                  standalone: true
+                                                }" />
+                                              <label aria-hidden="true" class="custom-label" for="LCcallNumber{{
+                                                  getdisplayName(
+                                                    item.labelType,
+                                                    fieldItem.displayName
+                                                  )
+                                                }}">
+                                                <span>{{
+                                                  fieldItem.displayName
+                                                }}</span></label>
+                                            </div>
+                                            <div class="col-3 pl-0"
+                                              [matTooltip]="validateTag(fieldItem,item.labelFields,childIndex)==true?'Invalid tag':''"
+                                              matTooltipClass="my-tooltip editTagEditErrorTooltip" aria-describedby="LCcheckboxRow"
+                                              matTooltipPosition="above">
+                                              <input class="form-control mb-2" type="text" id="callNumberTag{{
+                                                  getdisplayNameTag(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag
+                                                  )
+                                                }}-{{childIndex}}" [value]="fieldItem.tag" [disabled]="
+                                                  fieldItem.isChecked == false
+                                                " name="callNumberTag{{
+                                                  getdisplayNameTag(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag
+                                                  )
+                                                }}-{{childIndex}}" tabindex="0"
+                                                (ngModelChange)="markAsDirtyField(form)" [(ngModel)]="fieldItem.tag"
+                                                [ngClass]="{'border-danger': validateTag(fieldItem,item.labelFields,childIndex)}"
+                                                matInput OnlyNumber #inputTag #tagModel="ngModel" [ngModelOptions]="{
+                                                  standalone: true
+                                                }" minlength="1" maxlength="3" />
+                                              <label for="callNumberTag{{
+                                                  getdisplayNameTag(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag
+                                                  )
+                                                }}-{{childIndex}}" class="sr-only">{{ fieldItem.tag }} Tag</label>
+                                            </div>
+                                            <div *ngIf="item.labelType!=miscLabel" class="col-3 pl-0"
+                                              [matTooltip]="validateField(fieldItem,item.labelFields,childIndex)==true?'Invalid field':''"
+                                              matTooltipClass="my-tooltip editTagEditErrorTooltip" aria-describedby="LCcheckboxRow"
+                                              matTooltipPosition="above">
+                                              <input class="form-control mb-2" type="text" id="callNumberSubField{{
+                                                  getdisplayNameSubField(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag,
+                                                    fieldItem.subField
+                                                  )
+                                                }}-{{childIndex}}" name="callNumberSubField{{
+                                                  getdisplayNameSubField(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag,
+                                                    fieldItem.subField
+                                                  )
+                                                }}-{{childIndex}}" tabindex="0" (input)="markAsDirtyField(form)"
+                                                [ngClass]="{
+                                                  'border-danger': validateField(fieldItem,item.labelFields,childIndex)
+                                                }" [value]="fieldItem.subField" [disabled]="
+                                                  fieldItem.isChecked == false
+                                                " [(ngModel)]="fieldItem.subField" [ngModelOptions]="{
+                                                  standalone: true
+                                                }" minlength="1" maxlength="4" />
+                                              <label for="callNumberSubField{{
+                                                  getdisplayNameSubField(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag,
+                                                    fieldItem.subField
+                                                  )
+                                                }}-{{childIndex}}" class="sr-only">{{
+                                                  fieldItem.subField
+                                                }}
+                                                Subfield</label>
+                                            </div>
+                                            <div *ngIf="item.labelType==miscLabel" class="col-3 pl-0"
+                                              [matTooltip]="validateField(fieldItem,item.labelFields,childIndex)==true?'Invalid field':''"
+                                              matTooltipClass="my-tooltip editTagEditErrorTooltip"
+                                              matTooltipPosition="above">
+                                              <input class="form-control mb-2" type="text" id="callNumberSubField{{
+                                                  getdisplayNameSubField(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag,
+                                                    fieldItem.subField
+                                                  )
+                                                }}-{{childIndex}}" name="callNumberSubField{{
+                                                  getdisplayNameSubField(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag,
+                                                    fieldItem.subField
+                                                  )
+                                                }}-{{childIndex}}" tabindex="0" (input)="markAsDirtyField(form)"
+                                                [ngClass]="{
+                                                  'border-danger': validateField(fieldItem,item.labelFields,childIndex)
+                                                }" [value]="fieldItem.subField" [disabled]="
+                                                  fieldItem.isChecked == false
+                                                " [(ngModel)]="fieldItem.subField" [ngModelOptions]="{
+                                                  standalone: true
+                                                }" minlength="1" maxlength="2" />
+                                              <label for="callNumberSubField{{
+                                                  getdisplayNameSubField(
+                                                    item.labelType,
+                                                    fieldItem.displayName,
+                                                    fieldItem.tag,
+                                                    fieldItem.subField
+                                                  )
+                                                }}-{{childIndex}}" class="sr-only">{{
+                                                  fieldItem.subField
+                                                }}
+                                                Subfield</label>
+                                            </div>
+                                          </ng-container>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="col-4 pl-0" *ngIf="item.labelFields.length > 1">
+                                    <span class="bibTagLabels">Order Display</span>
+                                    <div class="orderDisplayBlock"
+                                      matTooltipClass="my-tooltip editTagEditErrorTooltip" matTooltipPosition="above"
+                                     >
+                                      <smooth-dnd-container [dragClass]="'opacity-ghost'"
+                                        [dropClass]="'opacity-ghost-drop'" [dragHandleSelector]="
+                                          '.column-drag-handle'
+                                        " [lockAxis]="'y'" (drop)="
+                                          onDropColumn(form, $event, item)
+                                        ">
+                                        <smooth-dnd-draggable *ngFor="
+                                            let orderDisplayField of item.orderDisplayFields;
+                                            let index = index
+                                          ">
+                                          <div class="orderDisplayBlockRow" tabindex="0" name="{{
+                                              orderDisplayField.displayName
+                                            }}-{{ index }}" (click)="
+                                              orderedDisplayItemSelected(
+                                                form,
+                                                index
+                                              )
+                                            " [ngStyle]="{
+                                              'background-color': getOrderDisplaySelectedBackGroundColor(
+                                                index
+                                              )
+                                            }" ngDefaultControl [(ngModel)]="
+                                              orderDisplayField.displayOrder
+                                            ">
+                                            <span class="sr-only">Order
+                                              Display</span>{{ orderDisplayField.displayName }}
+                                            <em aria-hidden="true" tabindex="0"
+                                              class="column-drag-handle fas fa-arrows-alt-v"
+                                              title="Drag up / down"></em>
+                                          </div>
+                                        </smooth-dnd-draggable>
+                                      </smooth-dnd-container>
+                                      <!-- <div class="orderDisplayBlockRow" (click)="markAsDirtyField(form)">
+                                          Author <em aria-hidden="true" class="column-drag-handle fas fa-arrows-alt-v"
+                                            title="Drag up / down"></em>
+                                        </div> -->
+                                    </div>
+                                  </div>
+                                  <div class="col-2 pl-0 mt-75" *ngIf="item.labelFields.length > 1">
+                                    <div class="orderDisplayBlockBtns">
+                                      <button class="btn btn-primary btn-block" id="insertSpace-{{i}}" tabindex="0"
+                                        type="button" (click)="
+                                          insertSpaceButtonSelected(form, item)
+                                        " >
+                                        Insert Space
+                                      </button>
+                                      <button class="btn btn-primary btn-block" id="deleteSpace-{{i}}" tabindex="0"
+                                        type="button" [disabled]="
+                                          disableInsertDeleteButton(
+                                            item,
+                                            'delete'
+                                          )
+                                        " (click)="
+                                          deleteSpaceButtonSelected(form, item)
+                                        ">
+                                        Delete Space
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row z3950Btns">
+        <div class="col pl-small pr-0 text-right">
+          <button class="btn btn-primary mr-1" [disabled]="enableDisableSave()" id="saveCLSlabelConfig" tabindex="0"
+            type="button" (click)="save(form)">
+            Save
+          </button>
+          <button class="btn btn-default mr-1" [disabled]="!loadControlsScreen" id="cancelCLSlabelConfig" tabindex="0"
+            type="button" (click)="cancel(form)">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="backCLSlabelConfig" tabindex="0" type="button" (click)="back(form)">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

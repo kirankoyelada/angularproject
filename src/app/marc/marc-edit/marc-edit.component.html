@@ -1,0 +1,208 @@
+<div *ngIf="marcState" class="container-fluid">
+  <form #form="ngForm" (ngSubmit)="SaveMarcRecord(form)" (keydown.enter)="($event.target.tagName === 'BUTTON')">
+    <div class="MarcEditor">
+      <header class="MARCrecordHeader">
+        <div class="container-fluid" role="grid">
+          <div class="row">
+            <div class="col-sm-3 pl-small pr-small">
+              <h4 class="editMarcHeadTwoLines">
+                <span tabindex="0" class="editMarcHead">Edit Bibliographic Record</span>
+                <span *ngIf ="!isDeletedDBSelected" tabindex="0" class="editMarcHeadRecSource"><b>Record Source:</b> {{ recordSource }}</span>
+              </h4>
+            </div>
+            <div class="col-sm-3 p-0 text-center">
+              <span *ngIf="marcState.displayWarnMessage" class="editErrorMessage" tabindex="0">
+                One or more errors occurred while saving the record. Please
+                correct them to proceed.
+              </span>
+            </div>
+            <div class="col-sm-6 pr-small text-right">
+              <button id="btnBarCodeField249" type="button" class="btn btn-primary ml-1" tabindex="0" (click)="openTagCreation()" [disabled]="isBarCodeEnable() || isDeletedDBSelected" >
+              Add 949
+              </button>
+              <button id="btnDownloadMarc" type="button" class="btn btn-primary ml-1" tabindex="0" data-toggle="modal" (click)="openDownloadPopup()"
+              data-backdrop="static" data-target="#downloadModalPopup" data-keyboard="true">
+                Download
+              </button>
+              <div class="modal fade" id="downloadModalPopup" role="dialog" aria-hidden="true" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" tabindex="0">Download</h5>
+                      <button type="button" class="close" data-dismiss="modal" tabindex="0"
+                        title="Close">&times;</button>
+                    </div>
+                    <form>
+                      <div class="modal-body">
+                        <div class="printConfirm text-left">
+                          <fieldset>
+                            <legend class="sr-only">Select a file(.mrc) to append</legend>
+                            <div class="row m-0">
+                              <div class="col-12 pl-small pr-small custom-file-block">
+                                <p class="font-weight-bold" tabindex="0">Select a file(.mrc) to append</p>
+                                  <div class="custom-file mt-1 mb-2" tabindex="0" (keydown.enter)="openFileUpload()">
+                                      <input type="file" class="custom-file-input" tabindex="-1" onclick="this.value=null;" id="fileUpload"
+                                          name="filename" required accept="{{accept}}" (change)="onChange($event.target.files)">
+                                      <label class="custom-file-label" for="fileUpload">Browse</label>
+                                  </div>
+                                  <span class="editErrorMessage" *ngIf="marcState.displayWarnMessage"> {{errMsg}}</span>
+                              </div>
+                            </div>
+                          </fieldset>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" (tap)="downloadMarcRecord()" (keydown.enter)="downloadMarcRecord()" data-dismiss="modal">OK</button>
+                        <button type="button" id="closeDownloadBtn" class="btn btn-default"
+                          data-dismiss="modal">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <button id="btnPrintView" type="button" class="btn btn-primary ml-1" tabindex="0" data-toggle="modal"
+                data-backdrop="static" data-target="#printInfoEdit" data-keyboard="true" (click)="openPrintPopup()">
+                Print
+              </button>
+              <div class="modal fade" id="printInfoEdit" role="dialog" aria-hidden="true" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" tabindex="0">Print - Line Spacing</h5>
+                      <button type="button" class="close" data-dismiss="modal" tabindex="0"
+                        title="Close">&times;</button>
+                    </div>
+                    <form>
+                      <div class="modal-body">
+                        <div class="printConfirm text-left">
+                          <fieldset>
+                            <legend class="sr-only">Choose Line Space Option</legend>
+                            <div class="row m-0">
+                              <div class="col-5 p-0">
+                                <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection" id="doubleSpace"
+                                  name="spaceOption" value="2" tabindex="0">
+                                <label for="doubleSpace">Double Space</label>
+                              </div>
+                              <div class="col-5 p-0">
+                                <input class="mr-2" type="radio" [(ngModel)]="lineSpaceSelection" id="singleSpace"
+                                  name="spaceOption" value="1" tabindex="0">
+                                <label for="singleSpace">Single Space</label>
+                              </div>
+                            </div>
+                          </fieldset>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" (tap)="printMarcRecord()">OK</button>
+                        <button type="button" id="closePrintViewBtn" class="btn btn-default" data-dismiss="modal"
+                          (tap)="ClosePrintPopup()">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <button type="button" (tap)=" deleteConfirmationMessage(marcState.marc.id)" class="btn btn-primary ml-1"
+                [disabled]="!canDelete() || isAllCustomerSelected || isDeletedDBSelected" tabindex="0">
+                Delete
+              </button>
+              <button type="button" (tap)="viewRecordHistory(marcState.marc.recordNumber)" class="btn btn-primary ml-1"
+                tabindex="0" [disabled] = "isDeletedDBSelected">
+                Record History
+              </button>
+              <button type="button" (tap)="CloneMarcRecord(marcState.marc.id)" class="btn btn-primary ml-1" tabindex="0"
+                [disabled]="!hasAccessAny([Permissions.CLN_BIB_MN,Permissions.CLN_BIB_WS]) ||isAllCustomerSelected || isDeletedDBSelected">Clone</button>
+              <button class="btn btn-primary ml-1" #addORSBtn
+                pageScroll id="addORSField" tabindex="0"
+                type="button" (click)="generateORSNumber(form)" (keydown.enter)="generateORSNumber(form)"
+                [disabled]="!((isExternalUser && currentCustomerId) || hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS])) || isAllCustomerSelected || isDeletedDBSelected">
+                ORS ID
+              </button>
+              <button *ngIf="DisplayRevealSpacesButton" type="button" (tap)="ToggleWhiteSpace()" class="btn btn-primary ml-1" tabindex="0" [disabled]="isDeletedDBSelected">{{RevealSpacesButtonLabel}}</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div id="marceditgrid" class="editMarcRowsContainer" [style.height.px]="NewHeight" cdk-scrollable [ngStyle]="{'background-color':marcSettings?.backgroundcolor}"> 
+        <!-- <div>{{form.value | json}}</div> -->
+        <smooth-dnd-container [dragClass]="'opacity-ghost'" [dropClass]="'opacity-ghost-drop'"
+          [dragHandleSelector]="'.column-drag-handle'" [lockAxis]="'y'" (drop)="onDrop($event)">
+          <smooth-dnd-draggable *ngFor="let field of marcState.marc.fields; let index = index">
+            <div class="draggable-item" [ngStyle]="{'background-color':field.color}"
+              (focusin)="updateLastFocusedIndex(index)"
+              [ngClass]="{'disableForm': !((isExternalUser && currentCustomerId) || hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS]))}">
+              <marc-field id="marcField{{ index }}" [position]="index" [field]="field" [marcSettings]="marcSettings"
+                [existingMARCData]="existingMARCData" [tagsRemoved]="toBeRemovedTags"
+                [(leaderDataWithHyphons)]="leaderDataWithHyphons" [leaderData]="leaderData"
+                (fieldChanged)="onFieldUpdate($event)" (fieldOnblur)="onBlurMarcField($event)"
+                [isDragDisabled]="field.isLeaderCtrlField" [form]="form" [overrideValidation]="marcState.overrideMarc21"
+                [isDeleteDisabled]="isDeleteDisabled(field.isDeleteDisabled, field.tag)"
+                [isEditable]="isEditable(field)"
+                (enterKeypress)="handleEnterKeyPressed($event)" #marcField (upKeypress)="handleUpDownPressed($event)"
+                (upDownKeypress)="handleUpDownPressed($event)" (deleteBtnClick)="deleteMarcField($event, form)"
+                (onLeaderDataChange)="update008Data($event)"
+                >
+              </marc-field>
+            </div>
+          </smooth-dnd-draggable>
+        </smooth-dnd-container>
+      </div>
+      <div class="row marcEditorBtns">
+        <div class="col-3 col-sm-5 pl-0">
+          <button class="btn btn-primary flex-fill" #addNewBtn href="#marcField{{ marcState.marc.fields.length - 1 }}"
+            pageScroll id="addNewMarcField" tabindex="0" type="button" (tap)="AddNewMarcField(form)"
+            (keydown.enter)="AddNewMarcField(form)"
+            [disabled]="!((isExternalUser && currentCustomerId) || hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS])) || isAllCustomerSelected || isDeletedDBSelected">
+            Add New Field
+          </button>
+          <!--
+          <div class="custom-checkbox-div overRide21RulesCheckbox" *ngIf="(isExternalUser && currentCustomerId && currentCustomerId === marcState.marc.customerId)">
+            <input tabindex="0" type="checkbox" name="overrideMarc21" id="overrideMarc21" (change)="OnOverideMarc21($event)" [ngModel]="marcState.overrideMarc21"
+            [disabled]="isAllCustomerSelected">
+            <label aria-hidden="true" class="custom-label" for="overrideMarc21"><span>Override MARC 21 rules</span></label>
+          </div>
+          -->
+        </div>
+        <div class="col-9 col-sm-7 pl-small pr-0 text-right">
+          <div class="btn-group dropup">
+            <div class="dropdown">
+              <button type="submit" class="btn btn-primary dropdown-toggle mr-1" id="saveMarcRec" data-toggle="dropdown"
+                tabindex="0" aria-haspopup="true" aria-expanded="false"
+                [disabled]="!((isExternalUser && currentCustomerId) || hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS])) || isAllCustomerSelected || isDeletedDBSelected">
+                Save To
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" (keydown.enter)="saveMarcRecordToMain()" (click)="saveMarcRecordToMain()"
+                  tabindex="0" [ngClass]="{'disableForm': !hasAccess(Permissions.EDT_BIB_MN) || marcState.overrideMarc21}" id="btnSaveToMain">
+                  BTCAT Main
+                </a>
+                <a class="dropdown-item" (keydown.enter)="saveMarcRecordToWorkSpace()"
+                  (click)="saveMarcRecordToWorkSpace()" tabindex="0" id="btnSaveToWS"
+                  [ngClass]="{'disableForm': !hasAccess(Permissions.EDT_BIB_WS) || marcState.overrideMarc21}">
+                  BTCAT Workspace
+                </a>
+                <a class="dropdown-item" (keydown.enter)="saveMarcRecordToCutomerWorkSpace()" id="btnSaveToCusWS"
+                  (click)="saveMarcRecordToCutomerWorkSpace()" tabindex="0" *ngIf="isExternalUser && currentCustomerId">
+                  CLS Customer
+                </a>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-default mr-1" id="cancelMarcRec" tabindex="0" type="button" (tap)="cancel(form)"
+            (keydown.enter)="cancel(form)" [disabled]="!((isExternalUser && currentCustomerId) || hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS])) || isAllCustomerSelected || isDeletedDBSelected">
+            Cancel
+          </button>
+          <button class="btn btn-default" id="backMarcRec" tabindex="0" type="button" (tap)="back(form, false)"
+            (keydown.enter)="back(form, false)">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+    <app-execute-macro *ngIf="marcState.marc" id="marc-execute-macro-{{ index }}" [marcSettings]="marcSettings"
+      [marc]="marcState.marc" [isActive]="isActive"
+      [hasMacroExecutionPermission]="hasAccess(Permissions.RUN_MAC) && ((isExternalUser && currentCustomerId) || hasAccessAny([Permissions.EDT_BIB_MN,Permissions.EDT_BIB_WS]))"
+      (onMarcRecordChange)="onMacroExecuted($event)" (onMarcRecordShowErrorMsg)="onMarcRecordShowErrorMsg($event)">
+    </app-execute-macro>
+  </form>
+</div>

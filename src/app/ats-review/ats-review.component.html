@@ -1,0 +1,39 @@
+<div class="wrapper">
+  <div id="contentFull">
+    <header class="tableHeaderCounts">
+      <div class="container-fluid Z3950Head" role="grid">
+        <div class="row">
+          <div class="col-6 pl-small pr-small">
+            <h4><span tabindex="0">ATS Review</span></h4>    
+          </div>                 
+          <div class="col-6 pr-small text-right">
+            <div class="form-group z3950SearchFilter">
+              <p *ngIf="showData">
+                <span class="font-weight-bold">Total Items:</span><span>{{totalItems}}</span>
+                <span class="font-weight-bold pl-small">Unique Records:</span><span>{{uniquesRecords}}</span>
+              </p>
+              <button class="btn btn-primary" tabindex="0" type="button" (click)="openConfigureColumns()">Configure Columns</button>
+            </div>
+        </div>
+        </div>
+      </div>
+    </header>
+    <div class="marc-outer Z3950Profiles m-0">
+      <div class="MARCrecords" [style.height.px]="NewHeight">
+        <fieldset>
+          <legend class="sr-only">ATS Review</legend>
+          <table id="atsReviewGrid" class="table table-bordered table-hover table-sm" role="grid" width="100%">
+          </table>
+        </fieldset>
+      </div>
+      </div>
+      <div class="row z3950Btns">
+        <div class="col-12 pl-small pr-0 text-right">
+          <button class="btn btn-default" id="backClsCustomerConfig" tabindex="0" type="button" (click)="back()">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
